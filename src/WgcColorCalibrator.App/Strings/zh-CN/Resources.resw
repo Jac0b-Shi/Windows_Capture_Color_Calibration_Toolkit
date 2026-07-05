@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="AppDescription" xml:space="preserve">
+    <value>Windows 捕获色彩测量与校准工具。</value>
+  </data>
+  <data name="AppDisplayName" xml:space="preserve">
+    <value>WGC 色彩校准器</value>
+  </data>
+  <data name="PublisherDisplayName" xml:space="preserve">
+    <value>Jac0b Shi</value>
+  </data>
+  <data name="AboutLicense.Text" xml:space="preserve">
+    <value>许可证：LGPL-3.0-only。</value>
+  </data>
+  <data name="AboutStatus.Text" xml:space="preserve">
+    <value>状态：初始化阶段。</value>
+  </data>
+  <data name="AboutTitle.Text" xml:space="preserve">
+    <value>关于</value>
+  </data>
+  <data name="DiagnosticsAppVersionLabel.Text" xml:space="preserve">
+    <value>应用版本</value>
+  </data>
+  <data name="DiagnosticsDotNetLabel.Text" xml:space="preserve">
+    <value>.NET</value>
+  </data>
+  <data name="DiagnosticsHdrLabel.Text" xml:space="preserve">
+    <value>HDR 状态</value>
+  </data>
+  <data name="DiagnosticsPixelFormatLabel.Text" xml:space="preserve">
+    <value>像素格式</value>
+  </data>
+  <data name="DiagnosticsTitle.Text" xml:space="preserve">
+    <value>诊断</value>
+  </data>
+  <data name="DiagnosticsWgcLabel.Text" xml:space="preserve">
+    <value>WGC 支持</value>
+  </data>
+  <data name="DiagnosticsWindowsAppSdkLabel.Text" xml:space="preserve">
+    <value>Windows App SDK</value>
+  </data>
+  <data name="DiagnosticsWindowsLabel.Text" xml:space="preserve">
+    <value>Windows</value>
+  </data>
+  <data name="HomeCaptureFormatLabel.Text" xml:space="preserve">
+    <value>捕获格式</value>
+  </data>
+  <data name="HomeHdrLabel.Text" xml:space="preserve">
+    <value>HDR</value>
+  </data>
+  <data name="HomeScopeLabel.Text" xml:space="preserve">
+    <value>范围</value>
+  </data>
+  <data name="HomeScopeValue.Text" xml:space="preserve">
+    <value>仓库基础、核心领域、本地化和应用外壳。</value>
+  </data>
+  <data name="HomeTitle.Text" xml:space="preserve">
+    <value>WGC 色彩校准器</value>
+  </data>
+  <data name="HomeWgcLabel.Text" xml:space="preserve">
+    <value>Windows Graphics Capture</value>
+  </data>
+  <data name="LanguageEnUs.Content" xml:space="preserve">
+    <value>英语</value>
+  </data>
+  <data name="LanguageSystem.Content" xml:space="preserve">
+    <value>系统语言</value>
+  </data>
+  <data name="LanguageZhCn.Content" xml:space="preserve">
+    <value>简体中文</value>
+  </data>
+  <data name="MainWindowTitle" xml:space="preserve">
+    <value>WGC 色彩校准器</value>
+  </data>
+  <data name="NavigationAbout.Content" xml:space="preserve">
+    <value>关于</value>
+  </data>
+  <data name="NavigationDiagnostics.Content" xml:space="preserve">
+    <value>诊断</value>
+  </data>
+  <data name="NavigationHome.Content" xml:space="preserve">
+    <value>首页</value>
+  </data>
+  <data name="Navigation.PaneTitle" xml:space="preserve">
+    <value>WGC 色彩校准器</value>
+  </data>
+  <data name="NavigationSettings.Content" xml:space="preserve">
+    <value>设置</value>
+  </data>
+  <data name="SettingsApplyLanguage.Content" xml:space="preserve">
+    <value>应用</value>
+  </data>
+  <data name="SettingsLanguageLabel.Text" xml:space="preserve">
+    <value>语言</value>
+  </data>
+  <data name="SettingsTitle.Text" xml:space="preserve">
+    <value>设置</value>
+  </data>
+</root>

@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page
+    x:Class="WgcColorCalibrator.App.Pages.HomePage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <ScrollViewer>
+        <StackPanel Spacing="16" Padding="32">
+            <TextBlock x:Uid="HomeTitle" Style="{ThemeResource TitleTextBlockStyle}" />
+            <Grid ColumnSpacing="16" RowSpacing="12">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="180" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+
+                <TextBlock x:Uid="HomeScopeLabel" Grid.Row="0" Grid.Column="0" FontWeight="SemiBold" />
+                <TextBlock x:Uid="HomeScopeValue" Grid.Row="0" Grid.Column="1" TextWrapping="Wrap" />
+                <TextBlock x:Uid="HomeWgcLabel" Grid.Row="1" Grid.Column="0" FontWeight="SemiBold" />
+                <TextBlock Grid.Row="1" Grid.Column="1" Text="not-probed" />
+                <TextBlock x:Uid="HomeHdrLabel" Grid.Row="2" Grid.Column="0" FontWeight="SemiBold" />
+                <TextBlock Grid.Row="2" Grid.Column="1" Text="not-probed" />
+                <TextBlock x:Uid="HomeCaptureFormatLabel" Grid.Row="3" Grid.Column="0" FontWeight="SemiBold" />
+                <TextBlock Grid.Row="3" Grid.Column="1" Text="not-selected" />
+            </Grid>
+        </StackPanel>
+    </ScrollViewer>
+</Page>
+

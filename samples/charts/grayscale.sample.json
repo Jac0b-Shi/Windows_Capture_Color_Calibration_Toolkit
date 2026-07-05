@@ -1,0 +1,23 @@
+{
+  "schemaVersion": "0.1.0",
+  "id": "grayscale-sample",
+  "name": "Grayscale Sample",
+  "patches": [
+    { "id": "gray-000", "label": "#000000", "expectedColor": { "r": 0, "g": 0, "b": 0 }, "category": "grayscale", "weight": 1.0 },
+    { "id": "gray-064", "label": "#404040", "expectedColor": { "r": 64, "g": 64, "b": 64 }, "category": "grayscale", "weight": 1.0 },
+    { "id": "gray-128", "label": "#808080", "expectedColor": { "r": 128, "g": 128, "b": 128 }, "category": "grayscale", "weight": 1.0 },
+    { "id": "gray-192", "label": "#C0C0C0", "expectedColor": { "r": 192, "g": 192, "b": 192 }, "category": "grayscale", "weight": 1.0 },
+    { "id": "gray-255", "label": "#FFFFFF", "expectedColor": { "r": 255, "g": 255, "b": 255 }, "category": "grayscale", "weight": 1.0 }
+  ],
+  "layout": {
+    "patchWidth": 64,
+    "patchHeight": 64,
+    "gap": 8,
+    "safeSampleInset": 8,
+    "columnCount": 5
+  },
+  "metadata": {
+    "source": "sample"
+  }
+}
+

@@ -1,0 +1,17 @@
+name: Technical question
+description: Track a WGC, HDR, WinUI, D3D11, DXGI, or Windows version question.
+title: "[Question]: "
+labels: ["technical-question"]
+body:
+  - type: textarea
+    id: question
+    attributes:
+      label: Question
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Evidence
+      description: Link Microsoft official documentation, official samples, experiments, or logs.
+

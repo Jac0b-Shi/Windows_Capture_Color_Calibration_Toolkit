@@ -1,0 +1,22 @@
+{
+  "schemaVersion": "0.1.0",
+  "id": "near-white-sample",
+  "name": "Near White Sample",
+  "patches": [
+    { "id": "white-255", "label": "#FFFFFF", "expectedColor": { "r": 255, "g": 255, "b": 255 }, "category": "near-white", "weight": 1.0 },
+    { "id": "gray-248", "label": "#F8F8F8", "expectedColor": { "r": 248, "g": 248, "b": 248 }, "category": "near-white", "weight": 1.0 },
+    { "id": "warm-250", "label": "#FFF8F0", "expectedColor": { "r": 255, "g": 248, "b": 240 }, "category": "near-white", "weight": 1.0 },
+    { "id": "cool-250", "label": "#F0F8FF", "expectedColor": { "r": 240, "g": 248, "b": 255 }, "category": "near-white", "weight": 1.0 }
+  ],
+  "layout": {
+    "patchWidth": 64,
+    "patchHeight": 64,
+    "gap": 8,
+    "safeSampleInset": 8,
+    "columnCount": 4
+  },
+  "metadata": {
+    "source": "sample"
+  }
+}
+

@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "WgcColorCalibrator (Package)": {
+      "commandName": "MsixPackage"
+    },
+    "WgcColorCalibrator (Unpackaged)": {
+      "commandName": "Project"
+    }
+  }
+}

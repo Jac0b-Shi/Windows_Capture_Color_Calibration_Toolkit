@@ -1,0 +1,56 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://jac0b-shi.github.io/wgc-hdr-color-calibrator/schemas/chart-definition.schema.json",
+  "title": "ChartDefinition",
+  "type": "object",
+  "required": ["schemaVersion", "id", "name", "patches", "layout"],
+  "properties": {
+    "schemaVersion": {
+      "const": "0.1.0"
+    },
+    "id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1
+    },
+    "patches": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["id", "label", "expectedColor", "weight"],
+        "properties": {
+          "id": { "type": "string", "minLength": 1 },
+          "label": { "type": "string" },
+          "expectedColor": {
+            "type": "object",
+            "required": ["r", "g", "b"],
+            "properties": {
+              "r": { "type": "integer", "minimum": 0, "maximum": 255 },
+              "g": { "type": "integer", "minimum": 0, "maximum": 255 },
+              "b": { "type": "integer", "minimum": 0, "maximum": 255 }
+            }
+          },
+          "category": { "type": ["string", "null"] },
+          "weight": { "type": "number", "minimum": 0 },
+          "metadata": {
+            "type": ["object", "null"],
+            "additionalProperties": { "type": "string" }
+          }
+        }
+      }
+    },
+    "layout": {
+      "type": "object"
+    },
+    "metadata": {
+      "type": ["object", "null"],
+      "additionalProperties": { "type": "string" }
+    }
+  },
+  "additionalProperties": true
+}
+

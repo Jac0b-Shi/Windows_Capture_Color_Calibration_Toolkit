@@ -1,0 +1,5 @@
+id,label,r,g,b,category,weight
+white,#FFFFFF,255,255,255,manual,1
+near-white,#F8F8F8,248,248,248,near-white,1
+black,#000000,0,0,0,grayscale,1
+

@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://jac0b-shi.github.io/wgc-hdr-color-calibrator/schemas/measurement-profile.schema.json",
+  "title": "MeasurementProfile",
+  "type": "object",
+  "required": ["schemaVersion", "application", "system", "capture", "chart", "measurements", "warnings", "createdAt"],
+  "properties": {
+    "schemaVersion": {
+      "const": "0.1.0"
+    },
+    "application": { "type": "object" },
+    "system": { "type": "object" },
+    "gpu": { "type": "object" },
+    "display": { "type": "object" },
+    "hdr": { "type": "object" },
+    "capture": { "type": "object" },
+    "chart": { "type": "object" },
+    "layout": { "type": "object" },
+    "measurements": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["patchId", "expected", "captured", "sampling", "warnings"]
+      }
+    },
+    "analysis": {
+      "type": "array"
+    },
+    "warnings": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "createdAt": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "additionalProperties": true
+}
+
