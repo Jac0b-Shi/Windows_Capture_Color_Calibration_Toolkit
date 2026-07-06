@@ -3,7 +3,7 @@
   "$id": "https://jac0b-shi.github.io/wgc-hdr-color-calibrator/schemas/measurement-profile.schema.json",
   "title": "MeasurementProfile",
   "type": "object",
-  "required": ["schemaVersion", "application", "system", "capture", "chart", "measurements", "warnings", "createdAt"],
+  "required": ["schemaVersion", "application", "system", "capture", "chart", "layout", "measurements", "warnings", "createdAt"],
   "properties": {
     "schemaVersion": {
       "const": "0.1.0"
@@ -15,7 +15,7 @@
     "hdr": { "type": "object" },
     "capture": { "type": "object" },
     "chart": { "type": "object" },
-    "layout": { "type": "object" },
+    "layout": { "type": "array" },
     "measurements": {
       "type": "array",
       "items": {
