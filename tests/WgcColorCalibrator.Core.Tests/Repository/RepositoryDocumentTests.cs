@@ -110,6 +110,52 @@ public sealed class RepositoryDocumentTests
         Assert.Empty(violations);
     }
 
+    [Fact]
+    public void AppManifestVersion_Matches_AssemblyVersion()
+    {
+        string repositoryRoot = GetRepositoryRoot();
+
+        string csprojPath = Path.Combine(repositoryRoot, "src", "WgcColorCalibrator.App", "WgcColorCalibrator.App.csproj");
+        string csprojContent = File.ReadAllText(csprojPath);
+        string assemblyVersion = ExtractXmlValue(csprojContent, "AssemblyVersion")
+            ?? throw new InvalidOperationException("AssemblyVersion not found in App csproj.");
+
+        string manifestPath = Path.Combine(repositoryRoot, "src", "WgcColorCalibrator.App", "Package.appxmanifest");
+        string manifestContent = File.ReadAllText(manifestPath);
+
+        int identityStart = manifestContent.IndexOf("<Identity", StringComparison.Ordinal);
+        Assert.True(identityStart >= 0, "Identity element not found in manifest.");
+        int identityEnd = manifestContent.IndexOf('>', identityStart);
+        string identityElement = manifestContent[identityStart..(identityEnd + 1)].ToString();
+        string manifestVersion = ExtractXmlAttribute(identityElement, "Version")
+            ?? throw new InvalidOperationException("Version attribute not found in manifest Identity element.");
+
+        Assert.True(assemblyVersion == manifestVersion,
+            $"AssemblyVersion ({assemblyVersion}) must match Package.appxmanifest Identity Version ({manifestVersion}).");
+    }
+
+    private static string? ExtractXmlValue(string xml, string elementName)
+    {
+        string openTag = $"<{elementName}>";
+        string closeTag = $"</{elementName}>";
+        int start = xml.IndexOf(openTag, StringComparison.Ordinal);
+        if (start < 0) return null;
+        start += openTag.Length;
+        int end = xml.IndexOf(closeTag, start, StringComparison.Ordinal);
+        if (end < 0) return null;
+        return xml[start..end].ToString().Trim();
+    }
+
+    private static string? ExtractXmlAttribute(string element, string attributeName)
+    {
+        int start = element.IndexOf($"{attributeName}=\"", StringComparison.Ordinal);
+        if (start < 0) return null;
+        start += attributeName.Length + 2;
+        int end = element.IndexOf('"', start);
+        if (end < 0) return null;
+        return element[start..end].ToString();
+    }
+
     private static string GetRepositoryRoot()
     {
         var directory = new DirectoryInfo(AppContext.BaseDirectory);

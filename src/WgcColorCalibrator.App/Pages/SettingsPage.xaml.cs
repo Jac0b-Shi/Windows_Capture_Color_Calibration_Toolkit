@@ -1,8 +1,8 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.Windows.ApplicationModel.Resources;
 using WgcColorCalibrator.App.Services;
-using Windows.ApplicationModel.Resources;
 
 namespace WgcColorCalibrator.App.Pages;
 
@@ -28,7 +28,7 @@ public sealed partial class SettingsPage : Page
 
             if (!string.Equals(languageTag, previousTag, StringComparison.Ordinal))
             {
-                var loader = ResourceLoader.GetForViewIndependentUse();
+                var loader = new ResourceLoader();
 
                 ContentDialog dialog = new()
                 {

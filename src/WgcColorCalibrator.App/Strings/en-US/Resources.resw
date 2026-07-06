@@ -49,7 +49,10 @@
     <value>WGC support</value>
   </data>
   <data name="DiagnosticsWindowsAppSdkLabel.Text" xml:space="preserve">
-    <value>Windows App SDK</value>
+    <value>Windows App SDK release</value>
+  </data>
+  <data name="DiagnosticsWindowsAppRuntimeLabel.Text" xml:space="preserve">
+    <value>Windows App Runtime</value>
   </data>
   <data name="DiagnosticsWindowsLabel.Text" xml:space="preserve">
     <value>Windows</value>

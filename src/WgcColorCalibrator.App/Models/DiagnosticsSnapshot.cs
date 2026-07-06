@@ -4,7 +4,8 @@ public sealed record DiagnosticsSnapshot(
     string ApplicationVersion,
     string DotNetVersion,
     string WindowsVersion,
-    string WindowsAppSdkPackageVersion,
+    string WindowsAppSdkRelease,
+    string WindowsAppRuntimeVersion,
     ProbeStatus WgcSupportStatus,
     ProbeStatus HdrStatus,
     ProbeStatus CapturePixelFormatStatus);

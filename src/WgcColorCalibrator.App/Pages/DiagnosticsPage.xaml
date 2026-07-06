@@ -19,6 +19,7 @@
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
 
                 <TextBlock x:Uid="DiagnosticsAppVersionLabel" Grid.Row="0" Grid.Column="0" FontWeight="SemiBold" />
@@ -29,12 +30,14 @@
                 <TextBlock x:Name="WindowsTextBlock" Grid.Row="2" Grid.Column="1" />
                 <TextBlock x:Uid="DiagnosticsWindowsAppSdkLabel" Grid.Row="3" Grid.Column="0" FontWeight="SemiBold" />
                 <TextBlock x:Name="WindowsAppSdkTextBlock" Grid.Row="3" Grid.Column="1" />
-                <TextBlock x:Uid="DiagnosticsWgcLabel" Grid.Row="4" Grid.Column="0" FontWeight="SemiBold" />
-                <TextBlock x:Name="WgcTextBlock" Grid.Row="4" Grid.Column="1" />
-                <TextBlock x:Uid="DiagnosticsHdrLabel" Grid.Row="5" Grid.Column="0" FontWeight="SemiBold" />
-                <TextBlock x:Name="HdrTextBlock" Grid.Row="5" Grid.Column="1" />
-                <TextBlock x:Uid="DiagnosticsPixelFormatLabel" Grid.Row="6" Grid.Column="0" FontWeight="SemiBold" />
-                <TextBlock x:Name="PixelFormatTextBlock" Grid.Row="6" Grid.Column="1" />
+                <TextBlock x:Uid="DiagnosticsWindowsAppRuntimeLabel" Grid.Row="4" Grid.Column="0" FontWeight="SemiBold" />
+                <TextBlock x:Name="WindowsAppRuntimeTextBlock" Grid.Row="4" Grid.Column="1" />
+                <TextBlock x:Uid="DiagnosticsWgcLabel" Grid.Row="5" Grid.Column="0" FontWeight="SemiBold" />
+                <TextBlock x:Name="WgcTextBlock" Grid.Row="5" Grid.Column="1" />
+                <TextBlock x:Uid="DiagnosticsHdrLabel" Grid.Row="6" Grid.Column="0" FontWeight="SemiBold" />
+                <TextBlock x:Name="HdrTextBlock" Grid.Row="6" Grid.Column="1" />
+                <TextBlock x:Uid="DiagnosticsPixelFormatLabel" Grid.Row="7" Grid.Column="0" FontWeight="SemiBold" />
+                <TextBlock x:Name="PixelFormatTextBlock" Grid.Row="7" Grid.Column="1" />
             </Grid>
         </StackPanel>
     </ScrollViewer>

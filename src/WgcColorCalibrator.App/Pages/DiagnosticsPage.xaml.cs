@@ -1,8 +1,8 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.Windows.ApplicationModel.Resources;
 using WgcColorCalibrator.App.Models;
 using WgcColorCalibrator.App.Services;
-using Windows.ApplicationModel.Resources;
 
 namespace WgcColorCalibrator.App.Pages;
 
@@ -16,7 +16,8 @@ public sealed partial class DiagnosticsPage : Page
         AppVersionTextBlock.Text = snapshot.ApplicationVersion;
         DotNetTextBlock.Text = snapshot.DotNetVersion;
         WindowsTextBlock.Text = snapshot.WindowsVersion;
-        WindowsAppSdkTextBlock.Text = snapshot.WindowsAppSdkPackageVersion;
+        WindowsAppSdkTextBlock.Text = snapshot.WindowsAppSdkRelease;
+        WindowsAppRuntimeTextBlock.Text = snapshot.WindowsAppRuntimeVersion;
         WgcTextBlock.Text = GetProbeStatusText(snapshot.WgcSupportStatus);
         HdrTextBlock.Text = GetProbeStatusText(snapshot.HdrStatus);
         PixelFormatTextBlock.Text = GetProbeStatusText(snapshot.CapturePixelFormatStatus);
@@ -24,7 +25,7 @@ public sealed partial class DiagnosticsPage : Page
 
     private static string GetProbeStatusText(ProbeStatus status)
     {
-        var loader = ResourceLoader.GetForViewIndependentUse();
+        var loader = new ResourceLoader();
         string key = status switch
         {
             ProbeStatus.NotProbed => "ProbeStatusNotProbed",

@@ -1,0 +1,109 @@
+{
+  "schemaVersion": "0.1.0",
+  "application": {
+    "name": "WgcColorCalibrator",
+    "version": "0.1.0"
+  },
+  "system": {
+    "windowsBuild": "unknown"
+  },
+  "gpu": {},
+  "display": {},
+  "hdr": {},
+  "capture": {
+    "backendId": "wgc",
+    "sourceKind": "window",
+    "requestedPixelFormat": "b8G8R8A8UIntNormalized",
+    "actualPixelFormat": "b8G8R8A8UIntNormalized",
+    "encoding": "unknown",
+    "formatDowngraded": false
+  },
+  "chart": {
+    "schemaVersion": "0.1.0",
+    "id": "manual-single-color",
+    "name": "Manual Single Color",
+    "patches": [
+      {
+        "id": "manual-ffffff",
+        "label": "#FFFFFF",
+        "expectedColor": {
+          "r": 255,
+          "g": 255,
+          "b": 255
+        },
+        "category": "manual",
+        "weight": 1,
+        "metadata": null
+      }
+    ],
+    "layout": {
+      "patchWidth": 64,
+      "patchHeight": 64,
+      "gap": 8,
+      "border": 16,
+      "safeSampleInset": 8,
+      "columnCount": 4,
+      "windowBackground": {
+        "r": 0,
+        "g": 0,
+        "b": 0
+      }
+    },
+    "metadata": {
+      "providerId": "manual-single-color"
+    }
+  },
+  "layout": [
+    {
+      "patchId": "manual-ffffff",
+      "bounds": {
+        "x": 16,
+        "y": 16,
+        "width": 64,
+        "height": 64,
+        "right": 80,
+        "bottom": 80
+      },
+      "safeSampleBounds": {
+        "x": 24,
+        "y": 24,
+        "width": 48,
+        "height": 48,
+        "right": 72,
+        "bottom": 72
+      }
+    }
+  ],
+  "measurements": [
+    {
+      "patchId": "manual-ffffff",
+      "expected": {
+        "encoding": "srgbEncoded",
+        "rgb8": {
+          "r": 255,
+          "g": 255,
+          "b": 255
+        },
+        "rgba": null
+      },
+      "displayObserved": null,
+      "captured": {
+        "encoding": "unknown",
+        "rgb8": {
+          "r": 242,
+          "g": 242,
+          "b": 242
+        },
+        "rgba": null
+      },
+      "sampling": {
+        "method": "centerMedian",
+        "sampleCount": 16
+      },
+      "warnings": []
+    }
+  ],
+  "analysis": [],
+  "warnings": [],
+  "createdAt": "2026-07-05T00:00:00+00:00"
+}

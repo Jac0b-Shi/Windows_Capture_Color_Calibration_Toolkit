@@ -13,7 +13,8 @@ public sealed class DiagnosticsSnapshotService
             ApplicationVersion: GetApplicationVersion(),
             DotNetVersion: RuntimeInformation.FrameworkDescription,
             WindowsVersion: Environment.OSVersion.VersionString,
-            WindowsAppSdkPackageVersion: GetWindowsAppSdkVersion(),
+            WindowsAppSdkRelease: GetWindowsAppSdkRelease(),
+            WindowsAppRuntimeVersion: GetWindowsAppRuntimeVersion(),
             WgcSupportStatus: ProbeStatus.NotProbed,
             HdrStatus: ProbeStatus.NotProbed,
             CapturePixelFormatStatus: ProbeStatus.NotSelected);
@@ -21,7 +22,6 @@ public sealed class DiagnosticsSnapshotService
 
     private static string GetApplicationVersion()
     {
-        // Packaged: read MSIX identity version
         try
         {
             if (global::Windows.ApplicationModel.Package.Current is { } package)
@@ -32,7 +32,6 @@ public sealed class DiagnosticsSnapshotService
         }
         catch
         {
-            // Not running packaged — fall back to assembly version
         }
 
         var assembly = Assembly.GetEntryAssembly();
@@ -45,13 +44,23 @@ public sealed class DiagnosticsSnapshotService
         return "unknown";
     }
 
-    private static string GetWindowsAppSdkVersion()
+    private static string GetWindowsAppSdkRelease()
     {
         try
         {
-            // Official Windows App SDK VersionInfo API (WinRT)
-            var release = ReleaseInfo.AsString;
-            return release;
+            return ReleaseInfo.AsString;
+        }
+        catch
+        {
+            return "unknown";
+        }
+    }
+
+    private static string GetWindowsAppRuntimeVersion()
+    {
+        try
+        {
+            return RuntimeInfo.AsString;
         }
         catch
         {

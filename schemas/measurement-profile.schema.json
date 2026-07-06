@@ -37,7 +37,30 @@
         "schemaVersion": { "const": "0.1.0" },
         "id": { "type": "string", "minLength": 1 },
         "name": { "type": "string", "minLength": 1 },
-        "patches": { "type": "array", "minItems": 1 },
+        "patches": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": ["id", "label", "expectedColor", "weight"],
+            "properties": {
+              "id": { "type": "string", "minLength": 1 },
+              "label": { "type": "string" },
+              "expectedColor": {
+                "type": "object",
+                "required": ["r", "g", "b"],
+                "properties": {
+                  "r": { "type": "integer", "minimum": 0, "maximum": 255 },
+                  "g": { "type": "integer", "minimum": 0, "maximum": 255 },
+                  "b": { "type": "integer", "minimum": 0, "maximum": 255 }
+                }
+              },
+              "category": { "type": ["string", "null"] },
+              "weight": { "type": "number", "minimum": 0 },
+              "metadata": { "oneOf": [{ "type": "object" }, { "type": "null" }] }
+            }
+          }
+        },
         "layout": { "type": "object" },
         "metadata": { "oneOf": [{ "type": "object" }, { "type": "null" }] }
       }
@@ -79,9 +102,45 @@
         "required": ["patchId", "expected", "captured", "sampling", "warnings"],
         "properties": {
           "patchId": { "type": "string", "minLength": 1 },
-          "expected": { "type": "object", "required": ["encoding"] },
-          "displayObserved": { "oneOf": [{ "type": "object", "required": ["encoding"] }, { "type": "null" }] },
-          "captured": { "type": "object", "required": ["encoding"] },
+          "expected": {
+            "type": "object",
+            "required": ["encoding"],
+            "properties": {
+              "encoding": { "type": "string", "enum": ["unknown", "srgbEncoded", "linearScRgb", "displayObserved", "captureNative"] },
+              "rgb8": { "type": "object", "oneOf": [
+                { "type": "object", "required": ["r", "g", "b"],
+                  "properties": { "r": { "type": "integer", "minimum": 0, "maximum": 255 }, "g": { "type": "integer", "minimum": 0, "maximum": 255 }, "b": { "type": "integer", "minimum": 0, "maximum": 255 } } },
+                { "type": "null" }
+              ]},
+              "rgba": { "oneOf": [
+                { "type": "object", "required": ["r", "g", "b", "a"],
+                  "properties": { "r": { "type": "number" }, "g": { "type": "number" }, "b": { "type": "number" }, "a": { "type": "number" } } },
+                { "type": "null" }
+              ]}
+            }
+          },
+          "displayObserved": { "oneOf": [
+            { "type": "object", "required": ["encoding"],
+              "properties": { "encoding": { "type": "string", "enum": ["unknown", "srgbEncoded", "linearScRgb", "displayObserved", "captureNative"] } } },
+            { "type": "null" }
+          ]},
+          "captured": {
+            "type": "object",
+            "required": ["encoding"],
+            "properties": {
+              "encoding": { "type": "string", "enum": ["unknown", "srgbEncoded", "linearScRgb", "displayObserved", "captureNative"] },
+              "rgb8": { "oneOf": [
+                { "type": "object", "required": ["r", "g", "b"],
+                  "properties": { "r": { "type": "integer", "minimum": 0, "maximum": 255 }, "g": { "type": "integer", "minimum": 0, "maximum": 255 }, "b": { "type": "integer", "minimum": 0, "maximum": 255 } } },
+                { "type": "null" }
+              ]},
+              "rgba": { "oneOf": [
+                { "type": "object", "required": ["r", "g", "b", "a"],
+                  "properties": { "r": { "type": "number" }, "g": { "type": "number" }, "b": { "type": "number" }, "a": { "type": "number" } } },
+                { "type": "null" }
+              ]}
+            }
+          },
           "sampling": {
             "type": "object",
             "required": ["method", "sampleCount"],
@@ -96,7 +155,10 @@
     },
     "analysis": { "type": "array" },
     "warnings": { "type": "array", "items": { "type": "string" } },
-    "createdAt": { "type": "string" }
+    "createdAt": {
+      "type": "string",
+      "format": "date-time"
+    }
   },
   "additionalProperties": true
 }
