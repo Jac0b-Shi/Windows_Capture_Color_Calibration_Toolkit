@@ -42,8 +42,7 @@ public static class ChartCsvSerializer
         ArgumentException.ThrowIfNullOrWhiteSpace(chartName);
         ArgumentNullException.ThrowIfNull(layout);
 
-        string[] lines = csv
-            .Split(["\r\n", "\n"], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        string[] lines = SplitCsvRecords(csv);
 
         if (lines.Length == 0 || !string.Equals(lines[0], Header, StringComparison.OrdinalIgnoreCase))
         {
@@ -62,7 +61,7 @@ public static class ChartCsvSerializer
             byte r = ParseByte(columns[2], index, "r");
             byte g = ParseByte(columns[3], index, "g");
             byte b = ParseByte(columns[4], index, "b");
-            double weight = double.Parse(columns[6], CultureInfo.InvariantCulture);
+            double weight = ParseWeight(columns[6], index);
 
             patches.Add(new ColorPatchDefinition(
                 columns[0],
@@ -87,6 +86,105 @@ public static class ChartCsvSerializer
         }
 
         return result;
+    }
+
+    private static double ParseWeight(string value, int lineIndex)
+    {
+        if (!double.TryParse(value, NumberStyles.Float | NumberStyles.AllowThousands, CultureInfo.InvariantCulture, out double result))
+        {
+            throw new FormatException($"CSV line {lineIndex + 1} has invalid weight value.");
+        }
+
+        if (double.IsNaN(result) || double.IsInfinity(result))
+        {
+            throw new FormatException($"CSV line {lineIndex + 1} has invalid weight value: weight must be a finite number.");
+        }
+
+        return result;
+    }
+
+    /// <summary>
+    /// Splits CSV text into logical records, respecting that newlines inside
+    /// quoted fields are part of the field value, not record separators.
+    /// </summary>
+    private static string[] SplitCsvRecords(string csv)
+    {
+        var records = new List<string>();
+        var current = new StringBuilder();
+        bool inQuotes = false;
+
+        for (int index = 0; index < csv.Length; index++)
+        {
+            char character = csv[index];
+
+            if (inQuotes)
+            {
+                // Escaped quote ("") inside a quoted field
+                if (character == '"' && index + 1 < csv.Length && csv[index + 1] == '"')
+                {
+                    current.Append("\"\"");
+                    index++;
+                }
+                else if (character == '"')
+                {
+                    inQuotes = false;
+                    current.Append(character);
+                }
+                else
+                {
+                    current.Append(character);
+                }
+            }
+            else if (character == '"')
+            {
+                inQuotes = true;
+                current.Append(character);
+            }
+            else if (character == '\r')
+            {
+                // CRLF or standalone CR: end of record
+                FlushRecord();
+                // Skip trailing LF after CR (CRLF)
+                if (index + 1 < csv.Length && csv[index + 1] == '\n')
+                {
+                    index++;
+                }
+            }
+            else if (character == '\n')
+            {
+                // Standalone LF: end of record
+                FlushRecord();
+            }
+            else
+            {
+                current.Append(character);
+            }
+        }
+
+        // Emit final record and check for unclosed quotes
+        bool endedInQuotes = inQuotes;
+        FlushRecord();
+
+        if (endedInQuotes)
+        {
+            throw new FormatException("CSV contains an unclosed quoted field.");
+        }
+
+        return records.ToArray();
+
+        void FlushRecord()
+        {
+            string record = current.ToString();
+            current.Clear();
+            inQuotes = false;
+
+            // Trim trailing CR and reject empty records (trailing newline artifacts)
+            record = record.Trim('\r');
+            if (record.Length > 0)
+            {
+                records.Add(record);
+            }
+        }
     }
 
     private static string Escape(string value)
@@ -141,6 +239,11 @@ public static class ChartCsvSerializer
             {
                 current.Append(character);
             }
+        }
+
+        if (inQuotes)
+        {
+            throw new FormatException("CSV contains an unclosed quoted field.");
         }
 
         columns.Add(current.ToString());
