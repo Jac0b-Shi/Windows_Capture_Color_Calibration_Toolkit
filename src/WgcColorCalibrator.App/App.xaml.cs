@@ -28,7 +28,10 @@ public partial class App : Application
     private static IServiceProvider ConfigureServices()
     {
         var configuration = new ConfigurationBuilder()
-            .AddJsonFile("appsettings.json", optional: true, reloadOnChange: false)
+            .AddJsonFile(
+                Path.Combine(AppContext.BaseDirectory, "appsettings.json"),
+                optional: false,
+                reloadOnChange: false)
             .Build();
 
         var services = new ServiceCollection();
@@ -48,9 +51,7 @@ public partial class App : Application
 
     private static AppSettings CreateAppSettings(IConfiguration configuration) => new()
     {
-        Name = configuration["Application:Name"] ?? "WgcColorCalibrator",
-        Version = configuration["Application:Version"] ?? "0.1.0",
-        WindowsAppSdkPackageVersion = configuration["Application:WindowsAppSdkPackageVersion"] ?? "2.2.0"
+        Name = configuration["Application:Name"] ?? "WgcColorCalibrator"
     };
 
     private static AppDefaults CreateAppDefaults(IConfiguration configuration) => new()

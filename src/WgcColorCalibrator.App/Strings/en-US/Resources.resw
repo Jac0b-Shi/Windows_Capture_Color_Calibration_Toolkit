@@ -108,4 +108,13 @@
   <data name="SettingsTitle.Text" xml:space="preserve">
     <value>Settings</value>
   </data>
+  <data name="HomeWgcStatus.Text" xml:space="preserve">
+    <value>not probed</value>
+  </data>
+  <data name="HomeHdrStatus.Text" xml:space="preserve">
+    <value>not probed</value>
+  </data>
+  <data name="HomeCaptureFormatStatus.Text" xml:space="preserve">
+    <value>not selected</value>
+  </data>
 </root>

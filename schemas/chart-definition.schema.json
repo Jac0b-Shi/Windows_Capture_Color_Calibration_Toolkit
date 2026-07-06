@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://jac0b-shi.github.io/wgc-hdr-color-calibrator/schemas/chart-definition.schema.json",
+  "$id": "urn:wgc-color-calibrator:schemas:chart-definition",
   "title": "ChartDefinition",
   "type": "object",
   "required": ["schemaVersion", "id", "name", "patches", "layout"],

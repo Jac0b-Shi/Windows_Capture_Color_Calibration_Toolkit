@@ -108,4 +108,13 @@
   <data name="SettingsTitle.Text" xml:space="preserve">
     <value>设置</value>
   </data>
+  <data name="HomeWgcStatus.Text" xml:space="preserve">
+    <value>未探测</value>
+  </data>
+  <data name="HomeHdrStatus.Text" xml:space="preserve">
+    <value>未探测</value>
+  </data>
+  <data name="HomeCaptureFormatStatus.Text" xml:space="preserve">
+    <value>未选择</value>
+  </data>
 </root>

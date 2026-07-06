@@ -21,11 +21,11 @@
                 <TextBlock x:Uid="HomeScopeLabel" Grid.Row="0" Grid.Column="0" FontWeight="SemiBold" />
                 <TextBlock x:Uid="HomeScopeValue" Grid.Row="0" Grid.Column="1" TextWrapping="Wrap" />
                 <TextBlock x:Uid="HomeWgcLabel" Grid.Row="1" Grid.Column="0" FontWeight="SemiBold" />
-                <TextBlock Grid.Row="1" Grid.Column="1" Text="not-probed" />
+                <TextBlock x:Uid="HomeWgcStatus" Grid.Row="1" Grid.Column="1" />
                 <TextBlock x:Uid="HomeHdrLabel" Grid.Row="2" Grid.Column="0" FontWeight="SemiBold" />
-                <TextBlock Grid.Row="2" Grid.Column="1" Text="not-probed" />
+                <TextBlock x:Uid="HomeHdrStatus" Grid.Row="2" Grid.Column="1" />
                 <TextBlock x:Uid="HomeCaptureFormatLabel" Grid.Row="3" Grid.Column="0" FontWeight="SemiBold" />
-                <TextBlock Grid.Row="3" Grid.Column="1" Text="not-selected" />
+                <TextBlock x:Uid="HomeCaptureFormatStatus" Grid.Row="3" Grid.Column="1" />
             </Grid>
         </StackPanel>
     </ScrollViewer>

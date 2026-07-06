@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://jac0b-shi.github.io/wgc-hdr-color-calibrator/schemas/measurement-profile.schema.json",
+  "$id": "urn:wgc-color-calibrator:schemas:measurement-profile",
   "title": "MeasurementProfile",
   "type": "object",
   "required": ["schemaVersion", "application", "system", "capture", "chart", "layout", "measurements", "warnings", "createdAt"],

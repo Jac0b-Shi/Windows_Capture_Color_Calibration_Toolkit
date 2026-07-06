@@ -16,12 +16,34 @@ public sealed partial class SettingsPage : Page
         SelectCurrentLanguage();
     }
 
-    private void ApplyLanguage_Click(object sender, RoutedEventArgs e)
+    private async void ApplyLanguage_Click(object sender, RoutedEventArgs e)
     {
         if (LanguageComboBox.SelectedItem is ComboBoxItem item && item.Tag is string languageTag)
         {
+            string previousTag = languageService.CurrentLanguageTag;
+
             languageService.SetLanguageOverride(languageTag);
             LanguageStatusTextBlock.Text = languageService.CurrentLanguageTag;
+
+            if (!string.Equals(languageTag, previousTag, StringComparison.Ordinal))
+            {
+                ContentDialog dialog = new()
+                {
+                    Title = "Restart required",
+                    Content = "The language change will take effect after the application is restarted.",
+                    PrimaryButtonText = "Restart now",
+                    CloseButtonText = "Later",
+                    DefaultButton = ContentDialogButton.Primary,
+                    XamlRoot = XamlRoot
+                };
+
+                ContentDialogResult result = await dialog.ShowAsync();
+                if (result == ContentDialogResult.Primary)
+                {
+                    App.Current.Exit();
+                    Application.Current.Exit();
+                }
+            }
         }
     }
 
