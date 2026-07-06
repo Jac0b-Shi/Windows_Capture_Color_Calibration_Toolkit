@@ -2,9 +2,9 @@
 
 ## Verification
 
-- [ ] `dotnet restore WgcHdrColorCalibrator.sln`
-- [ ] `dotnet build WgcHdrColorCalibrator.sln --no-restore`
-- [ ] `dotnet test WgcHdrColorCalibrator.sln --no-build`
+- [ ] `dotnet restore WgcColorCalibrator.sln`
+- [ ] `dotnet build WgcColorCalibrator.sln --configuration Release --no-restore -p:Platform=x64`
+- [ ] `dotnet test WgcColorCalibrator.sln --configuration Release --no-build`
 
 ## WGC/HDR impact
 
