@@ -5,36 +5,98 @@
   "type": "object",
   "required": ["schemaVersion", "application", "system", "capture", "chart", "layout", "measurements", "warnings", "createdAt"],
   "properties": {
-    "schemaVersion": {
-      "const": "0.1.0"
+    "schemaVersion": { "const": "0.1.0" },
+    "application": {
+      "type": "object",
+      "required": ["name", "version"],
+      "properties": {
+        "name": { "type": "string", "minLength": 1 },
+        "version": { "type": "string" }
+      }
     },
-    "application": { "type": "object" },
     "system": { "type": "object" },
     "gpu": { "type": "object" },
     "display": { "type": "object" },
     "hdr": { "type": "object" },
-    "capture": { "type": "object" },
-    "chart": { "type": "object" },
-    "layout": { "type": "array" },
+    "capture": {
+      "type": "object",
+      "required": ["backendId", "sourceKind", "requestedPixelFormat", "actualPixelFormat", "encoding", "formatDowngraded"],
+      "properties": {
+        "backendId": { "type": "string", "minLength": 1 },
+        "sourceKind": { "type": "string", "enum": ["unknown", "window", "display"] },
+        "requestedPixelFormat": { "type": "string", "enum": ["unknown", "b8G8R8A8UIntNormalized", "r16G16B16A16Float"] },
+        "actualPixelFormat": { "type": "string", "enum": ["unknown", "b8G8R8A8UIntNormalized", "r16G16B16A16Float"] },
+        "encoding": { "type": "string", "enum": ["unknown", "srgbEncoded", "linearScRgb", "displayObserved", "captureNative"] },
+        "formatDowngraded": { "type": "boolean" }
+      }
+    },
+    "chart": {
+      "type": "object",
+      "required": ["schemaVersion", "id", "name", "patches", "layout"],
+      "properties": {
+        "schemaVersion": { "const": "0.1.0" },
+        "id": { "type": "string", "minLength": 1 },
+        "name": { "type": "string", "minLength": 1 },
+        "patches": { "type": "array", "minItems": 1 },
+        "layout": { "type": "object" },
+        "metadata": { "oneOf": [{ "type": "object" }, { "type": "null" }] }
+      }
+    },
+    "layout": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["patchId", "bounds", "safeSampleBounds"],
+        "properties": {
+          "patchId": { "type": "string", "minLength": 1 },
+          "bounds": {
+            "type": "object",
+            "required": ["x", "y", "width", "height"],
+            "properties": {
+              "x": { "type": "integer", "minimum": 0 },
+              "y": { "type": "integer", "minimum": 0 },
+              "width": { "type": "integer", "minimum": 1 },
+              "height": { "type": "integer", "minimum": 1 }
+            }
+          },
+          "safeSampleBounds": {
+            "type": "object",
+            "required": ["x", "y", "width", "height"],
+            "properties": {
+              "x": { "type": "integer", "minimum": 0 },
+              "y": { "type": "integer", "minimum": 0 },
+              "width": { "type": "integer", "minimum": 1 },
+              "height": { "type": "integer", "minimum": 1 }
+            }
+          }
+        }
+      }
+    },
     "measurements": {
       "type": "array",
       "items": {
         "type": "object",
-        "required": ["patchId", "expected", "captured", "sampling", "warnings"]
+        "required": ["patchId", "expected", "captured", "sampling", "warnings"],
+        "properties": {
+          "patchId": { "type": "string", "minLength": 1 },
+          "expected": { "type": "object", "required": ["encoding"] },
+          "displayObserved": { "oneOf": [{ "type": "object", "required": ["encoding"] }, { "type": "null" }] },
+          "captured": { "type": "object", "required": ["encoding"] },
+          "sampling": {
+            "type": "object",
+            "required": ["method", "sampleCount"],
+            "properties": {
+              "method": { "type": "string", "enum": ["centerPixel", "centerMean", "centerMedian"] },
+              "sampleCount": { "type": "integer", "minimum": 1 }
+            }
+          },
+          "warnings": { "type": "array", "items": { "type": "string" } }
+        }
       }
     },
-    "analysis": {
-      "type": "array"
-    },
-    "warnings": {
-      "type": "array",
-      "items": { "type": "string" }
-    },
-    "createdAt": {
-      "type": "string",
-      "format": "date-time"
-    }
+    "analysis": { "type": "array" },
+    "warnings": { "type": "array", "items": { "type": "string" } },
+    "createdAt": { "type": "string" }
   },
   "additionalProperties": true
 }
-

@@ -105,6 +105,57 @@ public sealed class SchemaValidationTests
         Assert.True(result.IsValid, $"Schema validation failed for {filename}: {FormatErrors(result)}");
     }
 
+    [Fact]
+    public void MeasurementProfile_MissingRequiredField_IsRejected()
+    {
+        const string json = """
+        {
+          "schemaVersion": "0.1.0",
+          "application": { "name": "test", "version": "0.1.0" },
+          "system": {},
+          "chart": { "schemaVersion": "0.1.0", "id": "t", "name": "t", "patches": [{"id":"p","label":"l","expectedColor":{"r":0,"g":0,"b":0},"category":"c","weight":1}], "layout": {} },
+          "layout": [],
+          "measurements": [],
+          "warnings": [],
+          "createdAt": "2026-01-01T00:00:00Z"
+        }
+        """;
+
+        JsonSchema schema = LoadMeasurementProfileSchema();
+        using JsonDocument document = JsonDocument.Parse(json);
+        EvaluationResults result = schema.Evaluate(document.RootElement);
+        Assert.False(result.IsValid, "Expected rejection: missing 'capture' field.");
+    }
+
+    [Fact]
+    public void MeasurementProfile_LayoutNotArray_IsRejected()
+    {
+        const string json = """
+        {
+          "schemaVersion": "0.1.0",
+          "application": { "name": "test", "version": "0.1.0" },
+          "system": {},
+          "capture": { "backendId": "w", "sourceKind": "window", "requestedPixelFormat": "b8G8R8A8UIntNormalized", "actualPixelFormat": "b8G8R8A8UIntNormalized", "encoding": "unknown", "formatDowngraded": false },
+          "chart": { "schemaVersion": "0.1.0", "id": "t", "name": "t", "patches": [{"id":"p","label":"l","expectedColor":{"r":0,"g":0,"b":0},"category":"c","weight":1}], "layout": {} },
+          "layout": {},
+          "measurements": [],
+          "warnings": [],
+          "createdAt": "2026-01-01T00:00:00Z"
+        }
+        """;
+
+        JsonSchema schema = LoadMeasurementProfileSchema();
+        using JsonDocument document = JsonDocument.Parse(json);
+        EvaluationResults result = schema.Evaluate(document.RootElement);
+        Assert.False(result.IsValid, "Expected rejection: 'layout' is not an array.");
+    }
+
+    private static JsonSchema LoadMeasurementProfileSchema()
+    {
+        string schemaPath = Path.Combine(GetRepositoryRoot(), "schemas", "measurement-profile.schema.json");
+        return LoadSchema(schemaPath);
+    }
+
     private static JsonSchema LoadSchema(string path)
     {
         string schemaText = File.ReadAllText(path);
