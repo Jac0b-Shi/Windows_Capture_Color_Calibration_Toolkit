@@ -117,4 +117,31 @@
   <data name="HomeCaptureFormatStatus.Text" xml:space="preserve">
     <value>未选择</value>
   </data>
+  <data name="SettingsLanguageRestartTitle" xml:space="preserve">
+    <value>语言已更改</value>
+  </data>
+  <data name="SettingsLanguageRestartContent" xml:space="preserve">
+    <value>语言更改将在下次启动应用时生效。</value>
+  </data>
+  <data name="SettingsLanguageRestartExitButton" xml:space="preserve">
+    <value>退出应用</value>
+  </data>
+  <data name="SettingsLanguageRestartLaterButton" xml:space="preserve">
+    <value>稍后</value>
+  </data>
+  <data name="ProbeStatusNotProbed" xml:space="preserve">
+    <value>未探测</value>
+  </data>
+  <data name="ProbeStatusNotSelected" xml:space="preserve">
+    <value>未选择</value>
+  </data>
+  <data name="ProbeStatusSupported" xml:space="preserve">
+    <value>支持</value>
+  </data>
+  <data name="ProbeStatusUnsupported" xml:space="preserve">
+    <value>不支持</value>
+  </data>
+  <data name="ProbeStatusError" xml:space="preserve">
+    <value>错误</value>
+  </data>
 </root>

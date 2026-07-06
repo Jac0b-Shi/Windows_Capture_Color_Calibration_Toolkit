@@ -2,6 +2,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using WgcColorCalibrator.App.Services;
+using Windows.ApplicationModel.Resources;
 
 namespace WgcColorCalibrator.App.Pages;
 
@@ -27,12 +28,14 @@ public sealed partial class SettingsPage : Page
 
             if (!string.Equals(languageTag, previousTag, StringComparison.Ordinal))
             {
+                var loader = ResourceLoader.GetForViewIndependentUse();
+
                 ContentDialog dialog = new()
                 {
-                    Title = "Restart required",
-                    Content = "The language change will take effect after the application is restarted.",
-                    PrimaryButtonText = "Restart now",
-                    CloseButtonText = "Later",
+                    Title = loader.GetString("SettingsLanguageRestartTitle"),
+                    Content = loader.GetString("SettingsLanguageRestartContent"),
+                    PrimaryButtonText = loader.GetString("SettingsLanguageRestartExitButton"),
+                    CloseButtonText = loader.GetString("SettingsLanguageRestartLaterButton"),
                     DefaultButton = ContentDialogButton.Primary,
                     XamlRoot = XamlRoot
                 };
@@ -40,7 +43,6 @@ public sealed partial class SettingsPage : Page
                 ContentDialogResult result = await dialog.ShowAsync();
                 if (result == ContentDialogResult.Primary)
                 {
-                    App.Current.Exit();
                     Application.Current.Exit();
                 }
             }

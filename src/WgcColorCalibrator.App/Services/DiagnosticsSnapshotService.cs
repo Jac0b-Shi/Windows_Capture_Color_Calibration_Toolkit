@@ -1,60 +1,57 @@
 using System.Reflection;
 using System.Runtime.InteropServices;
+using Microsoft.Windows.ApplicationModel.WindowsAppRuntime;
 using WgcColorCalibrator.App.Models;
 
 namespace WgcColorCalibrator.App.Services;
 
 public sealed class DiagnosticsSnapshotService
 {
-    private readonly AppSettings appSettings;
-
-    public DiagnosticsSnapshotService(AppSettings appSettings)
-    {
-        this.appSettings = appSettings;
-    }
-
     public DiagnosticsSnapshot CreateSnapshot()
     {
-        string applicationVersion = GetApplicationVersion();
-        string windowsAppSdkVersion = GetWindowsAppSdkVersion();
-
         return new(
-            ApplicationVersion: applicationVersion,
+            ApplicationVersion: GetApplicationVersion(),
             DotNetVersion: RuntimeInformation.FrameworkDescription,
             WindowsVersion: Environment.OSVersion.VersionString,
-            WindowsAppSdkPackageVersion: windowsAppSdkVersion,
-            WgcSupportStatus: "not-probed",
-            HdrStatus: "not-probed",
-            CapturePixelFormatStatus: "not-selected");
+            WindowsAppSdkPackageVersion: GetWindowsAppSdkVersion(),
+            WgcSupportStatus: ProbeStatus.NotProbed,
+            HdrStatus: ProbeStatus.NotProbed,
+            CapturePixelFormatStatus: ProbeStatus.NotSelected);
     }
 
     private static string GetApplicationVersion()
     {
+        // Packaged: read MSIX identity version
+        try
+        {
+            if (global::Windows.ApplicationModel.Package.Current is { } package)
+            {
+                var v = package.Id.Version;
+                return $"{v.Major}.{v.Minor}.{v.Build}.{v.Revision}";
+            }
+        }
+        catch
+        {
+            // Not running packaged — fall back to assembly version
+        }
+
         var assembly = Assembly.GetEntryAssembly();
-        if (assembly is null)
+        var version = assembly?.GetName().Version;
+        if (version is not null)
         {
-            return "unknown";
+            return $"{version.Major}.{version.Minor}.{version.Build}.{version.Revision}";
         }
 
-        var version = assembly.GetName().Version;
-        if (version is null)
-        {
-            return "unknown";
-        }
-
-        return $"{version.Major}.{version.Minor}.{version.Build}";
+        return "unknown";
     }
 
     private static string GetWindowsAppSdkVersion()
     {
         try
         {
-            // Attempt to read the Windows App SDK runtime version at runtime
-            var wapAssembly = Assembly.Load("Microsoft.WindowsAppRuntime");
-            var version = wapAssembly.GetName().Version;
-            return version is not null
-                ? $"{version.Major}.{version.Minor}.{version.Build}"
-                : "unknown";
+            // Official Windows App SDK VersionInfo API (WinRT)
+            var release = ReleaseInfo.AsString;
+            return release;
         }
         catch
         {

@@ -117,4 +117,31 @@
   <data name="HomeCaptureFormatStatus.Text" xml:space="preserve">
     <value>not selected</value>
   </data>
+  <data name="SettingsLanguageRestartTitle" xml:space="preserve">
+    <value>Language changed</value>
+  </data>
+  <data name="SettingsLanguageRestartContent" xml:space="preserve">
+    <value>The language change will take effect the next time you start the application.</value>
+  </data>
+  <data name="SettingsLanguageRestartExitButton" xml:space="preserve">
+    <value>Exit app</value>
+  </data>
+  <data name="SettingsLanguageRestartLaterButton" xml:space="preserve">
+    <value>Later</value>
+  </data>
+  <data name="ProbeStatusNotProbed" xml:space="preserve">
+    <value>not probed</value>
+  </data>
+  <data name="ProbeStatusNotSelected" xml:space="preserve">
+    <value>not selected</value>
+  </data>
+  <data name="ProbeStatusSupported" xml:space="preserve">
+    <value>supported</value>
+  </data>
+  <data name="ProbeStatusUnsupported" xml:space="preserve">
+    <value>unsupported</value>
+  </data>
+  <data name="ProbeStatusError" xml:space="preserve">
+    <value>error</value>
+  </data>
 </root>
