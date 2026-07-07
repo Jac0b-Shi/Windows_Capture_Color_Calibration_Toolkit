@@ -1,4 +1,5 @@
 using WgcColorCalibrator.Core.Colors;
+using WgcColorCalibrator.Core.Rendering;
 
 namespace WgcColorCalibrator.Core.Charts;
 
@@ -38,6 +39,12 @@ public sealed class GrayscaleChartProvider : IChartProvider
             })
             .ToArray();
 
+        var renderingParameters = new ChartRenderingParameters(
+            options.OutputMode,
+            options.ToneMappingParameters ?? ToneMappingParameters.Default,
+            ColorSpaceConverter.ScrgbReferenceWhiteNits,
+            ColorEncoding.SrgbEncoded);
+
         return new ChartDefinition(
             Id,
             "Grayscale",
@@ -47,6 +54,7 @@ public sealed class GrayscaleChartProvider : IChartProvider
             {
                 ["providerId"] = Id,
                 ["steps"] = options.GrayscaleSteps.ToString(System.Globalization.CultureInfo.InvariantCulture)
-            });
+            },
+            renderingParameters);
     }
 }

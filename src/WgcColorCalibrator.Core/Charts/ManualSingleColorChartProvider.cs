@@ -1,3 +1,6 @@
+using WgcColorCalibrator.Core.Colors;
+using WgcColorCalibrator.Core.Rendering;
+
 namespace WgcColorCalibrator.Core.Charts;
 
 /// <summary>
@@ -15,9 +18,14 @@ public sealed class ManualSingleColorChartProvider : IChartProvider
     {
         ArgumentNullException.ThrowIfNull(options);
 
-        var color = options.ManualColor ?? throw new ArgumentException(
+        Rgb8 color = options.ManualColor ?? throw new ArgumentException(
             "Manual color is required for the manual single color chart.",
             nameof(options));
+
+        HdrColor? hdrColor = options.ManualHdrColor;
+        ColorEncoding sourceEncoding = hdrColor is not null
+            ? ColorEncoding.LinearScRgb
+            : ColorEncoding.SrgbEncoded;
 
         string hex = color.ToHexString();
         string patchId = "manual-" + hex[1..].ToLowerInvariant();
@@ -28,7 +36,15 @@ public sealed class ManualSingleColorChartProvider : IChartProvider
             color,
             "manual",
             1.0,
-            null);
+            null,
+            sourceEncoding,
+            hdrColor);
+
+        var renderingParameters = new ChartRenderingParameters(
+            options.OutputMode,
+            options.ToneMappingParameters ?? ToneMappingParameters.Default,
+            ColorSpaceConverter.ScrgbReferenceWhiteNits,
+            sourceEncoding);
 
         return new ChartDefinition(
             Id,
@@ -38,7 +54,8 @@ public sealed class ManualSingleColorChartProvider : IChartProvider
             new Dictionary<string, string>
             {
                 ["providerId"] = Id
-            });
+            },
+            renderingParameters);
     }
 }
 

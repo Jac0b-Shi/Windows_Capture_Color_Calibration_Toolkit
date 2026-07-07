@@ -1,4 +1,5 @@
 using WgcColorCalibrator.Core.Colors;
+using WgcColorCalibrator.Core.Rendering;
 
 namespace WgcColorCalibrator.Core.Charts;
 
@@ -39,6 +40,12 @@ public sealed class NearWhiteChartProvider : IChartProvider
                 null))
             .ToArray();
 
+        var renderingParameters = new ChartRenderingParameters(
+            options.OutputMode,
+            options.ToneMappingParameters ?? ToneMappingParameters.Default,
+            ColorSpaceConverter.ScrgbReferenceWhiteNits,
+            ColorEncoding.SrgbEncoded);
+
         return new ChartDefinition(
             Id,
             "Near White",
@@ -47,7 +54,8 @@ public sealed class NearWhiteChartProvider : IChartProvider
             new Dictionary<string, string>
             {
                 ["providerId"] = Id
-            });
+            },
+            renderingParameters);
     }
 }
 

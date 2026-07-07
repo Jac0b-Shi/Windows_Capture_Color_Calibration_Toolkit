@@ -15,7 +15,18 @@ public sealed record ChartDefinition
         IReadOnlyList<ColorPatchDefinition> patches,
         ChartLayoutDefinition layout,
         IReadOnlyDictionary<string, string>? metadata)
-        : this(SchemaVersions.Current, id, name, patches, layout, metadata)
+        : this(SchemaVersions.Current, id, name, patches, layout, metadata, null)
+    {
+    }
+
+    public ChartDefinition(
+        string id,
+        string name,
+        IReadOnlyList<ColorPatchDefinition> patches,
+        ChartLayoutDefinition layout,
+        IReadOnlyDictionary<string, string>? metadata,
+        ChartRenderingParameters? renderingParameters)
+        : this(SchemaVersions.Current, id, name, patches, layout, metadata, renderingParameters)
     {
     }
 
@@ -26,7 +37,8 @@ public sealed record ChartDefinition
         string name,
         IReadOnlyList<ColorPatchDefinition> patches,
         ChartLayoutDefinition layout,
-        IReadOnlyDictionary<string, string>? metadata)
+        IReadOnlyDictionary<string, string>? metadata,
+        ChartRenderingParameters? renderingParameters = null)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(schemaVersion);
         ArgumentException.ThrowIfNullOrWhiteSpace(id);
@@ -55,6 +67,7 @@ public sealed record ChartDefinition
         Patches = patches;
         Layout = layout;
         Metadata = metadata;
+        RenderingParameters = renderingParameters;
     }
 
     public string SchemaVersion { get; }
@@ -68,4 +81,6 @@ public sealed record ChartDefinition
     public ChartLayoutDefinition Layout { get; }
 
     public IReadOnlyDictionary<string, string>? Metadata { get; }
+
+    public ChartRenderingParameters? RenderingParameters { get; }
 }

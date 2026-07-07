@@ -26,6 +26,7 @@ public sealed partial class MainWindow : Window
 
         Type pageType = tag switch
         {
+            "chart" => typeof(ChartPage),
             "settings" => typeof(SettingsPage),
             "diagnostics" => typeof(DiagnosticsPage),
             "about" => typeof(AboutPage),

@@ -1,5 +1,6 @@
 using WgcColorCalibrator.Core.Colors;
 using WgcColorCalibrator.Core.Layout;
+using WgcColorCalibrator.Core.Rendering;
 
 namespace WgcColorCalibrator.Core.Charts;
 
@@ -9,11 +10,17 @@ namespace WgcColorCalibrator.Core.Charts;
 public sealed record ChartGenerationOptions(
     Rgb8? ManualColor,
     int GrayscaleSteps,
-    ChartLayoutDefinition Layout)
+    ChartLayoutDefinition Layout,
+    RenderOutputMode OutputMode = RenderOutputMode.SdrSrgb,
+    ToneMappingParameters? ToneMappingParameters = null,
+    HdrColor? ManualHdrColor = null)
 {
     public static ChartGenerationOptions Default { get; } = new(
         ManualColor: new Rgb8(255, 255, 255),
         GrayscaleSteps: 5,
-        Layout: ChartLayoutDefinition.Default);
+        Layout: ChartLayoutDefinition.Default,
+        OutputMode: RenderOutputMode.SdrSrgb,
+        ToneMappingParameters: Rendering.ToneMappingParameters.Default,
+        ManualHdrColor: null);
 }
 

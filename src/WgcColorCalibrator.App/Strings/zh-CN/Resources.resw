@@ -147,4 +147,193 @@
   <data name="ProbeStatusError" xml:space="preserve">
     <value>错误</value>
   </data>
+  <data name="NavigationChart.Content" xml:space="preserve">
+    <value>色卡</value>
+  </data>
+  <data name="ChartTitle.Text" xml:space="preserve">
+    <value>色卡</value>
+  </data>
+  <data name="ChartTypeLabel.Text" xml:space="preserve">
+    <value>色卡类型</value>
+  </data>
+  <data name="ChartTypeManual.Content" xml:space="preserve">
+    <value>手动单色</value>
+  </data>
+  <data name="ChartTypeNearWhite.Content" xml:space="preserve">
+    <value>近白</value>
+  </data>
+  <data name="ChartTypeGrayscale.Content" xml:space="preserve">
+    <value>灰阶</value>
+  </data>
+  <data name="ManualColorLabel.Text" xml:space="preserve">
+    <value>颜色</value>
+  </data>
+  <data name="ManualColorHexTextBox.Header" xml:space="preserve">
+    <value>十六进制</value>
+  </data>
+  <data name="ManualColorPreviewLabel.Text" xml:space="preserve">
+    <value>预览</value>
+  </data>
+  <data name="ManualRedNumberBox.Header" xml:space="preserve">
+    <value>R</value>
+  </data>
+  <data name="ManualGreenNumberBox.Header" xml:space="preserve">
+    <value>G</value>
+  </data>
+  <data name="ManualBlueNumberBox.Header" xml:space="preserve">
+    <value>B</value>
+  </data>
+  <data name="GrayscaleStepsLabel.Text" xml:space="preserve">
+    <value>采样点</value>
+  </data>
+  <data name="GrayscaleStepsNumberBox.Header" xml:space="preserve">
+    <value>采样点</value>
+  </data>
+  <data name="ChartLayoutLabel.Text" xml:space="preserve">
+    <value>布局</value>
+  </data>
+  <data name="PatchWidthNumberBox.Header" xml:space="preserve">
+    <value>色块宽度</value>
+  </data>
+  <data name="PatchHeightNumberBox.Header" xml:space="preserve">
+    <value>色块高度</value>
+  </data>
+  <data name="GapNumberBox.Header" xml:space="preserve">
+    <value>间距</value>
+  </data>
+  <data name="BorderNumberBox.Header" xml:space="preserve">
+    <value>边距</value>
+  </data>
+  <data name="SafeSampleInsetNumberBox.Header" xml:space="preserve">
+    <value>安全采样内缩</value>
+  </data>
+  <data name="ColumnCountNumberBox.Header" xml:space="preserve">
+    <value>列数</value>
+  </data>
+  <data name="BackgroundColorTextBox.Header" xml:space="preserve">
+    <value>背景色</value>
+  </data>
+  <data name="ChartHdrLabel.Text" xml:space="preserve">
+    <value>HDR 输出</value>
+  </data>
+  <data name="OutputModeComboBox.Header" xml:space="preserve">
+    <value>输出模式</value>
+  </data>
+  <data name="OutputModeSdr.Content" xml:space="preserve">
+    <value>SDR</value>
+  </data>
+  <data name="OutputModeHdrScRgb.Content" xml:space="preserve">
+    <value>HDR scRGB</value>
+  </data>
+  <data name="OutputModeHdr10.Content" xml:space="preserve">
+    <value>HDR10（实验性）</value>
+  </data>
+  <data name="ToneMappingModeComboBox.Header" xml:space="preserve">
+    <value>色调映射</value>
+  </data>
+  <data name="ToneMappingModeDirect.Content" xml:space="preserve">
+    <value>直接 scRGB</value>
+  </data>
+  <data name="ToneMappingModeReference.Content" xml:space="preserve">
+    <value>参考白缩放</value>
+  </data>
+  <data name="PaperWhiteNumberBox.Header" xml:space="preserve">
+    <value>纸白亮度（nits）</value>
+  </data>
+  <data name="PeakBrightnessNumberBox.Header" xml:space="preserve">
+    <value>峰值亮度（nits）</value>
+  </data>
+  <data name="ExposureNumberBox.Header" xml:space="preserve">
+    <value>曝光（EV）</value>
+  </data>
+  <data name="HdrStatusTextBlock.Text" xml:space="preserve">
+    <value>未探测 HDR 状态</value>
+  </data>
+  <data name="GenerateButton.Content" xml:space="preserve">
+    <value>生成</value>
+  </data>
+  <data name="OpenChartWindowButton.Content" xml:space="preserve">
+    <value>打开色卡窗口</value>
+  </data>
+  <data name="CloseChartWindowButton.Content" xml:space="preserve">
+    <value>关闭色卡窗口</value>
+  </data>
+  <data name="ToggleDebugOverlayButton.Content" xml:space="preserve">
+    <value>调试覆盖层</value>
+  </data>
+  <data name="ImportJsonButton.Content" xml:space="preserve">
+    <value>导入 JSON</value>
+  </data>
+  <data name="ImportCsvButton.Content" xml:space="preserve">
+    <value>导入 CSV</value>
+  </data>
+  <data name="ExportJsonButton.Content" xml:space="preserve">
+    <value>导出 JSON</value>
+  </data>
+  <data name="ExportCsvButton.Content" xml:space="preserve">
+    <value>导出 CSV</value>
+  </data>
+  <data name="ChartPreviewLabel.Text" xml:space="preserve">
+    <value>预览</value>
+  </data>
+  <data name="PreviewWarningTextBlock.Text" xml:space="preserve">
+    <value>此预览仅为 SDR，不用于测量。</value>
+  </data>
+  <data name="ChartWindowTitle" xml:space="preserve">
+    <value>色卡窗口</value>
+  </data>
+  <data name="ChartStatusNoChart" xml:space="preserve">
+    <value>未生成色卡。</value>
+  </data>
+  <data name="ChartStatusChart" xml:space="preserve">
+    <value>色卡</value>
+  </data>
+  <data name="ValidationErrorTitle" xml:space="preserve">
+    <value>校验错误</value>
+  </data>
+  <data name="ImportErrorTitle" xml:space="preserve">
+    <value>导入错误</value>
+  </data>
+  <data name="ExportErrorTitle" xml:space="preserve">
+    <value>导出错误</value>
+  </data>
+  <data name="ValidationErrorInvalidHex" xml:space="preserve">
+    <value>无效的十六进制颜色。</value>
+  </data>
+  <data name="ValidationErrorInvalidHdrColor" xml:space="preserve">
+    <value>无效的 HDR 颜色。</value>
+  </data>
+  <data name="ValidationErrorInvalidPatchWidth" xml:space="preserve">
+    <value>色块宽度必须为正。</value>
+  </data>
+  <data name="ValidationErrorInvalidPatchHeight" xml:space="preserve">
+    <value>色块高度必须为正。</value>
+  </data>
+  <data name="ValidationErrorInvalidGap" xml:space="preserve">
+    <value>间距不能为负。</value>
+  </data>
+  <data name="ValidationErrorInvalidBorder" xml:space="preserve">
+    <value>边距不能为负。</value>
+  </data>
+  <data name="ValidationErrorInvalidSafeSampleInset" xml:space="preserve">
+    <value>安全采样内缩不能为负。</value>
+  </data>
+  <data name="ValidationErrorSafeSampleInsetTooLarge" xml:space="preserve">
+    <value>安全采样内缩必须留出正采样区域。</value>
+  </data>
+  <data name="ValidationErrorInvalidColumnCount" xml:space="preserve">
+    <value>列数必须为正。</value>
+  </data>
+  <data name="ValidationErrorInvalidGrayscaleSteps" xml:space="preserve">
+    <value>灰阶采样点至少为 2。</value>
+  </data>
+  <data name="HdrStatusNotProbed" xml:space="preserve">
+    <value>未探测 HDR 状态</value>
+  </data>
+  <data name="HdrStatusActive" xml:space="preserve">
+    <value>HDR 已启用</value>
+  </data>
+  <data name="HdrStatusInactive" xml:space="preserve">
+    <value>HDR 未启用</value>
+  </data>
 </root>

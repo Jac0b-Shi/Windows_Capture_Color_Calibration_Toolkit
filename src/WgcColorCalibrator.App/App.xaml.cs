@@ -3,7 +3,10 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.UI.Xaml;
 using WgcColorCalibrator.App.Models;
+using WgcColorCalibrator.App.Rendering.Abstractions;
+using WgcColorCalibrator.App.Rendering.Xaml;
 using WgcColorCalibrator.App.Services;
+using WgcColorCalibrator.Core.Charts;
 
 namespace WgcColorCalibrator.App;
 
@@ -45,6 +48,14 @@ public partial class App : Application
         services.AddSingleton(CreateAppDefaults(configuration));
         services.AddSingleton<LanguageService>();
         services.AddSingleton<DiagnosticsSnapshotService>();
+
+        services.AddSingleton<IChartProvider, ManualSingleColorChartProvider>();
+        services.AddSingleton<IChartProvider, NearWhiteChartProvider>();
+        services.AddSingleton<IChartProvider, GrayscaleChartProvider>();
+        services.AddSingleton<IChartRenderer, XamlChartPreviewRenderer>();
+        services.AddSingleton<IChartWindowFactory, ChartWindowFactory>();
+        services.AddSingleton<ChartWorkspaceService>();
+
         services.AddTransient<MainWindow>();
         return services.BuildServiceProvider();
     }

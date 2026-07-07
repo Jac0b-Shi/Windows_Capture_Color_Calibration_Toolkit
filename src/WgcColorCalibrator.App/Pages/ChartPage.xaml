@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page
+    x:Class="WgcColorCalibrator.App.Pages.ChartPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <ScrollViewer>
+        <Grid Padding="32" RowSpacing="24" ColumnSpacing="24">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <TextBlock
+                x:Uid="ChartTitle"
+                Grid.Row="0"
+                Grid.Column="0"
+                Grid.ColumnSpan="2"
+                Style="{ThemeResource TitleTextBlockStyle}" />
+
+            <StackPanel
+                Grid.Row="1"
+                Grid.Column="0"
+                Spacing="12">
+                <TextBlock x:Uid="ChartTypeLabel" FontWeight="SemiBold" />
+                <ComboBox x:Name="ChartTypeComboBox" MinWidth="240" SelectionChanged="ChartTypeComboBox_SelectionChanged">
+                    <ComboBoxItem x:Uid="ChartTypeManual" Tag="manual-single-color" />
+                    <ComboBoxItem x:Uid="ChartTypeNearWhite" Tag="near-white" />
+                    <ComboBoxItem x:Uid="ChartTypeGrayscale" Tag="grayscale" />
+                </ComboBox>
+
+                <StackPanel x:Name="ManualPanel" Spacing="8" Visibility="Collapsed">
+                    <TextBlock x:Uid="ManualColorLabel" />
+                    <TextBox x:Name="ManualColorHexTextBox" x:Uid="ManualColorHexTextBox" Text="#FFFFFF" LostFocus="ManualColorHexTextBox_LostFocus" />
+                    <Grid ColumnSpacing="8">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <NumberBox x:Name="ManualRedNumberBox" x:Uid="ManualRedNumberBox" Grid.Column="0" Minimum="0" Maximum="255" Value="255" ValueChanged="ManualColorNumberBox_ValueChanged" />
+                        <NumberBox x:Name="ManualGreenNumberBox" x:Uid="ManualGreenNumberBox" Grid.Column="1" Minimum="0" Maximum="255" Value="255" ValueChanged="ManualColorNumberBox_ValueChanged" />
+                        <NumberBox x:Name="ManualBlueNumberBox" x:Uid="ManualBlueNumberBox" Grid.Column="2" Minimum="0" Maximum="255" Value="255" ValueChanged="ManualColorNumberBox_ValueChanged" />
+                    </Grid>
+                    <TextBlock x:Uid="ManualColorPreviewLabel" />
+                    <Rectangle x:Name="ManualColorPreview" Width="64" Height="64" Fill="White" Stroke="{ThemeResource TextFillColorPrimaryBrush}" StrokeThickness="1" />
+                    <TextBlock x:Name="ManualColorNormalizedTextBlock" Text="#FFFFFF" />
+                </StackPanel>
+
+                <StackPanel x:Name="GrayscalePanel" Spacing="8" Visibility="Collapsed">
+                    <TextBlock x:Uid="GrayscaleStepsLabel" />
+                    <NumberBox x:Name="GrayscaleStepsNumberBox" x:Uid="GrayscaleStepsNumberBox" Minimum="2" Maximum="256" Value="5" />
+                </StackPanel>
+            </StackPanel>
+
+            <StackPanel
+                Grid.Row="1"
+                Grid.Column="1"
+                Spacing="12">
+                <TextBlock x:Uid="ChartLayoutLabel" FontWeight="SemiBold" />
+                <Grid ColumnSpacing="8" RowSpacing="8">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <NumberBox x:Name="PatchWidthNumberBox" x:Uid="PatchWidthNumberBox" Grid.Row="0" Grid.Column="0" Minimum="1" Maximum="4096" Value="64" />
+                    <NumberBox x:Name="PatchHeightNumberBox" x:Uid="PatchHeightNumberBox" Grid.Row="0" Grid.Column="1" Minimum="1" Maximum="4096" Value="64" />
+                    <NumberBox x:Name="GapNumberBox" x:Uid="GapNumberBox" Grid.Row="1" Grid.Column="0" Minimum="0" Maximum="1024" Value="8" />
+                    <NumberBox x:Name="BorderNumberBox" x:Uid="BorderNumberBox" Grid.Row="1" Grid.Column="1" Minimum="0" Maximum="1024" Value="16" />
+                    <NumberBox x:Name="SafeSampleInsetNumberBox" x:Uid="SafeSampleInsetNumberBox" Grid.Row="2" Grid.Column="0" Minimum="0" Maximum="1024" Value="8" />
+                    <NumberBox x:Name="ColumnCountNumberBox" x:Uid="ColumnCountNumberBox" Grid.Row="2" Grid.Column="1" Minimum="1" Maximum="64" Value="4" />
+                    <TextBox x:Name="BackgroundColorTextBox" x:Uid="BackgroundColorTextBox" Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="2" Text="#000000" />
+                </Grid>
+            </StackPanel>
+
+            <StackPanel
+                Grid.Row="2"
+                Grid.Column="0"
+                Grid.ColumnSpan="2"
+                Spacing="12">
+                <TextBlock x:Uid="ChartHdrLabel" FontWeight="SemiBold" />
+                <Grid ColumnSpacing="8" RowSpacing="8">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <ComboBox x:Name="OutputModeComboBox" x:Uid="OutputModeComboBox" Grid.Row="0" Grid.Column="0" MinWidth="160">
+                        <ComboBoxItem x:Uid="OutputModeSdr" Tag="SdrSrgb" />
+                        <ComboBoxItem x:Uid="OutputModeHdrScRgb" Tag="HdrScRgb" />
+                        <ComboBoxItem x:Uid="OutputModeHdr10" Tag="Hdr10" />
+                    </ComboBox>
+                    <ComboBox x:Name="ToneMappingModeComboBox" x:Uid="ToneMappingModeComboBox" Grid.Row="0" Grid.Column="1" MinWidth="160">
+                        <ComboBoxItem x:Uid="ToneMappingModeDirect" Tag="DirectScRgb" />
+                        <ComboBoxItem x:Uid="ToneMappingModeReference" Tag="ReferenceWhiteScaled" />
+                    </ComboBox>
+                    <NumberBox x:Name="PaperWhiteNumberBox" x:Uid="PaperWhiteNumberBox" Grid.Row="0" Grid.Column="2" Minimum="1" Maximum="10000" Value="200" />
+                    <NumberBox x:Name="PeakBrightnessNumberBox" x:Uid="PeakBrightnessNumberBox" Grid.Row="0" Grid.Column="3" Minimum="1" Maximum="10000" Value="1000" />
+                    <NumberBox x:Name="ExposureNumberBox" x:Uid="ExposureNumberBox" Grid.Row="1" Grid.Column="0" Minimum="-10" Maximum="10" Value="0" SmallChange="0.1" />
+                    <TextBlock x:Name="HdrStatusTextBlock" x:Uid="HdrStatusTextBlock" Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="3" TextWrapping="WrapWholeWords" />
+                </Grid>
+            </StackPanel>
+
+            <StackPanel
+                Grid.Row="3"
+                Grid.Column="0"
+                Grid.ColumnSpan="2"
+                Orientation="Horizontal"
+                Spacing="8">
+                <Button x:Uid="GenerateButton" Click="GenerateButton_Click" />
+                <Button x:Uid="OpenChartWindowButton" Click="OpenChartWindowButton_Click" />
+                <Button x:Uid="CloseChartWindowButton" Click="CloseChartWindowButton_Click" />
+                <Button x:Uid="ToggleDebugOverlayButton" Click="ToggleDebugOverlayButton_Click" />
+                <Button x:Uid="ImportJsonButton" Click="ImportJsonButton_Click" />
+                <Button x:Uid="ImportCsvButton" Click="ImportCsvButton_Click" />
+                <Button x:Uid="ExportJsonButton" Click="ExportJsonButton_Click" />
+                <Button x:Uid="ExportCsvButton" Click="ExportCsvButton_Click" />
+            </StackPanel>
+
+            <StackPanel
+                Grid.Row="4"
+                Grid.Column="0"
+                Grid.ColumnSpan="2"
+                Spacing="8">
+                <TextBlock x:Uid="ChartPreviewLabel" FontWeight="SemiBold" />
+                <TextBlock x:Name="PreviewWarningTextBlock" x:Uid="PreviewWarningTextBlock" TextWrapping="WrapWholeWords" />
+                <Border
+                    x:Name="PreviewHostBorder"
+                    BorderBrush="{ThemeResource TextFillColorPrimaryBrush}"
+                    BorderThickness="1"
+                    HorizontalAlignment="Left"
+                    VerticalAlignment="Top">
+                    <Canvas x:Name="PreviewCanvas" />
+                </Border>
+            </StackPanel>
+
+            <TextBlock
+                x:Name="StatusTextBlock"
+                Grid.Row="5"
+                Grid.Column="0"
+                Grid.ColumnSpan="2"
+                TextWrapping="WrapWholeWords"
+                IsTextSelectionEnabled="True" />
+        </Grid>
+    </ScrollViewer>
+</Page>
