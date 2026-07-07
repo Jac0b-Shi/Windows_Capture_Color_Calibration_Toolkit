@@ -1,5 +1,5 @@
 using Microsoft.UI.Xaml;
-using WgcColorCalibrator.App.Rendering.Abstractions;
+using WgcColorCalibrator.Core.Rendering;
 
 namespace WgcColorCalibrator.App.Windows;
 
@@ -14,6 +14,15 @@ public sealed partial class ChartWindow : Window
 
         var resourceLoader = new Microsoft.Windows.ApplicationModel.Resources.ResourceLoader();
         Title = resourceLoader.GetString("ChartWindowTitle");
+    }
+
+    public void SetChartSize(SizeInt physicalSize, double scale)
+    {
+        AppWindow.ResizeClient(new global::Windows.Graphics.SizeInt32
+        {
+            Width = physicalSize.Width,
+            Height = physicalSize.Height
+        });
     }
 
     public double GetRasterizationScale() =>

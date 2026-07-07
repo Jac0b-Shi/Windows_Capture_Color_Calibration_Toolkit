@@ -12,6 +12,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WgcColorCalibrator.Core.Tes
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WgcColorCalibrator.App", "src\WgcColorCalibrator.App\WgcColorCalibrator.App.csproj", "{F04CC43E-2A5A-43E8-9258-ACB62C52F256}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WgcColorCalibrator.Rendering.Direct3D11", "src\WgcColorCalibrator.Rendering.Direct3D11\WgcColorCalibrator.Rendering.Direct3D11.csproj", "{63F0F1CD-7F82-473A-8EBB-7FA9D06BE842}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -46,6 +48,14 @@ Global
 		{F04CC43E-2A5A-43E8-9258-ACB62C52F256}.Release|Any CPU.Build.0 = Release|Any CPU
 		{F04CC43E-2A5A-43E8-9258-ACB62C52F256}.Release|x64.ActiveCfg = Release|x64
 		{F04CC43E-2A5A-43E8-9258-ACB62C52F256}.Release|x64.Build.0 = Release|x64
+		{63F0F1CD-7F82-473A-8EBB-7FA9D06BE842}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{63F0F1CD-7F82-473A-8EBB-7FA9D06BE842}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{63F0F1CD-7F82-473A-8EBB-7FA9D06BE842}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{63F0F1CD-7F82-473A-8EBB-7FA9D06BE842}.Debug|x64.Build.0 = Debug|Any CPU
+		{63F0F1CD-7F82-473A-8EBB-7FA9D06BE842}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{63F0F1CD-7F82-473A-8EBB-7FA9D06BE842}.Release|Any CPU.Build.0 = Release|Any CPU
+		{63F0F1CD-7F82-473A-8EBB-7FA9D06BE842}.Release|x64.ActiveCfg = Release|Any CPU
+		{63F0F1CD-7F82-473A-8EBB-7FA9D06BE842}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -54,5 +64,6 @@ Global
 		{5268F512-ED93-40D8-8696-30D8AD0C1C9D} = {827E0CD3-B72D-47B6-A68D-7590B98EB39B}
 		{7EA77E52-F2F9-42B2-90A5-E23EE15E6348} = {0AB3BF05-4346-4AA6-1389-037BE0695223}
 		{F04CC43E-2A5A-43E8-9258-ACB62C52F256} = {827E0CD3-B72D-47B6-A68D-7590B98EB39B}
+		{63F0F1CD-7F82-473A-8EBB-7FA9D06BE842} = {827E0CD3-B72D-47B6-A68D-7590B98EB39B}
 	EndGlobalSection
 EndGlobal

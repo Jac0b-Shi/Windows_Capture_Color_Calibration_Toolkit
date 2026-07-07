@@ -1,6 +1,5 @@
 using Microsoft.UI.Xaml;
 using Microsoft.Extensions.DependencyInjection;
-using WgcColorCalibrator.App.Rendering.Abstractions;
 using WgcColorCalibrator.App.Windows;
 using WgcColorCalibrator.Core.Charts;
 using WgcColorCalibrator.Core.Layout;
@@ -90,6 +89,9 @@ public sealed class ChartWorkspaceService
         _chartWindow = _windowFactory.Create();
         _chartWindow.Closed += OnChartWindowClosed;
         _chartWindow.Activate();
+
+        SizeInt intendedPhysicalSize = CalculateIntendedPhysicalSize(CurrentPlacements, CurrentChart.Layout);
+        _chartWindow.SetChartSize(intendedPhysicalSize, _chartWindow.GetRasterizationScale());
 
         RenderChartWindow(_chartWindow);
     }
@@ -193,6 +195,20 @@ public sealed class ChartWorkspaceService
             _chartWindow.Closed -= OnChartWindowClosed;
             _chartWindow = null;
         }
+    }
+
+    private static SizeInt CalculateIntendedPhysicalSize(IReadOnlyList<PatchPlacement> placements, ChartLayoutDefinition layout)
+    {
+        int maxRight = 0;
+        int maxBottom = 0;
+
+        foreach (PatchPlacement placement in placements)
+        {
+            maxRight = Math.Max(maxRight, placement.Bounds.X + placement.Bounds.Width);
+            maxBottom = Math.Max(maxBottom, placement.Bounds.Y + placement.Bounds.Height);
+        }
+
+        return new SizeInt(maxRight + layout.Border, maxBottom + layout.Border);
     }
 
     private void NotifyStateChanged() => StateChanged?.Invoke(this, EventArgs.Empty);

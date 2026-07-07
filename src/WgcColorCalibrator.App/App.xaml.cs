@@ -2,8 +2,9 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.UI.Xaml;
+using WgcColorCalibrator.Rendering.Direct3D11;
 using WgcColorCalibrator.App.Models;
-using WgcColorCalibrator.App.Rendering.Abstractions;
+using WgcColorCalibrator.Core.Rendering;
 using WgcColorCalibrator.App.Rendering.Xaml;
 using WgcColorCalibrator.App.Services;
 using WgcColorCalibrator.Core.Charts;
@@ -52,7 +53,7 @@ public partial class App : Application
         services.AddSingleton<IChartProvider, ManualSingleColorChartProvider>();
         services.AddSingleton<IChartProvider, NearWhiteChartProvider>();
         services.AddSingleton<IChartProvider, GrayscaleChartProvider>();
-        services.AddSingleton<IChartRenderer, XamlChartPreviewRenderer>();
+        services.AddDirect3D11Rendering();
         services.AddSingleton<IChartWindowFactory, ChartWindowFactory>();
         services.AddSingleton<ChartWorkspaceService>();
 

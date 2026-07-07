@@ -2,7 +2,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.Windows.ApplicationModel.Resources;
-using WgcColorCalibrator.App.Rendering.Abstractions;
 using WgcColorCalibrator.App.Rendering.Xaml;
 using WgcColorCalibrator.App.Services;
 using WgcColorCalibrator.Core.Charts;

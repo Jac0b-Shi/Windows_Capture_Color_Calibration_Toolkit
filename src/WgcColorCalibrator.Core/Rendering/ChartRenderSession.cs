@@ -1,8 +1,7 @@
 using WgcColorCalibrator.Core.Charts;
 using WgcColorCalibrator.Core.Layout;
-using WgcColorCalibrator.Core.Rendering;
 
-namespace WgcColorCalibrator.App.Rendering.Abstractions;
+namespace WgcColorCalibrator.Core.Rendering;
 
 /// <summary>
 /// Records everything known about a chart rendering that may be used for later capture and measurement.
