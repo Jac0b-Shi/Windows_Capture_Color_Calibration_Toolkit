@@ -124,7 +124,7 @@ public sealed class TextureChartRenderer
 
             if (debugOverlayEnabled)
             {
-                DrawDebugOverlay(ptr, mapped.RowPitch, placement, format, width, height);
+                DrawDebugOverlay(ptr, mapped.RowPitch, placement, toneMapper, options.ToneMappingParameters, format, width, height);
             }
         }
     }
@@ -148,10 +148,10 @@ public sealed class TextureChartRenderer
         }
     }
 
-    private static unsafe void DrawDebugOverlay(byte* ptr, uint rowPitch, PatchPlacement placement, Format format, int width, int height)
+    private static unsafe void DrawDebugOverlay(byte* ptr, uint rowPitch, PatchPlacement placement, IToneMapper toneMapper, ToneMappingParameters parameters, Format format, int width, int height)
     {
-        Vector4 outline = PackSdrColor(255, 255, 255, 255);
-        Vector4 inset = PackSdrColor(255, 0, 0, 255);
+        Vector4 outline = MapColor(format, new Rgb8(255, 255, 255), toneMapper, parameters);
+        Vector4 inset = MapColor(format, new Rgb8(255, 0, 0), toneMapper, parameters);
 
         PixelRect bounds = placement.Bounds;
         int left = Math.Max(0, bounds.X);

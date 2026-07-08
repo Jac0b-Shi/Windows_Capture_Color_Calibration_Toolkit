@@ -1,4 +1,6 @@
+using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
+using System.Runtime.InteropServices;
 using WinRT.Interop;
 using WgcColorCalibrator.Core.Rendering;
 
@@ -9,13 +11,35 @@ namespace WgcColorCalibrator.App.Windows;
 /// </summary>
 public sealed partial class ChartWindow : Window
 {
+    private IChartRenderer? _renderer;
+    private bool _readyRaised;
+    private nint _lastMonitor;
+    private double _lastScale = 1.0;
+    private DispatcherQueueTimer? _hotplugTimer;
+
     public ChartWindow()
     {
         InitializeComponent();
 
         var resourceLoader = new Microsoft.Windows.ApplicationModel.Resources.ResourceLoader();
         Title = resourceLoader.GetString("ChartWindowTitle");
+
+        _lastMonitor = NativeMethods.MonitorFromWindow(WindowHandle, 2);
+        _lastScale = GetRasterizationScale();
+
+        ChartSwapChainPanel.Loaded += OnPanelLoadedOrSizeChanged;
+        ChartSwapChainPanel.SizeChanged += OnPanelLoadedOrSizeChanged;
+        Closed += OnClosed;
+
+        _hotplugTimer = DispatcherQueue.GetForCurrentThread().CreateTimer();
+        _hotplugTimer.Interval = TimeSpan.FromSeconds(2);
+        _hotplugTimer.Tick += OnHotplugTimerTick;
+        _hotplugTimer.Start();
     }
+
+    public event EventHandler? PanelReady;
+
+    public event EventHandler? DisplayChanged;
 
     public nint WindowHandle => WindowNative.GetWindowHandle(this);
 
@@ -36,6 +60,71 @@ public sealed partial class ChartWindow : Window
         ArgumentNullException.ThrowIfNull(renderer);
         ArgumentNullException.ThrowIfNull(options);
 
+        _renderer = renderer;
         return renderer.Render(options.Chart, options.Placements, options, ChartSwapChainPanel);
+    }
+
+    private void OnPanelLoadedOrSizeChanged(object sender, object e)
+    {
+        if (ChartSwapChainPanel.XamlRoot is null)
+        {
+            return;
+        }
+
+        if (ChartSwapChainPanel.ActualWidth <= 0 || ChartSwapChainPanel.ActualHeight <= 0)
+        {
+            return;
+        }
+
+        _lastScale = GetRasterizationScale();
+
+        if (!_readyRaised)
+        {
+            _readyRaised = true;
+            PanelReady?.Invoke(this, EventArgs.Empty);
+        }
+
+        CheckDisplayChanged();
+    }
+
+    private void OnHotplugTimerTick(DispatcherQueueTimer sender, object args)
+    {
+        CheckDisplayChanged();
+    }
+
+    private void CheckDisplayChanged()
+    {
+        if (!_readyRaised)
+        {
+            return;
+        }
+
+        nint currentMonitor = NativeMethods.MonitorFromWindow(WindowHandle, 2);
+        double currentScale = GetRasterizationScale();
+
+        if (currentMonitor != _lastMonitor || currentScale != _lastScale)
+        {
+            _lastMonitor = currentMonitor;
+            _lastScale = currentScale;
+            DisplayChanged?.Invoke(this, EventArgs.Empty);
+        }
+    }
+
+    private void OnClosed(object sender, WindowEventArgs args)
+    {
+        _hotplugTimer?.Stop();
+        _hotplugTimer = null;
+
+        if (_renderer is not null)
+        {
+            _renderer.DetachHost(ChartSwapChainPanel);
+            _renderer = null;
+        }
+    }
+
+    private static class NativeMethods
+    {
+        [DllImport("user32.dll", SetLastError = false)]
+        public static extern nint MonitorFromWindow(nint hwnd, uint dwFlags);
     }
 }

@@ -98,7 +98,39 @@ public sealed class ChartWorkspaceService
 
         _chartWindow = _windowFactory.Create();
         _chartWindow.Closed += OnChartWindowClosed;
+        _chartWindow.PanelReady += OnChartWindowPanelReady;
+        _chartWindow.DisplayChanged += OnChartWindowDisplayChanged;
         _chartWindow.Activate();
+    }
+
+    private void OnChartWindowPanelReady(object? sender, EventArgs e)
+    {
+        if (_chartWindow is null || CurrentChart is null || CurrentPlacements is null)
+        {
+            return;
+        }
+
+        ReProbeAndRender();
+        NotifyStateChanged();
+    }
+
+    private void OnChartWindowDisplayChanged(object? sender, EventArgs e)
+    {
+        if (_chartWindow is null || CurrentChart is null || CurrentPlacements is null)
+        {
+            return;
+        }
+
+        ReProbeAndRender();
+        NotifyStateChanged();
+    }
+
+    private void ReProbeAndRender()
+    {
+        if (_chartWindow is null || CurrentChart is null || CurrentPlacements is null)
+        {
+            return;
+        }
 
         SizeInt intendedPhysicalSize = CalculateIntendedPhysicalSize(CurrentPlacements, CurrentChart.Layout);
         _chartWindow.SetChartSize(intendedPhysicalSize, _chartWindow.GetRasterizationScale());
@@ -106,7 +138,7 @@ public sealed class ChartWorkspaceService
         DisplayOutputMetadata displayMetadata = _displayOutputProbe.Probe(_chartWindow.WindowHandle);
         var warnings = new List<string>();
         bool allowHdrClippingExperiment = CurrentOutputMode != RenderOutputMode.SdrSrgb &&
-                                          HdrUnsupportedBehavior == HdrUnsupportedBehavior.AllowClippingExperiment;
+                                           HdrUnsupportedBehavior == HdrUnsupportedBehavior.AllowClippingExperiment;
         OutputModeResolution resolution = OutputModeResolver.ResolveDetailed(
             CurrentOutputMode,
             displayMetadata,
@@ -124,6 +156,8 @@ public sealed class ChartWorkspaceService
         }
 
         _chartWindow.Closed -= OnChartWindowClosed;
+        _chartWindow.PanelReady -= OnChartWindowPanelReady;
+        _chartWindow.DisplayChanged -= OnChartWindowDisplayChanged;
         _chartWindow.Close();
         _chartWindow = null;
     }
@@ -232,6 +266,8 @@ public sealed class ChartWorkspaceService
         if (_chartWindow is not null)
         {
             _chartWindow.Closed -= OnChartWindowClosed;
+            _chartWindow.PanelReady -= OnChartWindowPanelReady;
+            _chartWindow.DisplayChanged -= OnChartWindowDisplayChanged;
             _chartWindow = null;
         }
     }

@@ -1,6 +1,7 @@
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.Windows.ApplicationModel.Resources;
+using WinRT.Interop;
 using WgcColorCalibrator.App.Pages;
 
 namespace WgcColorCalibrator.App;
@@ -14,8 +15,11 @@ public sealed partial class MainWindow : Window
         var resourceLoader = new ResourceLoader();
         Title = resourceLoader.GetString("MainWindowTitle");
 
+        WindowHandle = WindowNative.GetWindowHandle(this);
         ContentFrame.Navigate(typeof(HomePage));
     }
+
+    public nint WindowHandle { get; }
 
     private void RootNavigation_SelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
     {

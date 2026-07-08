@@ -74,6 +74,11 @@ public sealed class XamlChartPreviewRenderer : IChartRenderer
             DateTimeOffset.UtcNow);
     }
 
+    public void DetachHost(object host)
+    {
+        // Preview renderer does not hold any resources tied to a specific host.
+    }
+
     private static global::Windows.UI.Color ToWindowsColor(Core.Colors.Rgb8 color) =>
         Microsoft.UI.ColorHelper.FromArgb(255, color.R, color.G, color.B);
 }

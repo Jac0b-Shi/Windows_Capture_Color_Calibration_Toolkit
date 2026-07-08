@@ -1,7 +1,9 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Navigation;
 using Microsoft.Windows.ApplicationModel.Resources;
+using WinRT.Interop;
 using WgcColorCalibrator.App.Rendering.Xaml;
 using WgcColorCalibrator.App.Services;
 using WgcColorCalibrator.Core.Charts;
@@ -18,6 +20,7 @@ public sealed partial class ChartPage : Page
     private readonly ChartWorkspaceService _workspaceService;
     private readonly ResourceLoader _resourceLoader;
     private readonly XamlChartPreviewRenderer _previewRenderer;
+    private readonly EventHandler _onWorkspaceStateChanged;
 
     public ChartPage()
     {
@@ -25,13 +28,20 @@ public sealed partial class ChartPage : Page
         _workspaceService = App.Services.GetRequiredService<ChartWorkspaceService>();
         _resourceLoader = new ResourceLoader();
         _previewRenderer = new XamlChartPreviewRenderer();
+        _onWorkspaceStateChanged = OnWorkspaceStateChanged;
 
-        _workspaceService.StateChanged += OnWorkspaceStateChanged;
+        _workspaceService.StateChanged += _onWorkspaceStateChanged;
         ChartTypeComboBox.SelectedIndex = 0;
         OutputModeComboBox.SelectedIndex = 0;
         ToneMappingModeComboBox.SelectedIndex = 1;
         HdrBehaviorComboBox.SelectedIndex = 0;
         UpdateStatus();
+    }
+
+    protected override void OnNavigatedFrom(NavigationEventArgs e)
+    {
+        base.OnNavigatedFrom(e);
+        _workspaceService.StateChanged -= _onWorkspaceStateChanged;
     }
 
     private void OnWorkspaceStateChanged(object? sender, EventArgs e)
@@ -367,8 +377,8 @@ public sealed partial class ChartPage : Page
 
     private static void InitializePicker(object picker)
     {
-        // Packaged apps do not need an HWND for pickers.
-        // This method is kept as a hook if unpackaged support is added later.
+        nint hwnd = App.Services.GetRequiredService<MainWindow>().WindowHandle;
+        InitializeWithWindow.Initialize(picker, hwnd);
     }
 
     private void ShowError(string message)

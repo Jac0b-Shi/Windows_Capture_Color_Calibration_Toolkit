@@ -65,6 +65,16 @@ public sealed class D3D11ChartRenderer : IChartRenderer, IDisposable
         SwapChainPanelHost hostWrapper = GetOrCreateHost(panel);
         hostWrapper.EnsureSize(actualPhysicalSize.Width, actualPhysicalSize.Height, format, colorSpace);
 
+        bool colorSpaceSet = hostWrapper.TrySetColorSpace(colorSpace, out ColorSpaceVerification colorSpaceVerification);
+        if (!colorSpaceSet)
+        {
+            warnings.Add("color-space-verification-failed");
+        }
+
+        bool hdrOutputActive = actualOutputMode != RenderOutputMode.SdrSrgb &&
+                               colorSpaceSet &&
+                               colorSpaceVerification.ActualColorSpace == colorSpace;
+
         DisplayOutputMetadata displayMetadata = options.DisplayOutput ?? DisplayOutputMetadata.Unknown;
         if (displayMetadata == DisplayOutputMetadata.Unknown)
         {
@@ -88,7 +98,7 @@ public sealed class D3D11ChartRenderer : IChartRenderer, IDisposable
             actualOutputMode,
             format.ToString(),
             colorSpace.ToString(),
-            actualOutputMode != RenderOutputMode.SdrSrgb,
+            hdrOutputActive,
             options.RasterizationScale,
             new Size(panel.ActualWidth, panel.ActualHeight),
             intendedPhysicalSize,
@@ -96,7 +106,21 @@ public sealed class D3D11ChartRenderer : IChartRenderer, IDisposable
             options.ToneMappingParameters,
             displayMetadata,
             warnings,
-            DateTimeOffset.UtcNow);
+            DateTimeOffset.UtcNow,
+            colorSpaceVerification.SupportFlags,
+            colorSpaceVerification.SetColorSpaceResult.Code,
+            colorSpaceVerification.ActualColorSpace?.ToString());
+    }
+
+    public void DetachHost(object host)
+    {
+        if (host is null || !_hosts.TryGetValue(host, out SwapChainPanelHost? hostWrapper))
+        {
+            return;
+        }
+
+        hostWrapper.DetachFromPanel();
+        _hosts.Remove(host);
     }
 
     public void Dispose()

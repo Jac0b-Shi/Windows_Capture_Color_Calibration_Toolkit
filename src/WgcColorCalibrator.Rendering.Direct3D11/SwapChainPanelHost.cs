@@ -1,4 +1,6 @@
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using SharpGen.Runtime;
 using Vortice.Direct3D11;
 using Vortice.DXGI;
 
@@ -9,6 +11,12 @@ namespace WgcColorCalibrator.Rendering.Direct3D11;
 /// </summary>
 public sealed class SwapChainPanelHost : IDisposable
 {
+    // IDXGISwapChain3 vtable indices for SetColorSpace1 and GetColorSpace1.
+    // Vortice 3.8.3 exposes CheckColorSpaceSupport and SetColorSpace1, but not GetColorSpace1,
+    // so the readback is performed through the COM vtable directly.
+    private const int SetColorSpace1VtableIndex = 33;
+    private const int GetColorSpace1VtableIndex = 34;
+
     private readonly D3D11DeviceResources _resources;
     private readonly object _panel;
     private IDXGISwapChain1? _swapChain;
@@ -63,7 +71,6 @@ public sealed class SwapChainPanelHost : IDisposable
         };
 
         _swapChain = _resources.Factory.CreateSwapChainForComposition(_resources.Device, description, null);
-        SetColorSpace(_swapChain, colorSpace);
         SetSwapChainOnPanel(_swapChain);
     }
 
@@ -82,6 +89,17 @@ public sealed class SwapChainPanelHost : IDisposable
         _swapChain?.Present(1, PresentFlags.None);
     }
 
+    public void DetachFromPanel()
+    {
+        if (_disposed)
+        {
+            return;
+        }
+
+        SetSwapChainOnPanel(null);
+        Dispose();
+    }
+
     public void Dispose()
     {
         if (_disposed)
@@ -94,19 +112,107 @@ public sealed class SwapChainPanelHost : IDisposable
         _disposed = true;
     }
 
-    private static void SetColorSpace(IDXGISwapChain1 swapChain, ColorSpaceType colorSpace)
+    public bool TrySetColorSpace(ColorSpaceType requested, out ColorSpaceVerification verification)
     {
-        IDXGISwapChain3? swapChain3 = swapChain.QueryInterface<IDXGISwapChain3>();
-        if (swapChain3 is not null)
+        verification = default;
+
+        IDXGISwapChain3? swapChain3 = _swapChain?.QueryInterface<IDXGISwapChain3>();
+        if (swapChain3 is null)
         {
-            using (swapChain3)
+            return false;
+        }
+
+        using (swapChain3)
+        {
+            SwapChainColorSpaceSupportFlags supportFlags = swapChain3.CheckColorSpaceSupport(requested);
+            if (!supportFlags.HasFlag(SwapChainColorSpaceSupportFlags.Present))
             {
-                swapChain3.SetColorSpace1(colorSpace);
+                verification = new ColorSpaceVerification(requested, (uint)supportFlags, new Result(unchecked((int)0x80004005)), null);
+                return false;
             }
+
+            Result setResult = SetColorSpace1WithHResult(swapChain3, requested);
+            ColorSpaceType? actual = null;
+            if (setResult.Success)
+            {
+                int getHr = GetColorSpace1WithHResult(swapChain3, out ColorSpaceType readBack);
+                if (getHr >= 0)
+                {
+                    actual = readBack;
+                }
+            }
+
+            verification = new ColorSpaceVerification(requested, (uint)supportFlags, setResult, actual);
+            return setResult.Success && actual == requested;
         }
     }
 
-    private void SetSwapChainOnPanel(IDXGISwapChain1 swapChain)
+    private static Result SetColorSpace1WithHResult(IDXGISwapChain3 swapChain3, ColorSpaceType colorSpace)
+    {
+        try
+        {
+            int hr = InvokeColorSpaceMethod(swapChain3, SetColorSpace1VtableIndex, colorSpace);
+            return new Result(hr);
+        }
+        catch (Exception ex)
+        {
+            return new Result(ex.HResult);
+        }
+    }
+
+    private static int GetColorSpace1WithHResult(IDXGISwapChain3 swapChain3, out ColorSpaceType colorSpace)
+    {
+        colorSpace = default;
+        try
+        {
+            int hr = InvokeColorSpaceMethod(swapChain3, GetColorSpace1VtableIndex, out int rawColorSpace);
+            colorSpace = (ColorSpaceType)rawColorSpace;
+            return hr;
+        }
+        catch
+        {
+            return unchecked((int)0x80004005);
+        }
+    }
+
+    private static int InvokeColorSpaceMethod(IDXGISwapChain3 swapChain3, int vtableIndex, ColorSpaceType colorSpace)
+    {
+        var cppObject = Unsafe.As<CppObject>(swapChain3);
+        IntPtr nativePointer = cppObject.NativePointer;
+        if (nativePointer == IntPtr.Zero)
+        {
+            return unchecked((int)0x80004003);
+        }
+
+        IntPtr vtable = Marshal.ReadIntPtr(nativePointer);
+        IntPtr methodPointer = Marshal.ReadIntPtr(vtable, vtableIndex * IntPtr.Size);
+        var method = Marshal.GetDelegateForFunctionPointer<SetColorSpace1Delegate>(methodPointer);
+        return method(nativePointer, colorSpace);
+    }
+
+    private static int InvokeColorSpaceMethod(IDXGISwapChain3 swapChain3, int vtableIndex, out int colorSpace)
+    {
+        var cppObject = Unsafe.As<CppObject>(swapChain3);
+        IntPtr nativePointer = cppObject.NativePointer;
+        if (nativePointer == IntPtr.Zero)
+        {
+            colorSpace = 0;
+            return unchecked((int)0x80004003);
+        }
+
+        IntPtr vtable = Marshal.ReadIntPtr(nativePointer);
+        IntPtr methodPointer = Marshal.ReadIntPtr(vtable, vtableIndex * IntPtr.Size);
+        var method = Marshal.GetDelegateForFunctionPointer<GetColorSpace1Delegate>(methodPointer);
+        return method(nativePointer, out colorSpace);
+    }
+
+    [UnmanagedFunctionPointer(CallingConvention.StdCall)]
+    private delegate int SetColorSpace1Delegate(IntPtr thisPtr, ColorSpaceType colorSpace);
+
+    [UnmanagedFunctionPointer(CallingConvention.StdCall)]
+    private delegate int GetColorSpace1Delegate(IntPtr thisPtr, out int colorSpace);
+
+    private void SetSwapChainOnPanel(IDXGISwapChain1? swapChain)
     {
         if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
         {
@@ -114,6 +220,6 @@ public sealed class SwapChainPanelHost : IDisposable
         }
 
         var native = SwapChainPanelNative.FromObject(_panel);
-        native.SetSwapChain(swapChain);
+        native.SetSwapChain(swapChain!);
     }
 }

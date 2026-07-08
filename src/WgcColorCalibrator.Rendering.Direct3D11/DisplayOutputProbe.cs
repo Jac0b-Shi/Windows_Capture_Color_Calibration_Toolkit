@@ -31,73 +31,68 @@ public sealed class DisplayOutputProbe : IDisplayOutputProbe
             return DisplayOutputMetadata.Unknown;
         }
 
-        IDXGIDevice? dxgiDevice = _resources.Device.QueryInterface<IDXGIDevice>();
-        if (dxgiDevice is null)
+        for (uint adapterIndex = 0; ; adapterIndex++)
         {
-            return DisplayOutputMetadata.Unknown;
-        }
-
-        IDXGIAdapter? adapter;
-        try
-        {
-            adapter = dxgiDevice.GetAdapter();
-        }
-        finally
-        {
-            dxgiDevice.Dispose();
-        }
-
-        if (adapter is null)
-        {
-            return DisplayOutputMetadata.Unknown;
-        }
-
-        try
-        {
-            for (uint i = 0; ; i++)
+            Result enumAdapterResult = _resources.Factory.EnumAdapters1(adapterIndex, out IDXGIAdapter1? adapter);
+            if (!enumAdapterResult.Success || adapter is null)
             {
-                Result result = adapter.EnumOutputs(i, out IDXGIOutput output);
-                if (!result.Success || output is null)
+                break;
+            }
+
+            using (adapter)
+            {
+                DisplayOutputMetadata? metadata = TryMatchOutputs(adapter, monitor);
+                if (metadata is not null)
                 {
-                    break;
+                    return metadata;
+                }
+            }
+        }
+
+        return DisplayOutputMetadata.Unknown;
+    }
+
+    private static DisplayOutputMetadata? TryMatchOutputs(IDXGIAdapter1 adapter, nint monitor)
+    {
+        for (uint outputIndex = 0; ; outputIndex++)
+        {
+            Result enumOutputResult = adapter.EnumOutputs(outputIndex, out IDXGIOutput? output);
+            if (!enumOutputResult.Success || output is null)
+            {
+                break;
+            }
+
+            using (output)
+            {
+                IDXGIOutput6? output6 = output.QueryInterface<IDXGIOutput6>();
+                if (output6 is null)
+                {
+                    continue;
                 }
 
-                using (output)
+                using (output6)
                 {
-                    IDXGIOutput6? output6 = output!.QueryInterface<IDXGIOutput6>();
-                    if (output6 is null)
+                    OutputDescription1 desc = output6.Description1;
+                    if (desc.Monitor == monitor)
                     {
-                        continue;
-                    }
+                        bool hdrActive =
+                            desc.ColorSpace == ColorSpaceType.RgbFullG10NoneP709 ||
+                            desc.ColorSpace == ColorSpaceType.RgbFullG2084NoneP2020;
+                        bool hdrSupported = desc.MaxLuminance > 80.0f;
 
-                    using (output6)
-                    {
-                        OutputDescription1 desc = output6.Description1;
-                        if (desc.Monitor == monitor)
-                        {
-                            bool hdrActive =
-                                desc.ColorSpace == ColorSpaceType.RgbFullG10NoneP709 ||
-                                desc.ColorSpace == ColorSpaceType.RgbFullG2084NoneP2020;
-                            bool hdrSupported = desc.MaxLuminance > 80.0f;
-
-                            return new DisplayOutputMetadata(
-                                desc.DeviceName,
-                                hdrSupported,
-                                hdrActive,
-                                desc.MaxLuminance,
-                                desc.MaxFullFrameLuminance,
-                                desc.MinLuminance);
-                        }
+                        return new DisplayOutputMetadata(
+                            desc.DeviceName,
+                            hdrSupported,
+                            hdrActive,
+                            desc.MaxLuminance,
+                            desc.MaxFullFrameLuminance,
+                            desc.MinLuminance);
                     }
                 }
             }
         }
-        finally
-        {
-            adapter.Dispose();
-        }
 
-        return DisplayOutputMetadata.Unknown;
+        return null;
     }
 
     private static class NativeMethods

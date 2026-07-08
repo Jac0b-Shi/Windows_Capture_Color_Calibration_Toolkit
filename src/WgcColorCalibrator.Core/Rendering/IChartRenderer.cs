@@ -15,4 +15,9 @@ public interface IChartRenderer
         IReadOnlyList<PatchPlacement> placements,
         ChartRenderOptions options,
         object host);
+
+    /// <summary>
+    /// Releases any renderer resources associated with the given host (e.g., a SwapChainPanel).
+    /// </summary>
+    void DetachHost(object host);
 }
