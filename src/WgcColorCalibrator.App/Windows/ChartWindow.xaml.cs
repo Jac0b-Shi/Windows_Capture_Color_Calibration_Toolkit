@@ -1,6 +1,7 @@
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
 using System.Runtime.InteropServices;
 using WinRT.Interop;
 using WgcColorCalibrator.Core.Rendering;
@@ -33,6 +34,7 @@ public sealed partial class ChartWindow : Window
 
         ChartSwapChainPanel.Loaded += OnPanelLoadedOrSizeChanged;
         ChartSwapChainPanel.SizeChanged += OnPanelLoadedOrSizeChanged;
+        ChartSwapChainPanel.CompositionScaleChanged += OnCompositionScaleChanged;
         Closed += OnClosed;
 
         _hotplugTimer = DispatcherQueue.GetForCurrentThread().CreateTimer();
@@ -124,6 +126,17 @@ public sealed partial class ChartWindow : Window
         CheckDisplayChanged();
     }
 
+    private void OnCompositionScaleChanged(SwapChainPanel sender, object args)
+    {
+        if (sender.XamlRoot is null)
+        {
+            return;
+        }
+
+        _lastScale = GetRasterizationScale();
+        DisplayChanged?.Invoke(this, EventArgs.Empty);
+    }
+
     private void CheckDisplayChanged()
     {
         if (!_readyRaised)
@@ -190,6 +203,10 @@ public sealed partial class ChartWindow : Window
     {
         _hotplugTimer?.Stop();
         _hotplugTimer = null;
+
+        ChartSwapChainPanel.Loaded -= OnPanelLoadedOrSizeChanged;
+        ChartSwapChainPanel.SizeChanged -= OnPanelLoadedOrSizeChanged;
+        ChartSwapChainPanel.CompositionScaleChanged -= OnCompositionScaleChanged;
 
         if (_appWindowChangedSubscribed)
         {

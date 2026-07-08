@@ -1,7 +1,9 @@
+using System.Numerics;
 using System.Runtime.InteropServices;
 using SharpGen.Runtime;
 using Vortice.Direct3D11;
 using Vortice.DXGI;
+using WgcColorCalibrator.Core.Rendering;
 
 namespace WgcColorCalibrator.Rendering.Direct3D11;
 
@@ -11,11 +13,11 @@ namespace WgcColorCalibrator.Rendering.Direct3D11;
 public sealed class SwapChainPanelHost : IDisposable
 {
     private readonly D3D11DeviceResources _resources;
-    private readonly object _panel;
+    private readonly Microsoft.UI.Xaml.Controls.SwapChainPanel _panel;
     private IDXGISwapChain1? _swapChain;
     private bool _disposed;
 
-    public SwapChainPanelHost(D3D11DeviceResources resources, object panel)
+    public SwapChainPanelHost(D3D11DeviceResources resources, Microsoft.UI.Xaml.Controls.SwapChainPanel panel)
     {
         _resources = resources ?? throw new ArgumentNullException(nameof(resources));
         _panel = panel ?? throw new ArgumentNullException(nameof(panel));
@@ -29,6 +31,8 @@ public sealed class SwapChainPanelHost : IDisposable
 
     public int Height { get; private set; }
 
+    public SizeInt PanelPhysicalSize => GetPanelPhysicalSize();
+
     public void EnsureSize(int width, int height, Format format)
     {
         if (width <= 0 || height <= 0)
@@ -36,8 +40,20 @@ public sealed class SwapChainPanelHost : IDisposable
             throw new ArgumentException("Swap chain dimensions must be positive.", nameof(width));
         }
 
+        SizeInt panelPhysicalSize = GetPanelPhysicalSize();
+
+        const int Tolerance = 1;
+        if (Math.Abs(panelPhysicalSize.Width - width) > Tolerance ||
+            Math.Abs(panelPhysicalSize.Height - height) > Tolerance)
+        {
+            throw new Direct3D11RenderingException(
+                $"Panel physical size mismatch: panel={panelPhysicalSize.Width}x{panelPhysicalSize.Height}, " +
+                $"requested={width}x{height}.");
+        }
+
         if (_swapChain is not null && Width == width && Height == height && Format == format)
         {
+            UpdateMatrixTransform();
             return;
         }
 
@@ -65,6 +81,7 @@ public sealed class SwapChainPanelHost : IDisposable
 
         _swapChain = _resources.Factory.CreateSwapChainForComposition(_resources.Device, description, null);
         SetSwapChainOnPanel(_swapChain);
+        UpdateMatrixTransform();
     }
 
     public ID3D11Texture2D GetBackBuffer()
@@ -138,6 +155,38 @@ public sealed class SwapChainPanelHost : IDisposable
             result = new ColorSpaceApplicationResult(requested, (uint)supportFlags, setResult.Success, setResult);
             return setResult.Success;
         }
+    }
+
+    public void UpdateMatrixTransform()
+    {
+        if (_swapChain is null)
+        {
+            return;
+        }
+
+        float scaleX = (float)_panel.CompositionScaleX;
+        float scaleY = (float)_panel.CompositionScaleY;
+
+        if (!float.IsFinite(scaleX) || scaleX <= 0 ||
+            !float.IsFinite(scaleY) || scaleY <= 0)
+        {
+            throw new Direct3D11RenderingException(
+                $"Invalid SwapChainPanel composition scale: {scaleX} x {scaleY}.");
+        }
+
+        using IDXGISwapChain2 swapChain2 = _swapChain.QueryInterface<IDXGISwapChain2>();
+        swapChain2.MatrixTransform = Matrix3x2.CreateScale(1.0f / scaleX, 1.0f / scaleY);
+    }
+
+    private SizeInt GetPanelPhysicalSize()
+    {
+        double fallbackScale = _panel.XamlRoot?.RasterizationScale ?? 1.0;
+        double scaleX = _panel.CompositionScaleX > 0 ? _panel.CompositionScaleX : fallbackScale;
+        double scaleY = _panel.CompositionScaleY > 0 ? _panel.CompositionScaleY : fallbackScale;
+
+        int width = (int)Math.Round(_panel.ActualWidth * scaleX);
+        int height = (int)Math.Round(_panel.ActualHeight * scaleY);
+        return new SizeInt(Math.Max(1, width), Math.Max(1, height));
     }
 
     private void SetSwapChainOnPanel(IDXGISwapChain1? swapChain)

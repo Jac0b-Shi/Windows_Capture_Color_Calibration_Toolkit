@@ -25,6 +25,9 @@ public sealed record ChartRenderSession
         DisplayOutputMetadata? displayOutput,
         IReadOnlyList<string> warnings,
         DateTimeOffset createdAt,
+        double compositionScaleX,
+        double compositionScaleY,
+        string matrixTransform,
         uint? colorSpaceSupportFlags = null,
         int? setColorSpaceResult = null)
     {
@@ -33,6 +36,7 @@ public sealed record ChartRenderSession
         ArgumentNullException.ThrowIfNull(placements);
         ArgumentException.ThrowIfNullOrWhiteSpace(swapChainFormat);
         ArgumentException.ThrowIfNullOrWhiteSpace(dxgiColorSpace);
+        ArgumentException.ThrowIfNullOrWhiteSpace(matrixTransform);
         ArgumentNullException.ThrowIfNull(toneMappingParameters);
         ArgumentNullException.ThrowIfNull(warnings);
 
@@ -52,6 +56,9 @@ public sealed record ChartRenderSession
         DisplayOutput = displayOutput;
         Warnings = warnings;
         CreatedAt = createdAt;
+        CompositionScaleX = compositionScaleX;
+        CompositionScaleY = compositionScaleY;
+        MatrixTransform = matrixTransform;
         ColorSpaceSupportFlags = colorSpaceSupportFlags;
         SetColorSpaceResult = setColorSpaceResult;
     }
@@ -87,6 +94,12 @@ public sealed record ChartRenderSession
     public IReadOnlyList<string> Warnings { get; }
 
     public DateTimeOffset CreatedAt { get; }
+
+    public double CompositionScaleX { get; }
+
+    public double CompositionScaleY { get; }
+
+    public string MatrixTransform { get; }
 
     public uint? ColorSpaceSupportFlags { get; }
 

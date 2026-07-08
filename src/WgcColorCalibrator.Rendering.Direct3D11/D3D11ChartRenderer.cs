@@ -45,7 +45,7 @@ public sealed class D3D11ChartRenderer : IChartRenderer, IDisposable
 
         var warnings = new List<string>(options.Warnings ?? Array.Empty<string>());
         SizeInt intendedPhysicalSize = CalculateIntendedPhysicalSize(placements, chart.Layout);
-        (SizeInt actualPhysicalSize, double actualScale) = GetActualPhysicalSize(panel);
+        (SizeInt actualPhysicalSize, double scaleX, double scaleY) = GetActualPhysicalSize(panel);
 
         if (actualPhysicalSize.Width != intendedPhysicalSize.Width ||
             actualPhysicalSize.Height != intendedPhysicalSize.Height)
@@ -63,7 +63,7 @@ public sealed class D3D11ChartRenderer : IChartRenderer, IDisposable
         (Format format, ColorSpaceType colorSpace) = GetFormatAndColorSpace(actualOutputMode);
 
         SwapChainPanelHost hostWrapper = GetOrCreateHost(panel);
-        hostWrapper.EnsureSize(actualPhysicalSize.Width, actualPhysicalSize.Height, format);
+        hostWrapper.EnsureSize(intendedPhysicalSize.Width, intendedPhysicalSize.Height, format);
 
         bool colorSpaceSet = hostWrapper.TrySetColorSpace(colorSpace, out ColorSpaceApplicationResult colorSpaceResult);
         if (!colorSpaceSet)
@@ -86,9 +86,19 @@ public sealed class D3D11ChartRenderer : IChartRenderer, IDisposable
 
         using (ID3D11Texture2D backBuffer = hostWrapper.GetBackBuffer())
         {
+            Texture2DDescription desc = backBuffer.Description;
+            if (desc.Width != intendedPhysicalSize.Width || desc.Height != intendedPhysicalSize.Height)
+            {
+                throw new Direct3D11RenderingException(
+                    $"Back buffer size mismatch: expected={intendedPhysicalSize.Width}x{intendedPhysicalSize.Height}, " +
+                    $"actual={desc.Width}x{desc.Height}.");
+            }
+
             _textureRenderer.Render(backBuffer, chart, placements, toneMapper, options, options.DebugOverlayEnabled);
             hostWrapper.Present();
         }
+
+        string matrixTransform = $"ScaleX={1.0 / scaleX:F6}, ScaleY={1.0 / scaleY:F6}";
 
         return new ChartRenderSession(
             RendererId,
@@ -99,7 +109,7 @@ public sealed class D3D11ChartRenderer : IChartRenderer, IDisposable
             format.ToString(),
             colorSpace.ToString(),
             hdrOutputActive,
-            actualScale,
+            scaleX,
             new Size(panel.ActualWidth, panel.ActualHeight),
             intendedPhysicalSize,
             actualPhysicalSize,
@@ -107,6 +117,9 @@ public sealed class D3D11ChartRenderer : IChartRenderer, IDisposable
             displayMetadata,
             warnings,
             DateTimeOffset.UtcNow,
+            scaleX,
+            scaleY,
+            matrixTransform,
             colorSpaceResult.SupportFlags,
             colorSpaceResult.SetHResult.Code);
     }
@@ -165,7 +178,7 @@ public sealed class D3D11ChartRenderer : IChartRenderer, IDisposable
         return new SizeInt(maxRight + layout.Border, maxBottom + layout.Border);
     }
 
-    private static (SizeInt PhysicalSize, double Scale) GetActualPhysicalSize(Microsoft.UI.Xaml.Controls.SwapChainPanel panel)
+    private static (SizeInt PhysicalSize, double ScaleX, double ScaleY) GetActualPhysicalSize(Microsoft.UI.Xaml.Controls.SwapChainPanel panel)
     {
         double fallbackScale = panel.XamlRoot?.RasterizationScale ?? 1.0;
         double scaleX = panel.CompositionScaleX > 0 ? panel.CompositionScaleX : fallbackScale;
@@ -173,7 +186,7 @@ public sealed class D3D11ChartRenderer : IChartRenderer, IDisposable
 
         int width = (int)Math.Round(panel.ActualWidth * scaleX);
         int height = (int)Math.Round(panel.ActualHeight * scaleY);
-        return (new SizeInt(Math.Max(1, width), Math.Max(1, height)), scaleX);
+        return (new SizeInt(Math.Max(1, width), Math.Max(1, height)), scaleX, scaleY);
     }
 
     private IToneMapper ResolveToneMapper(ToneMappingMode mode)

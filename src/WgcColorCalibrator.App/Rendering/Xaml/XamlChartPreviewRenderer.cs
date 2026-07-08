@@ -71,7 +71,10 @@ public sealed class XamlChartPreviewRenderer : IChartRenderer
             options.ToneMappingParameters,
             DisplayOutputMetadata.Unknown,
             ["xaml-preview-not-for-measurement"],
-            DateTimeOffset.UtcNow);
+            DateTimeOffset.UtcNow,
+            compositionScaleX: 1.0,
+            compositionScaleY: 1.0,
+            matrixTransform: "ScaleX=1.000000, ScaleY=1.000000");
     }
 
     public void DetachHost(object host)
