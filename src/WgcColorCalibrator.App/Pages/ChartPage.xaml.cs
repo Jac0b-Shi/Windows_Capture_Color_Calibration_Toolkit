@@ -405,7 +405,7 @@ public sealed partial class ChartPage : Page
             _workspaceService.CurrentChart,
             _workspaceService.CurrentPlacements,
             options,
-            PreviewCanvas);
+            PreviewHost);
     }
 
     private ChartLayoutDefinition ReadLayoutDefinition()

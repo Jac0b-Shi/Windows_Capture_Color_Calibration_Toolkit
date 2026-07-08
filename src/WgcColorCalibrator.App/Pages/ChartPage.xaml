@@ -191,19 +191,26 @@
                     BorderThickness="1"
                     CornerRadius="8"
                     Padding="16"
+                    MinHeight="220"
                     Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-                    HorizontalAlignment="Left"
-                    VerticalAlignment="Top">
+                    HorizontalAlignment="Stretch">
                     <StackPanel Spacing="12">
                         <TextBlock x:Name="PreviewWarningTextBlock" x:Uid="PreviewWarningTextBlock" TextWrapping="WrapWholeWords" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                         <Border
                             x:Name="PreviewHostBorder"
-                            BorderBrush="{ThemeResource TextFillColorPrimaryBrush}"
+                            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
                             BorderThickness="1"
-                            HorizontalAlignment="Left"
-                            VerticalAlignment="Top"
+                            CornerRadius="4"
+                            Padding="12"
+                            MinHeight="180"
+                            MaxHeight="480"
+                            HorizontalAlignment="Stretch"
                             Background="{ThemeResource SolidBackgroundFillColorTertiaryBrush}">
-                            <Canvas x:Name="PreviewCanvas" />
+                            <Grid
+                                x:Name="PreviewHost"
+                                MinHeight="160"
+                                HorizontalAlignment="Stretch"
+                                VerticalAlignment="Stretch" />
                         </Border>
                     </StackPanel>
                 </Border>
