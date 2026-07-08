@@ -94,18 +94,32 @@ public sealed class OutputModeResolverTests
     }
 
     [Fact]
-    public void ResolveDetailed_HdrActive_RequestedEqualsActual()
+    public void Resolve_HdrRequestedOnUnknownCapabilityWithNoClipping_FallsBackToSdr()
     {
         var warnings = new List<string>();
-        var metadata = new DisplayOutputMetadata("Test", hdrSupported: true, hdrActive: true, 1000, 400, 0.1);
-        OutputModeResolution resolution = OutputModeResolver.ResolveDetailed(
+        RenderOutputMode actual = OutputModeResolver.Resolve(
             RenderOutputMode.HdrScRgb,
-            metadata,
+            DisplayOutputMetadata.Unknown,
             allowHdrClippingExperiment: false,
             warnings);
 
-        Assert.Equal(RenderOutputMode.HdrScRgb, resolution.RequestedMode);
-        Assert.Equal(RenderOutputMode.HdrScRgb, resolution.ActualMode);
-        Assert.Empty(resolution.Warnings);
+        Assert.Equal(RenderOutputMode.SdrSrgb, actual);
+        Assert.Contains(warnings, w => w.Contains("hdr-capability-unknown"));
+        Assert.Contains(warnings, w => w.Contains("hdr-fallback-to-sdr"));
+    }
+
+    [Fact]
+    public void Resolve_HdrRequestedOnUnknownCapabilityWithClipping_AllowsExperiment()
+    {
+        var warnings = new List<string>();
+        RenderOutputMode actual = OutputModeResolver.Resolve(
+            RenderOutputMode.HdrScRgb,
+            DisplayOutputMetadata.Unknown,
+            allowHdrClippingExperiment: true,
+            warnings);
+
+        Assert.Equal(RenderOutputMode.HdrScRgb, actual);
+        Assert.Contains(warnings, w => w.Contains("hdr-capability-unknown"));
+        Assert.Contains(warnings, w => w.Contains("hdr-clipping-experiment"));
     }
 }

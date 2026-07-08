@@ -48,7 +48,20 @@ public static class OutputModeResolver
 
         if (requested != RenderOutputMode.SdrSrgb)
         {
-            if (!metadata.HdrSupported)
+            if (!metadata.HdrCapabilityKnown)
+            {
+                warnings.Add($"hdr-capability-unknown: requested {requested}, display could not be matched to a DXGI output");
+                if (!allowHdrClippingExperiment)
+                {
+                    warnings.Add("hdr-fallback-to-sdr: clipping experiment not allowed");
+                    actual = RenderOutputMode.SdrSrgb;
+                }
+                else
+                {
+                    warnings.Add("hdr-clipping-experiment: rendering HDR without a known display capability");
+                }
+            }
+            else if (!metadata.HdrSupported)
             {
                 warnings.Add($"hdr-display-unsupported: requested {requested}, display reports no HDR capability");
                 if (!allowHdrClippingExperiment)

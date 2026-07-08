@@ -241,7 +241,7 @@
     <value>Paper white (nits)</value>
   </data>
   <data name="PeakBrightnessNumberBox.Header" xml:space="preserve">
-    <value>Peak brightness (nits)</value>
+    <value>Peak brightness (recorded only, nits)</value>
   </data>
   <data name="ExposureNumberBox.Header" xml:space="preserve">
     <value>Exposure (EV)</value>
@@ -336,6 +336,9 @@
   <data name="HdrStatusInactive" xml:space="preserve">
     <value>HDR inactive</value>
   </data>
+  <data name="HdrStatusUnknown" xml:space="preserve">
+    <value>HDR capability unknown</value>
+  </data>
   <data name="HdrBehaviorLabel.Text" xml:space="preserve">
     <value>If HDR is unavailable</value>
   </data>
@@ -352,7 +355,7 @@
     <value>Clipping experiment</value>
   </data>
   <data name="ManualHdrColorLabel.Text" xml:space="preserve">
-    <value>HDR color (linear scRGB)</value>
+    <value>HDR color (raw linear scRGB, 1.0 = 80 nits)</value>
   </data>
   <data name="ManualHdrRedNumberBox.Header" xml:space="preserve">
     <value>R</value>

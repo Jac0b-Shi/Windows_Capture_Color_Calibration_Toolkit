@@ -86,7 +86,8 @@ public sealed class DisplayOutputProbe : IDisplayOutputProbe
                             hdrActive,
                             desc.MaxLuminance,
                             desc.MaxFullFrameLuminance,
-                            desc.MinLuminance);
+                            desc.MinLuminance,
+                            DisplayCapabilityProbeMethod.DxgiOutputDescription1);
                     }
                 }
             }

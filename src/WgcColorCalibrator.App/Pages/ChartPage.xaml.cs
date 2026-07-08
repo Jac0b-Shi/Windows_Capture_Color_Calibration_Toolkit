@@ -406,9 +406,11 @@ public sealed partial class ChartPage : Page
         DisplayOutputMetadata metadata = session.DisplayOutput;
         string statusText = $"{_resourceLoader.GetString("ChartStatusChart")}: {chart.Name}, {chart.Patches.Count} patches, {session.ActualOutputMode}";
         string luminanceText = $"max={metadata.MaxLuminance:F1}, full={metadata.MaxFullFrameLuminance:F1}, min={metadata.MinLuminance:F2}";
-        HdrStatusTextBlock.Text = metadata.HdrActive
-            ? $"{_resourceLoader.GetString("HdrStatusActive")} ({metadata.DisplayName}, {luminanceText})"
-            : $"{_resourceLoader.GetString("HdrStatusInactive")} ({metadata.DisplayName}, {luminanceText})";
+
+        string hdrStatusKey = metadata.HdrCapabilityKnown
+            ? (metadata.HdrActive ? "HdrStatusActive" : "HdrStatusInactive")
+            : "HdrStatusUnknown";
+        HdrStatusTextBlock.Text = $"{_resourceLoader.GetString(hdrStatusKey)} ({metadata.DisplayName}, {luminanceText})";
 
         if (session.Warnings.Count > 0)
         {
