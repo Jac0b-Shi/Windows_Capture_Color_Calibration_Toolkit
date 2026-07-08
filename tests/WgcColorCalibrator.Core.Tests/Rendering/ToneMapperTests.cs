@@ -1,4 +1,6 @@
 using System.Numerics;
+using WgcColorCalibrator.Core.Charts;
+using WgcColorCalibrator.Core.Colors;
 using WgcColorCalibrator.Core.Rendering;
 
 namespace WgcColorCalibrator.Core.Tests.Rendering;
@@ -15,6 +17,49 @@ public class ToneMapperTests
         Vector4 output = mapper.Map(input, parameters);
 
         Assert.Equal(input, output);
+    }
+
+    [Fact]
+    public void DirectScRgb_PaperWhiteChange_DoesNotAlterOutput()
+    {
+        var mapper = new ToneMapperDirectScRgb();
+        var input = new Vector4(1.0f, 1.0f, 1.0f, 1.0f);
+        Vector4 output80 = mapper.Map(input, new ToneMappingParameters(80.0, 1000.0, 0.0));
+        Vector4 output400 = mapper.Map(input, new ToneMappingParameters(400.0, 1000.0, 0.0));
+
+        Assert.Equal(output80, output400);
+    }
+
+    [Theory]
+    [InlineData(80.0, 1.0f)]
+    [InlineData(200.0, 2.5f)]
+    [InlineData(400.0, 5.0f)]
+    public void ReferenceWhiteScaled_WhiteSrgb_MapsToExpectedScRgb(
+        double paperWhiteNits,
+        float expectedScRgb)
+    {
+        var mapper = new ToneMapperReferenceWhiteScaled();
+        float linear = ColorSpaceConverter.SrgbByteToLinear(255);
+        var input = new Vector4(linear, linear, linear, 1.0f);
+
+        Vector4 output = mapper.Map(input, new ToneMappingParameters(paperWhiteNits, 1000.0, 0.0));
+
+        Assert.Equal(expectedScRgb, output.X, precision: 6);
+        Assert.Equal(expectedScRgb, output.Y, precision: 6);
+        Assert.Equal(expectedScRgb, output.Z, precision: 6);
+    }
+
+    [Fact]
+    public void ReferenceWhiteScaled_PaperWhiteChange_ChangesOutput()
+    {
+        var mapper = new ToneMapperReferenceWhiteScaled();
+        float linear = ColorSpaceConverter.SrgbByteToLinear(255);
+        var input = new Vector4(linear, linear, linear, 1.0f);
+
+        Vector4 output80 = mapper.Map(input, new ToneMappingParameters(80.0, 1000.0, 0.0));
+        Vector4 output400 = mapper.Map(input, new ToneMappingParameters(400.0, 1000.0, 0.0));
+
+        Assert.NotEqual(output80, output400);
     }
 
     [Fact]

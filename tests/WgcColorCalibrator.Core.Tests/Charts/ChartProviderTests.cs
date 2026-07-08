@@ -55,6 +55,31 @@ public sealed class ChartProviderTests
     }
 
     [Fact]
+    public void GrayscaleProvider_PreservesToneMappingMode()
+    {
+        var provider = new GrayscaleChartProvider();
+        ChartDefinition chart = provider.Create(ChartGenerationOptions.Default with
+        {
+            GrayscaleSteps = 5,
+            ToneMappingMode = ToneMappingMode.ReferenceWhiteScaled
+        });
+
+        Assert.Equal(ToneMappingMode.ReferenceWhiteScaled, chart.RenderingParameters?.ToneMappingMode);
+    }
+
+    [Fact]
+    public void NearWhiteProvider_PreservesToneMappingMode()
+    {
+        var provider = new NearWhiteChartProvider();
+        ChartDefinition chart = provider.Create(ChartGenerationOptions.Default with
+        {
+            ToneMappingMode = ToneMappingMode.ReferenceWhiteScaled
+        });
+
+        Assert.Equal(ToneMappingMode.ReferenceWhiteScaled, chart.RenderingParameters?.ToneMappingMode);
+    }
+
+    [Fact]
     public void ChartDefinition_RejectsDuplicatePatchIds()
     {
         var patch = new ColorPatchDefinition("same", "Same", new Rgb8(1, 2, 3), null, 1.0, null);

@@ -43,7 +43,8 @@ public sealed class GrayscaleChartProvider : IChartProvider
             options.OutputMode,
             options.ToneMappingParameters ?? ToneMappingParameters.Default,
             ColorSpaceConverter.ScrgbReferenceWhiteNits,
-            ColorEncoding.SrgbEncoded);
+            ColorEncoding.SrgbEncoded,
+            options.ToneMappingMode);
 
         return new ChartDefinition(
             Id,
