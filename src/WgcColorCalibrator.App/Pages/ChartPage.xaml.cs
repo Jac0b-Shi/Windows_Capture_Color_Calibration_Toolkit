@@ -21,27 +21,63 @@ public sealed partial class ChartPage : Page
     private readonly ResourceLoader _resourceLoader;
     private readonly XamlChartPreviewRenderer _previewRenderer;
     private readonly EventHandler _onWorkspaceStateChanged;
+    private bool _uiEventsAttached;
 
     public ChartPage()
     {
-        InitializeComponent();
         _workspaceService = App.Services.GetRequiredService<ChartWorkspaceService>();
         _resourceLoader = new ResourceLoader();
         _previewRenderer = new XamlChartPreviewRenderer();
         _onWorkspaceStateChanged = OnWorkspaceStateChanged;
 
+        InitializeComponent();
+
+        // Attach events after InitializeComponent so all x:Name fields are assigned.
+        // XAML event bindings would fire during initialization while sibling controls are still null.
+        AttachUiEvents();
+        InitializeUiState();
+
         _workspaceService.StateChanged += _onWorkspaceStateChanged;
-        ChartTypeComboBox.SelectedIndex = 0;
-        OutputModeComboBox.SelectedIndex = 0;
-        ToneMappingModeComboBox.SelectedIndex = 1;
-        HdrBehaviorComboBox.SelectedIndex = 0;
-        UpdateStatus();
     }
 
     protected override void OnNavigatedFrom(NavigationEventArgs e)
     {
         base.OnNavigatedFrom(e);
         _workspaceService.StateChanged -= _onWorkspaceStateChanged;
+    }
+
+    private void AttachUiEvents()
+    {
+        if (_uiEventsAttached)
+        {
+            return;
+        }
+
+        ChartTypeComboBox.SelectionChanged += ChartTypeComboBox_SelectionChanged;
+        OutputModeComboBox.SelectionChanged += OutputModeComboBox_SelectionChanged;
+
+        ManualRedNumberBox.ValueChanged += ManualColorNumberBox_ValueChanged;
+        ManualGreenNumberBox.ValueChanged += ManualColorNumberBox_ValueChanged;
+        ManualBlueNumberBox.ValueChanged += ManualColorNumberBox_ValueChanged;
+
+        ManualHdrRedNumberBox.ValueChanged += ManualHdrColorNumberBox_ValueChanged;
+        ManualHdrGreenNumberBox.ValueChanged += ManualHdrColorNumberBox_ValueChanged;
+        ManualHdrBlueNumberBox.ValueChanged += ManualHdrColorNumberBox_ValueChanged;
+
+        _uiEventsAttached = true;
+    }
+
+    private void InitializeUiState()
+    {
+        ChartTypeComboBox.SelectedIndex = 0;
+        OutputModeComboBox.SelectedIndex = 0;
+        ToneMappingModeComboBox.SelectedIndex = 1;
+        HdrBehaviorComboBox.SelectedIndex = 0;
+
+        UpdateManualPanelVisibility();
+        UpdateManualColorText();
+        UpdateManualHdrColorText();
+        UpdateStatus();
     }
 
     private void OnWorkspaceStateChanged(object? sender, EventArgs e)
@@ -86,11 +122,17 @@ public sealed partial class ChartPage : Page
 
     private void ManualColorNumberBox_ValueChanged(NumberBox sender, NumberBoxValueChangedEventArgs args)
     {
+        UpdateManualColorText();
+    }
+
+    private void UpdateManualColorText()
+    {
         byte r = (byte)Math.Clamp((int)GetNumberBoxValue(ManualRedNumberBox, 255.0), 0, 255);
         byte g = (byte)Math.Clamp((int)GetNumberBoxValue(ManualGreenNumberBox, 255.0), 0, 255);
         byte b = (byte)Math.Clamp((int)GetNumberBoxValue(ManualBlueNumberBox, 255.0), 0, 255);
         var color = new Rgb8(r, g, b);
         ManualColorHexTextBox.Text = color.ToHexString();
+        ManualColorNormalizedTextBlock.Text = $"{color.ToHexString()} RGB({color.R}, {color.G}, {color.B})";
         UpdateColorPreview(color);
     }
 
@@ -356,10 +398,15 @@ public sealed partial class ChartPage : Page
 
     private void ManualHdrColorNumberBox_ValueChanged(NumberBox sender, NumberBoxValueChangedEventArgs args)
     {
+        UpdateManualHdrColorText();
+    }
+
+    private void UpdateManualHdrColorText()
+    {
         double r = GetNumberBoxValue(ManualHdrRedNumberBox, 1.0);
         double g = GetNumberBoxValue(ManualHdrGreenNumberBox, 1.0);
         double b = GetNumberBoxValue(ManualHdrBlueNumberBox, 1.0);
-        ManualHdrColorNormalizedTextBlock.Text = $"R={r} G={g} B={b}";
+        ManualHdrColorNormalizedTextBlock.Text = FormattableString.Invariant($"R={r:G6} G={g:G6} B={b:G6}");
     }
 
     private static double GetNumberBoxValue(NumberBox box, double defaultValue) =>

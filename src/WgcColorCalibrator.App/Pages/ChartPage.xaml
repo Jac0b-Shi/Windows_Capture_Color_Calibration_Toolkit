@@ -31,7 +31,7 @@
                 Grid.Column="0"
                 Spacing="12">
                 <TextBlock x:Uid="ChartTypeLabel" FontWeight="SemiBold" />
-                <ComboBox x:Name="ChartTypeComboBox" MinWidth="240" SelectionChanged="ChartTypeComboBox_SelectionChanged">
+                <ComboBox x:Name="ChartTypeComboBox" MinWidth="240">
                     <ComboBoxItem x:Uid="ChartTypeManual" Tag="manual-single-color" />
                     <ComboBoxItem x:Uid="ChartTypeNearWhite" Tag="near-white" />
                     <ComboBoxItem x:Uid="ChartTypeGrayscale" Tag="grayscale" />
@@ -46,9 +46,9 @@
                             <ColumnDefinition Width="*" />
                             <ColumnDefinition Width="*" />
                         </Grid.ColumnDefinitions>
-                        <NumberBox x:Name="ManualRedNumberBox" x:Uid="ManualRedNumberBox" Grid.Column="0" Minimum="0" Maximum="255" Value="255" ValueChanged="ManualColorNumberBox_ValueChanged" />
-                        <NumberBox x:Name="ManualGreenNumberBox" x:Uid="ManualGreenNumberBox" Grid.Column="1" Minimum="0" Maximum="255" Value="255" ValueChanged="ManualColorNumberBox_ValueChanged" />
-                        <NumberBox x:Name="ManualBlueNumberBox" x:Uid="ManualBlueNumberBox" Grid.Column="2" Minimum="0" Maximum="255" Value="255" ValueChanged="ManualColorNumberBox_ValueChanged" />
+                        <NumberBox x:Name="ManualRedNumberBox" x:Uid="ManualRedNumberBox" Grid.Column="0" Minimum="0" Maximum="255" Value="255" />
+                        <NumberBox x:Name="ManualGreenNumberBox" x:Uid="ManualGreenNumberBox" Grid.Column="1" Minimum="0" Maximum="255" Value="255" />
+                        <NumberBox x:Name="ManualBlueNumberBox" x:Uid="ManualBlueNumberBox" Grid.Column="2" Minimum="0" Maximum="255" Value="255" />
                     </Grid>
                     <TextBlock x:Uid="ManualColorPreviewLabel" />
                     <Rectangle x:Name="ManualColorPreview" Width="64" Height="64" Fill="White" Stroke="{ThemeResource TextFillColorPrimaryBrush}" StrokeThickness="1" />
@@ -63,9 +63,9 @@
                             <ColumnDefinition Width="*" />
                             <ColumnDefinition Width="*" />
                         </Grid.ColumnDefinitions>
-                        <NumberBox x:Name="ManualHdrRedNumberBox" x:Uid="ManualHdrRedNumberBox" Grid.Column="0" Minimum="0" Value="1.0" ValueChanged="ManualHdrColorNumberBox_ValueChanged" />
-                        <NumberBox x:Name="ManualHdrGreenNumberBox" x:Uid="ManualHdrGreenNumberBox" Grid.Column="1" Minimum="0" Value="1.0" ValueChanged="ManualHdrColorNumberBox_ValueChanged" />
-                        <NumberBox x:Name="ManualHdrBlueNumberBox" x:Uid="ManualHdrBlueNumberBox" Grid.Column="2" Minimum="0" Value="1.0" ValueChanged="ManualHdrColorNumberBox_ValueChanged" />
+                        <NumberBox x:Name="ManualHdrRedNumberBox" x:Uid="ManualHdrRedNumberBox" Grid.Column="0" Minimum="0" Value="1.0" />
+                        <NumberBox x:Name="ManualHdrGreenNumberBox" x:Uid="ManualHdrGreenNumberBox" Grid.Column="1" Minimum="0" Value="1.0" />
+                        <NumberBox x:Name="ManualHdrBlueNumberBox" x:Uid="ManualHdrBlueNumberBox" Grid.Column="2" Minimum="0" Value="1.0" />
                     </Grid>
                     <TextBlock x:Name="ManualHdrColorNormalizedTextBlock" Text="R=1.0 G=1.0 B=1.0" />
                 </StackPanel>
@@ -120,7 +120,7 @@
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
-                <ComboBox x:Name="OutputModeComboBox" x:Uid="OutputModeComboBox" Grid.Row="0" Grid.Column="0" MinWidth="160" SelectionChanged="OutputModeComboBox_SelectionChanged">
+                <ComboBox x:Name="OutputModeComboBox" x:Uid="OutputModeComboBox" Grid.Row="0" Grid.Column="0" MinWidth="160">
                     <ComboBoxItem x:Uid="OutputModeSdr" Tag="SdrSrgb" />
                     <ComboBoxItem x:Uid="OutputModeHdrScRgb" Tag="HdrScRgb" />
                     <ComboBoxItem x:Uid="OutputModeHdr10" Tag="Hdr10" />
