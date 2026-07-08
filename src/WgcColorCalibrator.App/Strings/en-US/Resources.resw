@@ -351,4 +351,16 @@
   <data name="HdrBehaviorAllowClipping.Content" xml:space="preserve">
     <value>Clipping experiment</value>
   </data>
+  <data name="ManualHdrColorLabel.Text" xml:space="preserve">
+    <value>HDR color (linear scRGB)</value>
+  </data>
+  <data name="ManualHdrRedNumberBox.Header" xml:space="preserve">
+    <value>R</value>
+  </data>
+  <data name="ManualHdrGreenNumberBox.Header" xml:space="preserve">
+    <value>G</value>
+  </data>
+  <data name="ManualHdrBlueNumberBox.Header" xml:space="preserve">
+    <value>B</value>
+  </data>
 </root>

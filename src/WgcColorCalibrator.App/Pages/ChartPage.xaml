@@ -37,7 +37,7 @@
                     <ComboBoxItem x:Uid="ChartTypeGrayscale" Tag="grayscale" />
                 </ComboBox>
 
-                <StackPanel x:Name="ManualPanel" Spacing="8" Visibility="Collapsed">
+                <StackPanel x:Name="SdrManualPanel" Spacing="8" Visibility="Collapsed">
                     <TextBlock x:Uid="ManualColorLabel" />
                     <TextBox x:Name="ManualColorHexTextBox" x:Uid="ManualColorHexTextBox" Text="#FFFFFF" LostFocus="ManualColorHexTextBox_LostFocus" />
                     <Grid ColumnSpacing="8">
@@ -53,6 +53,21 @@
                     <TextBlock x:Uid="ManualColorPreviewLabel" />
                     <Rectangle x:Name="ManualColorPreview" Width="64" Height="64" Fill="White" Stroke="{ThemeResource TextFillColorPrimaryBrush}" StrokeThickness="1" />
                     <TextBlock x:Name="ManualColorNormalizedTextBlock" Text="#FFFFFF" />
+                </StackPanel>
+
+                <StackPanel x:Name="HdrManualPanel" Spacing="8" Visibility="Collapsed">
+                    <TextBlock x:Uid="ManualHdrColorLabel" />
+                    <Grid ColumnSpacing="8">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <NumberBox x:Name="ManualHdrRedNumberBox" x:Uid="ManualHdrRedNumberBox" Grid.Column="0" Minimum="0" Value="1.0" ValueChanged="ManualHdrColorNumberBox_ValueChanged" />
+                        <NumberBox x:Name="ManualHdrGreenNumberBox" x:Uid="ManualHdrGreenNumberBox" Grid.Column="1" Minimum="0" Value="1.0" ValueChanged="ManualHdrColorNumberBox_ValueChanged" />
+                        <NumberBox x:Name="ManualHdrBlueNumberBox" x:Uid="ManualHdrBlueNumberBox" Grid.Column="2" Minimum="0" Value="1.0" ValueChanged="ManualHdrColorNumberBox_ValueChanged" />
+                    </Grid>
+                    <TextBlock x:Name="ManualHdrColorNormalizedTextBlock" Text="R=1.0 G=1.0 B=1.0" />
                 </StackPanel>
 
                 <StackPanel x:Name="GrayscalePanel" Spacing="8" Visibility="Collapsed">
@@ -105,7 +120,7 @@
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
-                <ComboBox x:Name="OutputModeComboBox" x:Uid="OutputModeComboBox" Grid.Row="0" Grid.Column="0" MinWidth="160">
+                <ComboBox x:Name="OutputModeComboBox" x:Uid="OutputModeComboBox" Grid.Row="0" Grid.Column="0" MinWidth="160" SelectionChanged="OutputModeComboBox_SelectionChanged">
                     <ComboBoxItem x:Uid="OutputModeSdr" Tag="SdrSrgb" />
                     <ComboBoxItem x:Uid="OutputModeHdrScRgb" Tag="HdrScRgb" />
                     <ComboBoxItem x:Uid="OutputModeHdr10" Tag="Hdr10" />

@@ -1,6 +1,15 @@
 namespace WgcColorCalibrator.Core.Rendering;
 
 /// <summary>
+/// Records the resolution of a requested output mode against the display and user policy.
+/// </summary>
+public sealed record OutputModeResolution(
+    RenderOutputMode RequestedMode,
+    RenderOutputMode ActualMode,
+    DisplayOutputMetadata DisplayOutput,
+    IReadOnlyList<string> Warnings);
+
+/// <summary>
 /// Resolves the requested output mode to an actual output mode based on display metadata and user policy.
 /// </summary>
 public static class OutputModeResolver
@@ -18,42 +27,59 @@ public static class OutputModeResolver
         ArgumentNullException.ThrowIfNull(metadata);
         ArgumentNullException.ThrowIfNull(warnings);
 
-        if (requested == RenderOutputMode.SdrSrgb)
-        {
-            return requested;
-        }
+        OutputModeResolution resolution = ResolveDetailed(requested, metadata, allowHdrClippingExperiment, warnings);
+        return resolution.ActualMode;
+    }
 
-        if (!metadata.HdrSupported)
+    /// <summary>
+    /// Performs a single resolution that captures both the requested and actual output mode, the display metadata,
+    /// and any warnings.
+    /// </summary>
+    public static OutputModeResolution ResolveDetailed(
+        RenderOutputMode requested,
+        DisplayOutputMetadata metadata,
+        bool allowHdrClippingExperiment,
+        ICollection<string> warnings)
+    {
+        ArgumentNullException.ThrowIfNull(metadata);
+        ArgumentNullException.ThrowIfNull(warnings);
+
+        RenderOutputMode actual = requested;
+
+        if (requested != RenderOutputMode.SdrSrgb)
         {
-            warnings.Add($"hdr-display-unsupported: requested {requested}, display reports no HDR capability");
-            if (!allowHdrClippingExperiment)
+            if (!metadata.HdrSupported)
             {
-                warnings.Add("hdr-fallback-to-sdr: clipping experiment not allowed");
-                return RenderOutputMode.SdrSrgb;
+                warnings.Add($"hdr-display-unsupported: requested {requested}, display reports no HDR capability");
+                if (!allowHdrClippingExperiment)
+                {
+                    warnings.Add("hdr-fallback-to-sdr: clipping experiment not allowed");
+                    actual = RenderOutputMode.SdrSrgb;
+                }
+                else
+                {
+                    warnings.Add("hdr-clipping-experiment: rendering HDR on a display that reports no HDR capability");
+                }
             }
-
-            warnings.Add("hdr-clipping-experiment: rendering HDR on a display that reports no HDR capability");
-            return requested;
-        }
-
-        if (!metadata.HdrActive)
-        {
-            warnings.Add($"system-hdr-disabled: requested {requested} but system HDR is off");
-            if (!allowHdrClippingExperiment)
+            else if (!metadata.HdrActive)
             {
-                warnings.Add("hdr-fallback-to-sdr: clipping experiment not allowed");
-                return RenderOutputMode.SdrSrgb;
+                warnings.Add($"system-hdr-disabled: requested {requested} but system HDR is off");
+                if (!allowHdrClippingExperiment)
+                {
+                    warnings.Add("hdr-fallback-to-sdr: clipping experiment not allowed");
+                    actual = RenderOutputMode.SdrSrgb;
+                }
+                else
+                {
+                    warnings.Add("hdr-clipping-experiment: rendering HDR while system HDR is off");
+                }
             }
-
-            warnings.Add("hdr-clipping-experiment: rendering HDR while system HDR is off");
-            return requested;
+            else if (requested == RenderOutputMode.Hdr10)
+            {
+                warnings.Add("hdr10-experimental: HDR10 is experimental and not yet fully validated");
+            }
         }
 
-        if (requested == RenderOutputMode.Hdr10)
-        {
-            warnings.Add("hdr10-experimental: HDR10 is experimental and not yet fully validated");
-        }
-
-        return requested;
+        return new OutputModeResolution(requested, actual, metadata, warnings.ToList().AsReadOnly());
     }
 }

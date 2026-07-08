@@ -65,10 +65,65 @@ public static class ColorSpaceConverter
     public static float ApplyExposureEv(float linear, double exposureEv) => linear * MathF.Pow(2.0f, (float)exposureEv);
 
     /// <summary>
-    /// Applies exposure in EV to a linear vector.
+    /// Converts linear BT.709 (scRGB) primaries to BT.2020 primaries.
     /// </summary>
-    public static Vector3 ApplyExposureEv(Vector3 linear, double exposureEv) => new(
-        ApplyExposureEv(linear.X, exposureEv),
-        ApplyExposureEv(linear.Y, exposureEv),
-        ApplyExposureEv(linear.Z, exposureEv));
+    public static Vector3 LinearScRgbToRec2020(Vector3 linear)
+    {
+        return new Vector3(
+            0.708f * linear.X + 0.292f * linear.Y + 0.000f * linear.Z,
+            0.170f * linear.X + 0.797f * linear.Y + 0.033f * linear.Z,
+            0.131f * linear.X + 0.046f * linear.Y + 0.823f * linear.Z);
+    }
+
+    /// <summary>
+    /// Encodes a normalized linear value (1.0 = 10,000 nits) with SMPTE ST.2084 PQ.
+    /// </summary>
+    public static float PqEncode(float normalized)
+    {
+        if (normalized <= 0.0f)
+            return 0.0f;
+
+        const float m1 = 2610.0f / 4096.0f / 4.0f;
+        const float m2 = 2523.0f / 4096.0f * 128.0f;
+        const float c1 = 3424.0f / 4096.0f;
+        const float c2 = 2413.0f / 4096.0f * 32.0f;
+        const float c3 = 2392.0f / 4096.0f * 32.0f;
+
+        float ePow = MathF.Pow(normalized, m1);
+        float numerator = c1 + c2 * ePow;
+        float denominator = 1.0f + c3 * ePow;
+        return MathF.Pow(numerator / denominator, m2);
+    }
+
+    /// <summary>
+    /// Decodes a PQ-encoded value back to a normalized linear value (1.0 = 10,000 nits).
+    /// </summary>
+    public static float PqDecode(float pq)
+    {
+        if (pq <= 0.0f)
+            return 0.0f;
+
+        const float m1 = 2610.0f / 4096.0f / 4.0f;
+        const float m2 = 2523.0f / 4096.0f * 128.0f;
+        const float c1 = 3424.0f / 4096.0f;
+        const float c2 = 2413.0f / 4096.0f * 32.0f;
+        const float c3 = 2392.0f / 4096.0f * 32.0f;
+
+        float nPow = MathF.Pow(pq, 1.0f / m2);
+        float numerator = MathF.Max(nPow - c1, 0.0f);
+        float denominator = c2 - c3 * nPow;
+        return denominator <= 0.0f
+            ? 0.0f
+            : MathF.Pow(numerator / denominator, 1.0f / m1);
+    }
+
+    /// <summary>
+    /// Converts a luminance in nits to a PQ-encoded value.
+    /// </summary>
+    public static float NitsToPqCodeValue(float nits) => PqEncode(nits / 10_000.0f);
+
+    /// <summary>
+    /// Converts a PQ-encoded value to luminance in nits.
+    /// </summary>
+    public static float PqCodeValueToNits(float pq) => PqDecode(pq) * 10_000.0f;
 }

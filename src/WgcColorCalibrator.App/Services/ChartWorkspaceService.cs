@@ -53,6 +53,8 @@ public sealed class ChartWorkspaceService
 
     public RenderOutputMode CurrentOutputMode { get; set; }
 
+    public ToneMappingMode CurrentToneMappingMode { get; set; }
+
     public ToneMappingParameters CurrentToneMappingParameters { get; set; }
 
     public HdrUnsupportedBehavior HdrUnsupportedBehavior { get; set; }
@@ -79,6 +81,7 @@ public sealed class ChartWorkspaceService
         CurrentPlacements = placements;
         CurrentOutputMode = options.OutputMode;
         CurrentToneMappingParameters = options.ToneMappingParameters ?? ToneMappingParameters.Default;
+        CurrentToneMappingMode = options.ToneMappingMode;
         CurrentSession = null;
 
         NotifyStateChanged();
@@ -101,33 +104,16 @@ public sealed class ChartWorkspaceService
         _chartWindow.SetChartSize(intendedPhysicalSize, _chartWindow.GetRasterizationScale());
 
         DisplayOutputMetadata displayMetadata = _displayOutputProbe.Probe(_chartWindow.WindowHandle);
-        RenderOutputMode resolvedOutputMode = ResolveOutputMode(CurrentOutputMode, displayMetadata);
-        bool allowHdrClipping = resolvedOutputMode != RenderOutputMode.SdrSrgb &&
-                                CurrentOutputMode != RenderOutputMode.SdrSrgb &&
-                                HdrUnsupportedBehavior == HdrUnsupportedBehavior.AllowClippingExperiment;
+        var warnings = new List<string>();
+        bool allowHdrClippingExperiment = CurrentOutputMode != RenderOutputMode.SdrSrgb &&
+                                          HdrUnsupportedBehavior == HdrUnsupportedBehavior.AllowClippingExperiment;
+        OutputModeResolution resolution = OutputModeResolver.ResolveDetailed(
+            CurrentOutputMode,
+            displayMetadata,
+            allowHdrClippingExperiment,
+            warnings);
 
-        RenderChartWindow(_chartWindow, resolvedOutputMode, allowHdrClipping, displayMetadata);
-    }
-
-    private RenderOutputMode ResolveOutputMode(RenderOutputMode requested, DisplayOutputMetadata metadata)
-    {
-        if (requested == RenderOutputMode.SdrSrgb)
-        {
-            return requested;
-        }
-
-        if (metadata.HdrActive)
-        {
-            return requested;
-        }
-
-        return HdrUnsupportedBehavior switch
-        {
-            HdrUnsupportedBehavior.SwitchToSdr => RenderOutputMode.SdrSrgb,
-            HdrUnsupportedBehavior.AllowClippingExperiment => requested,
-            _ => throw new InvalidOperationException(
-                "HDR is not active on the target display. Choose Switch to SDR or allow the clipping experiment.")
-        };
+        RenderChartWindow(_chartWindow, resolution, CurrentToneMappingMode, warnings);
     }
 
     public void CloseChartWindow()
@@ -149,11 +135,16 @@ public sealed class ChartWorkspaceService
         if (_chartWindow is not null)
         {
             DisplayOutputMetadata metadata = _displayOutputProbe.Probe(_chartWindow.WindowHandle);
-            RenderOutputMode resolvedOutputMode = ResolveOutputMode(CurrentOutputMode, metadata);
-            bool allowHdrClipping = resolvedOutputMode != RenderOutputMode.SdrSrgb &&
-                                    CurrentOutputMode != RenderOutputMode.SdrSrgb &&
-                                    HdrUnsupportedBehavior == HdrUnsupportedBehavior.AllowClippingExperiment;
-            RenderChartWindow(_chartWindow, resolvedOutputMode, allowHdrClipping, metadata);
+            var warnings = new List<string>();
+            bool allowHdrClippingExperiment = CurrentOutputMode != RenderOutputMode.SdrSrgb &&
+                                              HdrUnsupportedBehavior == HdrUnsupportedBehavior.AllowClippingExperiment;
+            OutputModeResolution resolution = OutputModeResolver.ResolveDetailed(
+                CurrentOutputMode,
+                metadata,
+                allowHdrClippingExperiment,
+                warnings);
+
+            RenderChartWindow(_chartWindow, resolution, CurrentToneMappingMode, warnings);
         }
 
         NotifyStateChanged();
@@ -205,15 +196,16 @@ public sealed class ChartWorkspaceService
         CurrentPlacements = ChartLayoutEngine.CreatePlacements(chart);
         CurrentOutputMode = chart.RenderingParameters?.RequestedOutputMode ?? RenderOutputMode.SdrSrgb;
         CurrentToneMappingParameters = chart.RenderingParameters?.ToneMappingParameters ?? ToneMappingParameters.Default;
+        CurrentToneMappingMode = chart.RenderingParameters?.ToneMappingMode ?? ToneMappingMode.DirectScRgb;
         CurrentSession = null;
         NotifyStateChanged();
     }
 
     private void RenderChartWindow(
         ChartWindow window,
-        RenderOutputMode outputMode,
-        bool allowHdrClippingExperiment,
-        DisplayOutputMetadata displayOutputMetadata)
+        OutputModeResolution resolution,
+        ToneMappingMode toneMappingMode,
+        IReadOnlyList<string> warnings)
     {
         if (CurrentChart is null || CurrentPlacements is null)
         {
@@ -225,10 +217,12 @@ public sealed class ChartWorkspaceService
             CurrentPlacements,
             window.GetRasterizationScale(),
             IsDebugOverlayEnabled,
-            outputMode,
+            resolution.RequestedMode,
+            resolution.ActualMode,
             CurrentToneMappingParameters,
-            displayOutputMetadata,
-            allowHdrClippingExperiment);
+            resolution.DisplayOutput,
+            HdrUnsupportedBehavior == HdrUnsupportedBehavior.AllowClippingExperiment,
+            warnings);
 
         CurrentSession = window.Render(_renderer, options);
     }

@@ -11,7 +11,9 @@ public sealed record ChartRenderOptions(
     IReadOnlyList<PatchPlacement> Placements,
     double RasterizationScale,
     bool DebugOverlayEnabled,
-    RenderOutputMode OutputMode,
+    RenderOutputMode RequestedOutputMode,
+    RenderOutputMode ActualOutputMode,
     ToneMappingParameters ToneMappingParameters,
     DisplayOutputMetadata? DisplayOutput = null,
-    bool AllowHdrClippingExperiment = false);
+    bool AllowHdrClippingExperiment = false,
+    IReadOnlyList<string>? Warnings = null);

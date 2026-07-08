@@ -44,7 +44,8 @@ public sealed class ManualSingleColorChartProvider : IChartProvider
             options.OutputMode,
             options.ToneMappingParameters ?? ToneMappingParameters.Default,
             ColorSpaceConverter.ScrgbReferenceWhiteNits,
-            sourceEncoding);
+            sourceEncoding,
+            options.ToneMappingMode);
 
         return new ChartDefinition(
             Id,

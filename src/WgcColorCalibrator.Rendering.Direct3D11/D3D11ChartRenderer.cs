@@ -43,7 +43,7 @@ public sealed class D3D11ChartRenderer : IChartRenderer, IDisposable
             throw new ArgumentException("Host must be a SwapChainPanel.", nameof(host));
         }
 
-        var warnings = new List<string>();
+        var warnings = new List<string>(options.Warnings ?? Array.Empty<string>());
         SizeInt intendedPhysicalSize = CalculateIntendedPhysicalSize(placements, chart.Layout);
         SizeInt actualPhysicalSize = GetActualPhysicalSize(panel, options.RasterizationScale);
 
@@ -58,29 +58,17 @@ public sealed class D3D11ChartRenderer : IChartRenderer, IDisposable
             warnings.Add("debug-overlay-enabled");
         }
 
-        DisplayOutputMetadata displayMetadata = DisplayOutputMetadata.Unknown;
-        SwapChainPanelHost hostWrapper = GetOrCreateHost(panel);
-
-        // First create the swapchain at the requested format so we can probe the containing output.
-        (Format requestedFormat, ColorSpaceType requestedColorSpace) = GetFormatAndColorSpace(options.OutputMode);
-        hostWrapper.EnsureSize(actualPhysicalSize.Width, actualPhysicalSize.Height, requestedFormat, requestedColorSpace);
-
-        using (ID3D11Texture2D backBuffer = hostWrapper.GetBackBuffer())
-        {
-            displayMetadata = ProbeDisplayMetadata(hostWrapper.SwapChain);
-        }
-
-        RenderOutputMode actualOutputMode = OutputModeResolver.Resolve(
-            options.OutputMode,
-            displayMetadata,
-            options.AllowHdrClippingExperiment,
-            warnings);
+        RenderOutputMode requestedOutputMode = options.RequestedOutputMode;
+        RenderOutputMode actualOutputMode = options.ActualOutputMode;
         (Format format, ColorSpaceType colorSpace) = GetFormatAndColorSpace(actualOutputMode);
 
-        // Recreate swapchain if the resolved format differs from the requested one.
-        if (format != requestedFormat)
+        SwapChainPanelHost hostWrapper = GetOrCreateHost(panel);
+        hostWrapper.EnsureSize(actualPhysicalSize.Width, actualPhysicalSize.Height, format, colorSpace);
+
+        DisplayOutputMetadata displayMetadata = options.DisplayOutput ?? DisplayOutputMetadata.Unknown;
+        if (displayMetadata == DisplayOutputMetadata.Unknown)
         {
-            hostWrapper.EnsureSize(actualPhysicalSize.Width, actualPhysicalSize.Height, format, colorSpace);
+            displayMetadata = ProbeDisplayMetadata(hostWrapper.SwapChain);
         }
 
         ToneMappingMode toneMappingMode = chart.RenderingParameters?.ToneMappingMode ?? ToneMappingMode.DirectScRgb;
@@ -96,7 +84,7 @@ public sealed class D3D11ChartRenderer : IChartRenderer, IDisposable
             RendererId,
             chart,
             placements,
-            options.OutputMode,
+            requestedOutputMode,
             actualOutputMode,
             format.ToString(),
             colorSpace.ToString(),

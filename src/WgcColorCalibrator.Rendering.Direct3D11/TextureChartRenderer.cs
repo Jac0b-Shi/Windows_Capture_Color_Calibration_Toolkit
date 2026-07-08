@@ -224,6 +224,17 @@ public sealed class TextureChartRenderer
                     break;
                 }
 
+            case Format.R10G10B10A2_UNorm:
+                {
+                    uint r = (uint)Math.Clamp(color.X * 1023.0f + 0.5f, 0, 1023);
+                    uint g = (uint)Math.Clamp(color.Y * 1023.0f + 0.5f, 0, 1023);
+                    uint b = (uint)Math.Clamp(color.Z * 1023.0f + 0.5f, 0, 1023);
+                    uint a = (uint)Math.Clamp(color.W * 3.0f + 0.5f, 0, 3);
+                    *(uint*)pixel = (a << 30) | (b << 20) | (g << 10) | r;
+                    pixel += 4;
+                    break;
+                }
+
             default:
                 throw new NotSupportedException($"Format {format} is not supported in this renderer.");
         }
@@ -242,6 +253,7 @@ public sealed class TextureChartRenderer
                     toneMapper.Map(SrgbToLinear(patch.ExpectedColor), parameters),
                 _ => throw new NotSupportedException($"Source encoding {patch.SourceEncoding} is not supported for HDR output.")
             },
+            Format.R10G10B10A2_UNorm => MapColorToHdr10(patch, toneMapper, parameters),
             _ => throw new NotSupportedException($"Format {format} is not supported in this renderer.")
         };
     }
@@ -252,8 +264,39 @@ public sealed class TextureChartRenderer
         {
             Format.B8G8R8A8_UNorm => PackSdrColor(color.R, color.G, color.B, 255),
             Format.R16G16B16A16_Float => toneMapper.Map(SrgbToLinear(color), parameters),
+            Format.R10G10B10A2_UNorm => MapSdrColorToHdr10(color, toneMapper, parameters),
             _ => throw new NotSupportedException($"Format {format} is not supported in this renderer.")
         };
+    }
+
+    private static Vector4 MapColorToHdr10(ColorPatchDefinition patch, IToneMapper toneMapper, ToneMappingParameters parameters)
+    {
+        Vector4 linear = patch.SourceEncoding switch
+        {
+            ColorEncoding.LinearScRgb when patch.HdrColor.HasValue =>
+                toneMapper.Map(patch.HdrColor.Value.ToVector4(), parameters),
+            ColorEncoding.SrgbEncoded =>
+                toneMapper.Map(SrgbToLinear(patch.ExpectedColor), parameters),
+            _ => throw new NotSupportedException($"Source encoding {patch.SourceEncoding} is not supported for HDR10 output.")
+        };
+
+        return LinearToHdr10(linear);
+    }
+
+    private static Vector4 MapSdrColorToHdr10(Rgb8 color, IToneMapper toneMapper, ToneMappingParameters parameters)
+    {
+        Vector4 linear = toneMapper.Map(SrgbToLinear(color), parameters);
+        return LinearToHdr10(linear);
+    }
+
+    private static Vector4 LinearToHdr10(Vector4 linear)
+    {
+        Vector3 rec2020 = ColorSpaceConverter.LinearScRgbToRec2020(new Vector3(linear.X, linear.Y, linear.Z));
+        return new Vector4(
+            ColorSpaceConverter.NitsToPqCodeValue(rec2020.X * 80.0f),
+            ColorSpaceConverter.NitsToPqCodeValue(rec2020.Y * 80.0f),
+            ColorSpaceConverter.NitsToPqCodeValue(rec2020.Z * 80.0f),
+            1.0f);
     }
 
     private static Vector4 SrgbToLinear(Rgb8 color)
@@ -286,6 +329,7 @@ public sealed class TextureChartRenderer
         {
             Format.B8G8R8A8_UNorm => 4,
             Format.R16G16B16A16_Float => 8,
+            Format.R10G10B10A2_UNorm => 4,
             _ => throw new NotSupportedException($"Format {format} is not supported in this renderer.")
         };
     }

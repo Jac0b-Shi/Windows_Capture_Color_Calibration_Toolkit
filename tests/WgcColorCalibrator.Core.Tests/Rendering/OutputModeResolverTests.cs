@@ -77,16 +77,35 @@ public sealed class OutputModeResolverTests
     }
 
     [Fact]
-    public void Resolve_Hdr10Requested_AddsExperimentalWarning()
+    public void ResolveDetailed_HdrFallback_RecordsRequestedAndActualModes()
     {
         var warnings = new List<string>();
-        RenderOutputMode actual = OutputModeResolver.Resolve(
-            RenderOutputMode.Hdr10,
-            new DisplayOutputMetadata("Test", hdrSupported: true, hdrActive: true, 1000, 400, 0.1),
+        var metadata = new DisplayOutputMetadata("Test", hdrSupported: true, hdrActive: false, 1000, 400, 0.1);
+        OutputModeResolution resolution = OutputModeResolver.ResolveDetailed(
+            RenderOutputMode.HdrScRgb,
+            metadata,
             allowHdrClippingExperiment: false,
             warnings);
 
-        Assert.Equal(RenderOutputMode.Hdr10, actual);
-        Assert.Contains(warnings, w => w.Contains("hdr10-experimental"));
+        Assert.Equal(RenderOutputMode.HdrScRgb, resolution.RequestedMode);
+        Assert.Equal(RenderOutputMode.SdrSrgb, resolution.ActualMode);
+        Assert.Equal(metadata, resolution.DisplayOutput);
+        Assert.Contains(resolution.Warnings, w => w.Contains("system-hdr-disabled"));
+    }
+
+    [Fact]
+    public void ResolveDetailed_HdrActive_RequestedEqualsActual()
+    {
+        var warnings = new List<string>();
+        var metadata = new DisplayOutputMetadata("Test", hdrSupported: true, hdrActive: true, 1000, 400, 0.1);
+        OutputModeResolution resolution = OutputModeResolver.ResolveDetailed(
+            RenderOutputMode.HdrScRgb,
+            metadata,
+            allowHdrClippingExperiment: false,
+            warnings);
+
+        Assert.Equal(RenderOutputMode.HdrScRgb, resolution.RequestedMode);
+        Assert.Equal(RenderOutputMode.HdrScRgb, resolution.ActualMode);
+        Assert.Empty(resolution.Warnings);
     }
 }

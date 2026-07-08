@@ -54,12 +54,13 @@ public sealed class XamlChartPreviewRenderer : IChartRenderer
         target.Children.Add(panel);
 
         // Preview renderer does not support real output mode tracking; it is always SDR.
+        RenderOutputMode previewMode = RenderOutputMode.SdrSrgb;
         return new ChartRenderSession(
             RendererId,
             chart,
             placements,
-            options.OutputMode,
-            RenderOutputMode.SdrSrgb,
+            previewMode,
+            previewMode,
             "B8G8R8A8_UNORM",
             "RGB_FULL_G22_NONE_P709",
             false,

@@ -42,9 +42,25 @@ public sealed partial class ChartPage : Page
 
     private void ChartTypeComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
+        UpdateManualPanelVisibility();
         string tag = GetSelectedTag(ChartTypeComboBox) ?? "manual-single-color";
-        ManualPanel.Visibility = tag == "manual-single-color" ? Visibility.Visible : Visibility.Collapsed;
         GrayscalePanel.Visibility = tag == "grayscale" ? Visibility.Visible : Visibility.Collapsed;
+    }
+
+    private void OutputModeComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        UpdateManualPanelVisibility();
+    }
+
+    private void UpdateManualPanelVisibility()
+    {
+        string chartType = GetSelectedTag(ChartTypeComboBox) ?? "manual-single-color";
+        RenderOutputMode outputMode = ReadOutputMode();
+        bool isManualSingleColor = chartType == "manual-single-color";
+        bool isHdr = outputMode == RenderOutputMode.HdrScRgb || outputMode == RenderOutputMode.Hdr10;
+
+        SdrManualPanel.Visibility = isManualSingleColor && !isHdr ? Visibility.Visible : Visibility.Collapsed;
+        HdrManualPanel.Visibility = isManualSingleColor && isHdr ? Visibility.Visible : Visibility.Collapsed;
     }
 
     private void ManualColorHexTextBox_LostFocus(object sender, RoutedEventArgs e)
@@ -83,6 +99,7 @@ public sealed partial class ChartPage : Page
             ChartLayoutDefinition layout = ReadLayoutDefinition();
             RenderOutputMode outputMode = ReadOutputMode();
             ToneMappingParameters toneMapping = ReadToneMappingParameters();
+            ToneMappingMode toneMappingMode = ReadToneMappingMode();
 
             Rgb8? manualColor = null;
             HdrColor? manualHdrColor = null;
@@ -114,7 +131,8 @@ public sealed partial class ChartPage : Page
                 layout,
                 outputMode,
                 toneMapping,
-                manualHdrColor);
+                manualHdrColor,
+                toneMappingMode);
 
             _workspaceService.GenerateChart(providerId, options);
             RenderPreview();
@@ -252,6 +270,7 @@ public sealed partial class ChartPage : Page
             1.0,
             false,
             RenderOutputMode.SdrSrgb,
+            RenderOutputMode.SdrSrgb,
             ToneMappingParameters.Default);
 
         _previewRenderer.Render(
@@ -291,6 +310,12 @@ public sealed partial class ChartPage : Page
         return Enum.Parse<RenderOutputMode>(tag);
     }
 
+    private ToneMappingMode ReadToneMappingMode()
+    {
+        string tag = GetSelectedTag(ToneMappingModeComboBox) ?? "DirectScRgb";
+        return Enum.Parse<ToneMappingMode>(tag);
+    }
+
     private HdrUnsupportedBehavior ReadHdrUnsupportedBehavior()
     {
         string tag = GetSelectedTag(HdrBehaviorComboBox) ?? "Cancel";
@@ -307,9 +332,9 @@ public sealed partial class ChartPage : Page
 
     private HdrColor ReadHdrColorFromManualInputs()
     {
-        double r = GetNumberBoxValue(ManualRedNumberBox, 255.0);
-        double g = GetNumberBoxValue(ManualGreenNumberBox, 255.0);
-        double b = GetNumberBoxValue(ManualBlueNumberBox, 255.0);
+        double r = GetNumberBoxValue(ManualHdrRedNumberBox, 1.0);
+        double g = GetNumberBoxValue(ManualHdrGreenNumberBox, 1.0);
+        double b = GetNumberBoxValue(ManualHdrBlueNumberBox, 1.0);
         var color = new HdrColor((float)r, (float)g, (float)b);
         if (!color.IsFinite || !color.IsNonNegative)
         {
@@ -317,6 +342,14 @@ public sealed partial class ChartPage : Page
         }
 
         return color;
+    }
+
+    private void ManualHdrColorNumberBox_ValueChanged(NumberBox sender, NumberBoxValueChangedEventArgs args)
+    {
+        double r = GetNumberBoxValue(ManualHdrRedNumberBox, 1.0);
+        double g = GetNumberBoxValue(ManualHdrGreenNumberBox, 1.0);
+        double b = GetNumberBoxValue(ManualHdrBlueNumberBox, 1.0);
+        ManualHdrColorNormalizedTextBlock.Text = $"R={r} G={g} B={b}";
     }
 
     private static double GetNumberBoxValue(NumberBox box, double defaultValue) =>

@@ -1,5 +1,6 @@
 using WgcColorCalibrator.Core.Charts;
 using WgcColorCalibrator.Core.Colors;
+using WgcColorCalibrator.Core.Rendering;
 
 namespace WgcColorCalibrator.Core.Tests.Charts;
 
@@ -18,6 +19,25 @@ public sealed class ChartProviderTests
         Assert.Single(chart.Patches);
         Assert.Equal("manual-ffffff", chart.Patches[0].Id);
         Assert.Equal("#FFFFFF", chart.Patches[0].Label);
+    }
+
+    [Fact]
+    public void ManualSingleColorProvider_HdrColor_ProducesLinearScRgbPatch()
+    {
+        var provider = new ManualSingleColorChartProvider();
+        var hdrColor = new HdrColor(1.0f, 2.0f, 3.0f);
+        ChartDefinition chart = provider.Create(ChartGenerationOptions.Default with
+        {
+            ManualColor = new Rgb8(255, 255, 255),
+            ManualHdrColor = hdrColor,
+            OutputMode = RenderOutputMode.HdrScRgb
+        });
+
+        Assert.Single(chart.Patches);
+        Assert.Equal(ColorEncoding.LinearScRgb, chart.Patches[0].SourceEncoding);
+        Assert.True(chart.Patches[0].HdrColor.HasValue);
+        Assert.Equal(hdrColor, chart.Patches[0].HdrColor.Value);
+        Assert.Equal(ToneMappingMode.DirectScRgb, chart.RenderingParameters?.ToneMappingMode);
     }
 
     [Fact]
