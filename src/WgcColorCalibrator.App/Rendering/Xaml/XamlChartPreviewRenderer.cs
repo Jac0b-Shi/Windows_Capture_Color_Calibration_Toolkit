@@ -30,9 +30,23 @@ public sealed class XamlChartPreviewRenderer : IChartRenderer
             throw new ArgumentException("Host must be a Panel.", nameof(host));
         }
 
-        var panel = new Canvas();
-        var background = new SolidColorBrush(ToWindowsColor(chart.Layout.WindowBackground));
-        panel.Background = background;
+        int physicalWidth = placements.Count == 0
+            ? chart.Layout.Border * 2
+            : placements.Max(p => p.Bounds.X + p.Bounds.Width) + chart.Layout.Border;
+
+        int physicalHeight = placements.Count == 0
+            ? chart.Layout.Border * 2
+            : placements.Max(p => p.Bounds.Y + p.Bounds.Height) + chart.Layout.Border;
+
+        double logicalWidth = PhysicalPixelConverter.ToDip(physicalWidth, options.RasterizationScale);
+        double logicalHeight = PhysicalPixelConverter.ToDip(physicalHeight, options.RasterizationScale);
+
+        var canvas = new Canvas
+        {
+            Width = logicalWidth,
+            Height = logicalHeight,
+            Background = new SolidColorBrush(ToWindowsColor(chart.Layout.WindowBackground))
+        };
 
         foreach (PatchPlacement placement in placements)
         {
@@ -47,11 +61,20 @@ public sealed class XamlChartPreviewRenderer : IChartRenderer
             Canvas.SetLeft(rect, PhysicalPixelConverter.ToDip(placement.Bounds.X, options.RasterizationScale));
             Canvas.SetTop(rect, PhysicalPixelConverter.ToDip(placement.Bounds.Y, options.RasterizationScale));
 
-            panel.Children.Add(rect);
+            canvas.Children.Add(rect);
         }
 
+        var viewbox = new Viewbox
+        {
+            Stretch = Stretch.Uniform,
+            StretchDirection = StretchDirection.DownOnly,
+            HorizontalAlignment = HorizontalAlignment.Left,
+            VerticalAlignment = VerticalAlignment.Top,
+            Child = canvas
+        };
+
         target.Children.Clear();
-        target.Children.Add(panel);
+        target.Children.Add(viewbox);
 
         // Preview renderer does not support real output mode tracking; it is always SDR.
         RenderOutputMode previewMode = RenderOutputMode.SdrSrgb;
@@ -66,10 +89,10 @@ public sealed class XamlChartPreviewRenderer : IChartRenderer
             "RGB_FULL_G22_NONE_P709",
             false,
             options.RasterizationScale,
-            new Size(0, 0),
-            new SizeInt(0, 0),
-            new SizeInt(0, 0),
-            new SizeInt(0, 0),
+            new Size(logicalWidth, logicalHeight),
+            new SizeInt(physicalWidth, physicalHeight),
+            new SizeInt(physicalWidth, physicalHeight),
+            new SizeInt(physicalWidth, physicalHeight),
             new Point(0, 0),
             options.ToneMappingParameters,
             DisplayOutputMetadata.Unknown,
