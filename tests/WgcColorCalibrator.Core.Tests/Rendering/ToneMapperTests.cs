@@ -86,4 +86,19 @@ public class ToneMapperTests
         // 80 nits -> scale 1.0, exposure 1 EV -> scale 2.0, total 2.0
         Assert.Equal(new Vector4(2.0f, 2.0f, 2.0f, 1.0f), output);
     }
+
+    [Theory]
+    [InlineData(ToneMappingMode.DirectScRgb, "direct-scrgb")]
+    [InlineData(ToneMappingMode.ReferenceWhiteScaled, "reference-white-scaled")]
+    public void ToneMapperId_MatchesMode(ToneMappingMode mode, string expectedId)
+    {
+        IToneMapper mapper = mode switch
+        {
+            ToneMappingMode.DirectScRgb => new ToneMapperDirectScRgb(),
+            ToneMappingMode.ReferenceWhiteScaled => new ToneMapperReferenceWhiteScaled(),
+            _ => throw new NotSupportedException()
+        };
+
+        Assert.Equal(expectedId, mapper.Id);
+    }
 }

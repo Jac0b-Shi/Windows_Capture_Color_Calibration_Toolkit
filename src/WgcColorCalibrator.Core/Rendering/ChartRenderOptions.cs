@@ -16,4 +16,6 @@ public sealed record ChartRenderOptions(
     ToneMappingParameters ToneMappingParameters,
     DisplayOutputMetadata? DisplayOutput = null,
     bool AllowHdrClippingExperiment = false,
-    IReadOnlyList<string>? Warnings = null);
+    IReadOnlyList<string>? Warnings = null,
+    SizeInt? ClientPhysicalSize = null,
+    Point? ContentOrigin = null);

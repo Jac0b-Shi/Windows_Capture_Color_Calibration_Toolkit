@@ -10,6 +10,7 @@ public sealed record ChartRenderSession
 {
     public ChartRenderSession(
         string rendererId,
+        string? toneMapperId,
         ChartDefinition chart,
         IReadOnlyList<PatchPlacement> placements,
         RenderOutputMode requestedOutputMode,
@@ -21,6 +22,8 @@ public sealed record ChartRenderSession
         Size logicalSize,
         SizeInt intendedPhysicalSize,
         SizeInt actualPhysicalSize,
+        SizeInt clientPhysicalSize,
+        Point contentOrigin,
         ToneMappingParameters toneMappingParameters,
         DisplayOutputMetadata? displayOutput,
         IReadOnlyList<string> warnings,
@@ -41,6 +44,7 @@ public sealed record ChartRenderSession
         ArgumentNullException.ThrowIfNull(warnings);
 
         RendererId = rendererId;
+        ToneMapperId = toneMapperId;
         Chart = chart;
         Placements = placements;
         RequestedOutputMode = requestedOutputMode;
@@ -52,6 +56,8 @@ public sealed record ChartRenderSession
         LogicalSize = logicalSize;
         IntendedPhysicalSize = intendedPhysicalSize;
         ActualPhysicalSize = actualPhysicalSize;
+        ClientPhysicalSize = clientPhysicalSize;
+        ContentOrigin = contentOrigin;
         ToneMappingParameters = toneMappingParameters;
         DisplayOutput = displayOutput;
         Warnings = warnings;
@@ -64,6 +70,8 @@ public sealed record ChartRenderSession
     }
 
     public string RendererId { get; }
+
+    public string? ToneMapperId { get; }
 
     public ChartDefinition Chart { get; }
 
@@ -86,6 +94,10 @@ public sealed record ChartRenderSession
     public SizeInt IntendedPhysicalSize { get; }
 
     public SizeInt ActualPhysicalSize { get; }
+
+    public SizeInt ClientPhysicalSize { get; }
+
+    public Point ContentOrigin { get; }
 
     public ToneMappingParameters ToneMappingParameters { get; }
 
@@ -117,3 +129,8 @@ public readonly record struct Size(double Width, double Height);
 /// Integer physical pixel size.
 /// </summary>
 public readonly record struct SizeInt(int Width, int Height);
+
+/// <summary>
+/// Content origin point in physical pixels.
+/// </summary>
+public readonly record struct Point(double X, double Y);

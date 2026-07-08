@@ -4,6 +4,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using System.Runtime.InteropServices;
 using WinRT.Interop;
+using WgcColorCalibrator.App.Services;
 using WgcColorCalibrator.Core.Rendering;
 
 namespace WgcColorCalibrator.App.Windows;
@@ -18,6 +19,7 @@ public sealed partial class ChartWindow : Window
     private bool _surfaceReadyRaised;
     private bool _appWindowChangedSubscribed;
     private SizeInt _intendedPhysicalSize;
+    private Point _contentOrigin;
     private nint _lastMonitor;
     private double _lastScale = 1.0;
     private DispatcherQueueTimer? _hotplugTimer;
@@ -25,6 +27,7 @@ public sealed partial class ChartWindow : Window
     public ChartWindow()
     {
         InitializeComponent();
+        WindowIconService.ApplyIcon(this);
 
         var resourceLoader = new Microsoft.Windows.ApplicationModel.Resources.ResourceLoader();
         Title = resourceLoader.GetString("ChartWindowTitle");
@@ -62,6 +65,8 @@ public sealed partial class ChartWindow : Window
             p.IsMaximizable = false;
         }
 
+        UpdatePanelLogicalSize();
+
         AppWindow.ResizeClient(new global::Windows.Graphics.SizeInt32
         {
             Width = physicalSize.Width,
@@ -79,6 +84,18 @@ public sealed partial class ChartWindow : Window
 
     public double GetRasterizationScale() =>
         ChartSwapChainPanel.XamlRoot?.RasterizationScale ?? 1.0;
+
+    public SizeInt ClientPhysicalSize
+    {
+        get
+        {
+        global::Windows.Graphics.SizeInt32 clientSize = AppWindow.ClientSize;
+        _contentOrigin = new Point(0, 0);
+            return new SizeInt(clientSize.Width, clientSize.Height);
+        }
+    }
+
+    public Point ContentOrigin => _contentOrigin;
 
     public ChartRenderSession Render(IChartRenderer renderer, ChartRenderOptions options)
     {
@@ -133,8 +150,18 @@ public sealed partial class ChartWindow : Window
             return;
         }
 
+        _surfaceReadyRaised = false;
         _lastScale = GetRasterizationScale();
-        DisplayChanged?.Invoke(this, EventArgs.Empty);
+        UpdatePanelLogicalSize();
+        CheckSizeSettled();
+    }
+
+    private void UpdatePanelLogicalSize()
+    {
+        (double scaleX, double scaleY) = GetCurrentCompositionScale();
+
+        ChartSwapChainPanel.Width = _intendedPhysicalSize.Width / scaleX;
+        ChartSwapChainPanel.Height = _intendedPhysicalSize.Height / scaleY;
     }
 
     private void CheckDisplayChanged()
@@ -151,7 +178,11 @@ public sealed partial class ChartWindow : Window
         {
             _lastMonitor = currentMonitor;
             _lastScale = currentScale;
-            DisplayChanged?.Invoke(this, EventArgs.Empty);
+
+            if (_surfaceReadyRaised)
+            {
+                DisplayChanged?.Invoke(this, EventArgs.Empty);
+            }
         }
     }
 
@@ -172,31 +203,38 @@ public sealed partial class ChartWindow : Window
             return;
         }
 
-        double scaleX = ChartSwapChainPanel.CompositionScaleX > 0
-            ? ChartSwapChainPanel.CompositionScaleX
-            : ChartSwapChainPanel.XamlRoot.RasterizationScale;
-        double scaleY = ChartSwapChainPanel.CompositionScaleY > 0
-            ? ChartSwapChainPanel.CompositionScaleY
-            : ChartSwapChainPanel.XamlRoot.RasterizationScale;
+        (double scaleX, double scaleY) = GetCurrentCompositionScale();
 
         int panelPhysicalWidth = (int)Math.Round(ChartSwapChainPanel.ActualWidth * scaleX);
         int panelPhysicalHeight = (int)Math.Round(ChartSwapChainPanel.ActualHeight * scaleY);
 
         global::Windows.Graphics.SizeInt32 clientSize = AppWindow.ClientSize;
 
-        bool clientSizeMatches =
-            Math.Abs(clientSize.Width - _intendedPhysicalSize.Width) <= 1 &&
-            Math.Abs(clientSize.Height - _intendedPhysicalSize.Height) <= 1;
+        bool clientSizeLargeEnough =
+            clientSize.Width >= _intendedPhysicalSize.Width - 1 &&
+            clientSize.Height >= _intendedPhysicalSize.Height - 1;
 
         bool panelSizeMatches =
             Math.Abs(panelPhysicalWidth - _intendedPhysicalSize.Width) <= 1 &&
             Math.Abs(panelPhysicalHeight - _intendedPhysicalSize.Height) <= 1;
 
-        if (clientSizeMatches && panelSizeMatches)
+        if (clientSizeLargeEnough && panelSizeMatches)
         {
             _surfaceReadyRaised = true;
             SurfaceReady?.Invoke(this, EventArgs.Empty);
         }
+    }
+
+    private (double ScaleX, double ScaleY) GetCurrentCompositionScale()
+    {
+        double fallbackScale = ChartSwapChainPanel.XamlRoot?.RasterizationScale ?? 1.0;
+        double scaleX = ChartSwapChainPanel.CompositionScaleX > 0
+            ? ChartSwapChainPanel.CompositionScaleX
+            : fallbackScale;
+        double scaleY = ChartSwapChainPanel.CompositionScaleY > 0
+            ? ChartSwapChainPanel.CompositionScaleY
+            : fallbackScale;
+        return (scaleX, scaleY);
     }
 
     private void OnClosed(object sender, WindowEventArgs args)

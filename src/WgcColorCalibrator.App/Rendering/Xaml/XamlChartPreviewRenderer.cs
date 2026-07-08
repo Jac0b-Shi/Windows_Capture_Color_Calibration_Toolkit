@@ -57,6 +57,7 @@ public sealed class XamlChartPreviewRenderer : IChartRenderer
         RenderOutputMode previewMode = RenderOutputMode.SdrSrgb;
         return new ChartRenderSession(
             RendererId,
+            null,
             chart,
             placements,
             previewMode,
@@ -68,6 +69,8 @@ public sealed class XamlChartPreviewRenderer : IChartRenderer
             new Size(0, 0),
             new SizeInt(0, 0),
             new SizeInt(0, 0),
+            new SizeInt(0, 0),
+            new Point(0, 0),
             options.ToneMappingParameters,
             DisplayOutputMetadata.Unknown,
             ["xaml-preview-not-for-measurement"],

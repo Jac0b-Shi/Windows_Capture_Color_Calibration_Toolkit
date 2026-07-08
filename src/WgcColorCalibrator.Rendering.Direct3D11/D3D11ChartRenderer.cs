@@ -99,9 +99,12 @@ public sealed class D3D11ChartRenderer : IChartRenderer, IDisposable
         }
 
         string matrixTransform = $"ScaleX={1.0 / scaleX:F6}, ScaleY={1.0 / scaleY:F6}";
+        SizeInt clientPhysicalSize = options.ClientPhysicalSize ?? actualPhysicalSize;
+        Point contentOrigin = options.ContentOrigin ?? new Point(0, 0);
 
         return new ChartRenderSession(
             RendererId,
+            toneMapper.Id,
             chart,
             placements,
             requestedOutputMode,
@@ -113,6 +116,8 @@ public sealed class D3D11ChartRenderer : IChartRenderer, IDisposable
             new Size(panel.ActualWidth, panel.ActualHeight),
             intendedPhysicalSize,
             actualPhysicalSize,
+            clientPhysicalSize,
+            contentOrigin,
             options.ToneMappingParameters,
             displayMetadata,
             warnings,

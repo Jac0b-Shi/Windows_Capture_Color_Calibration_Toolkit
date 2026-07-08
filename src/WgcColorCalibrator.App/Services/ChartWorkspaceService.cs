@@ -254,7 +254,9 @@ public sealed class ChartWorkspaceService
             CurrentToneMappingParameters,
             resolution.DisplayOutput,
             HdrUnsupportedBehavior == HdrUnsupportedBehavior.AllowClippingExperiment,
-            warnings);
+            warnings,
+            window.ClientPhysicalSize,
+            window.ContentOrigin);
 
         CurrentSession = window.Render(_renderer, options);
     }
