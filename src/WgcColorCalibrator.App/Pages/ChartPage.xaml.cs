@@ -515,24 +515,21 @@ public sealed partial class ChartPage : Page
         ChartDefinition? chart = _workspaceService.CurrentChart;
         if (chart is null)
         {
+            SummaryTextBlock.Text = string.Empty;
+            DirtyInfoBar.IsOpen = _isDirty;
             StatusTextBlock.Text = _isDirty
                 ? _resourceLoader.GetString("ChartStatusParametersDirty")
                 : _resourceLoader.GetString("ChartStatusNoChart");
             return;
         }
 
+        SummaryTextBlock.Text = $"{_resourceLoader.GetString("ChartStatusChart")}: {chart.Name}, {chart.Patches.Count} patches, {_workspaceService.CurrentOutputMode}";
+        DirtyInfoBar.IsOpen = _isDirty;
+
         ChartRenderSession? session = _workspaceService.CurrentSession;
         if (session is null || session.DisplayOutput is null || session.DisplayOutput == DisplayOutputMetadata.Unknown)
         {
-            if (_isDirty)
-            {
-                StatusTextBlock.Text = _resourceLoader.GetString("ChartStatusParametersDirty");
-            }
-            else
-            {
-                StatusTextBlock.Text = $"{_resourceLoader.GetString("ChartStatusChart")}: {chart.Name}, {chart.Patches.Count} patches, {_workspaceService.CurrentOutputMode}";
-            }
-
+            StatusTextBlock.Text = string.Empty;
             HdrStatusTextBlock.Text = _resourceLoader.GetString("HdrStatusNotProbed");
             return;
         }
@@ -549,11 +546,6 @@ public sealed partial class ChartPage : Page
         if (session.Warnings.Count > 0)
         {
             statusText += $" | {string.Join("; ", session.Warnings)}";
-        }
-
-        if (_isDirty)
-        {
-            statusText += $" | {_resourceLoader.GetString("ChartStatusParametersDirty")}";
         }
 
         StatusTextBlock.Text = statusText;

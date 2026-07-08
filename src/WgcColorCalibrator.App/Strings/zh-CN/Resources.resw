@@ -369,6 +369,15 @@
   <data name="ChartStatusParametersDirty" xml:space="preserve">
     <value>参数已更改，请重新生成以应用。</value>
   </data>
+  <data name="ChartSummaryLabel.Text" xml:space="preserve">
+    <value>摘要</value>
+  </data>
+  <data name="DirtyInfoBar.Title" xml:space="preserve">
+    <value>参数已更改</value>
+  </data>
+  <data name="DirtyInfoBar.Message" xml:space="preserve">
+    <value>参数已更改，请重新生成以应用。</value>
+  </data>
   <data name="PatchSizePresetComboBox.Header" xml:space="preserve">
     <value>色块尺寸预设</value>
   </data>

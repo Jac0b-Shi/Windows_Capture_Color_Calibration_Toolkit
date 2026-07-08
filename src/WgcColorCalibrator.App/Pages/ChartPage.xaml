@@ -12,6 +12,7 @@
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
                 <RowDefinition Height="*" />
             </Grid.RowDefinitions>
             <Grid.ColumnDefinitions>
@@ -170,21 +171,47 @@
                 Grid.Column="0"
                 Grid.ColumnSpan="2"
                 Spacing="8">
+                <TextBlock x:Uid="ChartSummaryLabel" FontWeight="SemiBold" />
+                <TextBlock x:Name="SummaryTextBlock" TextWrapping="WrapWholeWords" />
+                <InfoBar
+                    x:Name="DirtyInfoBar"
+                    x:Uid="DirtyInfoBar"
+                    IsOpen="False"
+                    Severity="Informational" />
+            </StackPanel>
+
+            <StackPanel
+                Grid.Row="5"
+                Grid.Column="0"
+                Grid.ColumnSpan="2"
+                Spacing="12">
                 <TextBlock x:Uid="ChartPreviewLabel" FontWeight="SemiBold" />
-                <TextBlock x:Name="PreviewWarningTextBlock" x:Uid="PreviewWarningTextBlock" TextWrapping="WrapWholeWords" />
                 <Border
-                    x:Name="PreviewHostBorder"
-                    BorderBrush="{ThemeResource TextFillColorPrimaryBrush}"
+                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
                     BorderThickness="1"
+                    CornerRadius="8"
+                    Padding="16"
+                    Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
                     HorizontalAlignment="Left"
                     VerticalAlignment="Top">
-                    <Canvas x:Name="PreviewCanvas" />
+                    <StackPanel Spacing="12">
+                        <TextBlock x:Name="PreviewWarningTextBlock" x:Uid="PreviewWarningTextBlock" TextWrapping="WrapWholeWords" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                        <Border
+                            x:Name="PreviewHostBorder"
+                            BorderBrush="{ThemeResource TextFillColorPrimaryBrush}"
+                            BorderThickness="1"
+                            HorizontalAlignment="Left"
+                            VerticalAlignment="Top"
+                            Background="{ThemeResource SolidBackgroundFillColorTertiaryBrush}">
+                            <Canvas x:Name="PreviewCanvas" />
+                        </Border>
+                    </StackPanel>
                 </Border>
             </StackPanel>
 
             <TextBlock
                 x:Name="StatusTextBlock"
-                Grid.Row="5"
+                Grid.Row="6"
                 Grid.Column="0"
                 Grid.ColumnSpan="2"
                 TextWrapping="WrapWholeWords"

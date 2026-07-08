@@ -3,6 +3,7 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.Windows.ApplicationModel.Resources;
 using WinRT.Interop;
 using WgcColorCalibrator.App.Pages;
+using WgcColorCalibrator.App.Services;
 
 namespace WgcColorCalibrator.App;
 
@@ -11,6 +12,7 @@ public sealed partial class MainWindow : Window
     public MainWindow()
     {
         InitializeComponent();
+        WindowIconService.ApplyIcon(this);
 
         var resourceLoader = new ResourceLoader();
         Title = resourceLoader.GetString("MainWindowTitle");
