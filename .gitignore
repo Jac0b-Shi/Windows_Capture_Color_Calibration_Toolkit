@@ -483,3 +483,7 @@ $RECYCLE.BIN/
 
 # Workbuddy
 .workbuddy/
+
+# Agent-local planning artifacts
+.mimocode/
+
