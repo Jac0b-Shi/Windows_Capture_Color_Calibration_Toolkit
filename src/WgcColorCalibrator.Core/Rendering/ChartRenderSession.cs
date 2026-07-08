@@ -22,6 +22,7 @@ public sealed record ChartRenderSession
         SizeInt intendedPhysicalSize,
         SizeInt actualPhysicalSize,
         ToneMappingParameters toneMappingParameters,
+        DisplayOutputMetadata? displayOutput,
         IReadOnlyList<string> warnings,
         DateTimeOffset createdAt)
     {
@@ -46,6 +47,7 @@ public sealed record ChartRenderSession
         IntendedPhysicalSize = intendedPhysicalSize;
         ActualPhysicalSize = actualPhysicalSize;
         ToneMappingParameters = toneMappingParameters;
+        DisplayOutput = displayOutput;
         Warnings = warnings;
         CreatedAt = createdAt;
     }
@@ -75,6 +77,8 @@ public sealed record ChartRenderSession
     public SizeInt ActualPhysicalSize { get; }
 
     public ToneMappingParameters ToneMappingParameters { get; }
+
+    public DisplayOutputMetadata? DisplayOutput { get; }
 
     public IReadOnlyList<string> Warnings { get; }
 

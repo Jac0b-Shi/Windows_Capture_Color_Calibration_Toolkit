@@ -13,7 +13,10 @@ public static class ServiceCollectionExtensions
         ArgumentNullException.ThrowIfNull(services);
 
         services.AddSingleton(D3D11DeviceResources.Create());
+        services.AddSingleton<IToneMapper, ToneMapperDirectScRgb>();
+        services.AddSingleton<IToneMapper, ToneMapperReferenceWhiteScaled>();
         services.AddSingleton<IChartRenderer, D3D11ChartRenderer>();
+        services.AddSingleton<IDisplayOutputProbe, DisplayOutputProbe>();
         return services;
     }
 }

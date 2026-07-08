@@ -12,12 +12,14 @@ public sealed record ChartRenderingParameters
         RenderOutputMode requestedOutputMode,
         ToneMappingParameters toneMappingParameters,
         double targetLuminanceNits,
-        ColorEncoding sourceEncoding)
+        ColorEncoding sourceEncoding,
+        ToneMappingMode toneMappingMode = ToneMappingMode.DirectScRgb)
     {
         RequestedOutputMode = requestedOutputMode;
         ToneMappingParameters = toneMappingParameters ?? throw new ArgumentNullException(nameof(toneMappingParameters));
         TargetLuminanceNits = targetLuminanceNits;
         SourceEncoding = sourceEncoding;
+        ToneMappingMode = toneMappingMode;
     }
 
     public RenderOutputMode RequestedOutputMode { get; }
@@ -28,9 +30,12 @@ public sealed record ChartRenderingParameters
 
     public ColorEncoding SourceEncoding { get; }
 
+    public ToneMappingMode ToneMappingMode { get; }
+
     public static ChartRenderingParameters Default { get; } = new(
         RenderOutputMode.SdrSrgb,
         ToneMappingParameters.Default,
         80.0,
-        ColorEncoding.SrgbEncoded);
+        ColorEncoding.SrgbEncoded,
+        ToneMappingMode.DirectScRgb);
 }

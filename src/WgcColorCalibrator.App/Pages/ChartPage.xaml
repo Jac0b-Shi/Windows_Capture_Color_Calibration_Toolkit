@@ -93,31 +93,40 @@
                 Grid.ColumnSpan="2"
                 Spacing="12">
                 <TextBlock x:Uid="ChartHdrLabel" FontWeight="SemiBold" />
-                <Grid ColumnSpacing="8" RowSpacing="8">
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="Auto" />
-                    </Grid.RowDefinitions>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="*" />
-                    </Grid.ColumnDefinitions>
-                    <ComboBox x:Name="OutputModeComboBox" x:Uid="OutputModeComboBox" Grid.Row="0" Grid.Column="0" MinWidth="160">
-                        <ComboBoxItem x:Uid="OutputModeSdr" Tag="SdrSrgb" />
-                        <ComboBoxItem x:Uid="OutputModeHdrScRgb" Tag="HdrScRgb" />
-                        <ComboBoxItem x:Uid="OutputModeHdr10" Tag="Hdr10" />
+            <Grid ColumnSpacing="8" RowSpacing="8">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <ComboBox x:Name="OutputModeComboBox" x:Uid="OutputModeComboBox" Grid.Row="0" Grid.Column="0" MinWidth="160">
+                    <ComboBoxItem x:Uid="OutputModeSdr" Tag="SdrSrgb" />
+                    <ComboBoxItem x:Uid="OutputModeHdrScRgb" Tag="HdrScRgb" />
+                    <ComboBoxItem x:Uid="OutputModeHdr10" Tag="Hdr10" />
+                </ComboBox>
+                <ComboBox x:Name="ToneMappingModeComboBox" x:Uid="ToneMappingModeComboBox" Grid.Row="0" Grid.Column="1" MinWidth="160">
+                    <ComboBoxItem x:Uid="ToneMappingModeDirect" Tag="DirectScRgb" />
+                    <ComboBoxItem x:Uid="ToneMappingModeReference" Tag="ReferenceWhiteScaled" />
+                </ComboBox>
+                <NumberBox x:Name="PaperWhiteNumberBox" x:Uid="PaperWhiteNumberBox" Grid.Row="0" Grid.Column="2" Minimum="1" Maximum="10000" Value="200" />
+                <NumberBox x:Name="PeakBrightnessNumberBox" x:Uid="PeakBrightnessNumberBox" Grid.Row="0" Grid.Column="3" Minimum="1" Maximum="10000" Value="1000" />
+                <NumberBox x:Name="ExposureNumberBox" x:Uid="ExposureNumberBox" Grid.Row="1" Grid.Column="0" Minimum="-10" Maximum="10" Value="0" SmallChange="0.1" />
+                <TextBlock x:Name="HdrStatusTextBlock" x:Uid="HdrStatusTextBlock" Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="3" TextWrapping="WrapWholeWords" />
+                <StackPanel Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="4" Orientation="Horizontal" Spacing="8">
+                    <TextBlock x:Uid="HdrBehaviorLabel" VerticalAlignment="Center" />
+                    <ComboBox x:Name="HdrBehaviorComboBox" x:Uid="HdrBehaviorComboBox" MinWidth="180">
+                        <ComboBoxItem x:Uid="HdrBehaviorCancel" Tag="Cancel" />
+                        <ComboBoxItem x:Uid="HdrBehaviorSwitchToSdr" Tag="SwitchToSdr" />
+                        <ComboBoxItem x:Uid="HdrBehaviorAllowClipping" Tag="AllowClippingExperiment" />
                     </ComboBox>
-                    <ComboBox x:Name="ToneMappingModeComboBox" x:Uid="ToneMappingModeComboBox" Grid.Row="0" Grid.Column="1" MinWidth="160">
-                        <ComboBoxItem x:Uid="ToneMappingModeDirect" Tag="DirectScRgb" />
-                        <ComboBoxItem x:Uid="ToneMappingModeReference" Tag="ReferenceWhiteScaled" />
-                    </ComboBox>
-                    <NumberBox x:Name="PaperWhiteNumberBox" x:Uid="PaperWhiteNumberBox" Grid.Row="0" Grid.Column="2" Minimum="1" Maximum="10000" Value="200" />
-                    <NumberBox x:Name="PeakBrightnessNumberBox" x:Uid="PeakBrightnessNumberBox" Grid.Row="0" Grid.Column="3" Minimum="1" Maximum="10000" Value="1000" />
-                    <NumberBox x:Name="ExposureNumberBox" x:Uid="ExposureNumberBox" Grid.Row="1" Grid.Column="0" Minimum="-10" Maximum="10" Value="0" SmallChange="0.1" />
-                    <TextBlock x:Name="HdrStatusTextBlock" x:Uid="HdrStatusTextBlock" Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="3" TextWrapping="WrapWholeWords" />
-                </Grid>
+                </StackPanel>
+            </Grid>
             </StackPanel>
 
             <StackPanel

@@ -1,4 +1,5 @@
 using Microsoft.UI.Xaml;
+using WinRT.Interop;
 using WgcColorCalibrator.Core.Rendering;
 
 namespace WgcColorCalibrator.App.Windows;
@@ -15,6 +16,8 @@ public sealed partial class ChartWindow : Window
         var resourceLoader = new Microsoft.Windows.ApplicationModel.Resources.ResourceLoader();
         Title = resourceLoader.GetString("ChartWindowTitle");
     }
+
+    public nint WindowHandle => WindowNative.GetWindowHandle(this);
 
     public void SetChartSize(SizeInt physicalSize, double scale)
     {

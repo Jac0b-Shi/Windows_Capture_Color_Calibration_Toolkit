@@ -13,7 +13,8 @@ public sealed record ChartGenerationOptions(
     ChartLayoutDefinition Layout,
     RenderOutputMode OutputMode = RenderOutputMode.SdrSrgb,
     ToneMappingParameters? ToneMappingParameters = null,
-    HdrColor? ManualHdrColor = null)
+    HdrColor? ManualHdrColor = null,
+    ToneMappingMode ToneMappingMode = ToneMappingMode.DirectScRgb)
 {
     public static ChartGenerationOptions Default { get; } = new(
         ManualColor: new Rgb8(255, 255, 255),
@@ -21,6 +22,7 @@ public sealed record ChartGenerationOptions(
         Layout: ChartLayoutDefinition.Default,
         OutputMode: RenderOutputMode.SdrSrgb,
         ToneMappingParameters: Rendering.ToneMappingParameters.Default,
-        ManualHdrColor: null);
+        ManualHdrColor: null,
+        ToneMappingMode: ToneMappingMode.DirectScRgb);
 }
 

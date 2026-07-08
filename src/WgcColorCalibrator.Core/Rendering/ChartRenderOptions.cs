@@ -12,4 +12,6 @@ public sealed record ChartRenderOptions(
     double RasterizationScale,
     bool DebugOverlayEnabled,
     RenderOutputMode OutputMode,
-    ToneMappingParameters ToneMappingParameters);
+    ToneMappingParameters ToneMappingParameters,
+    DisplayOutputMetadata? DisplayOutput = null,
+    bool AllowHdrClippingExperiment = false);

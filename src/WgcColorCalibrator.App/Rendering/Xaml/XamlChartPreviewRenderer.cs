@@ -68,6 +68,7 @@ public sealed class XamlChartPreviewRenderer : IChartRenderer
             new SizeInt(0, 0),
             new SizeInt(0, 0),
             options.ToneMappingParameters,
+            DisplayOutputMetadata.Unknown,
             ["xaml-preview-not-for-measurement"],
             DateTimeOffset.UtcNow);
     }

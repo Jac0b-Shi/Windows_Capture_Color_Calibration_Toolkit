@@ -1,3 +1,4 @@
+using System.Linq;
 using Vortice.Direct3D11;
 using Vortice.DXGI;
 using WgcColorCalibrator.Core.Charts;
@@ -13,12 +14,14 @@ public sealed class D3D11ChartRenderer : IChartRenderer, IDisposable
 {
     private readonly D3D11DeviceResources _deviceResources;
     private readonly TextureChartRenderer _textureRenderer;
+    private readonly IEnumerable<IToneMapper> _toneMappers;
     private readonly Dictionary<object, SwapChainPanelHost> _hosts = new();
     private bool _disposed;
 
-    public D3D11ChartRenderer(D3D11DeviceResources deviceResources)
+    public D3D11ChartRenderer(D3D11DeviceResources deviceResources, IEnumerable<IToneMapper> toneMappers)
     {
         _deviceResources = deviceResources ?? throw new ArgumentNullException(nameof(deviceResources));
+        _toneMappers = toneMappers ?? throw new ArgumentNullException(nameof(toneMappers));
         _textureRenderer = new TextureChartRenderer(deviceResources);
     }
 
@@ -55,15 +58,37 @@ public sealed class D3D11ChartRenderer : IChartRenderer, IDisposable
             warnings.Add("debug-overlay-enabled");
         }
 
-        RenderOutputMode actualOutputMode = ResolveOutputMode(options.OutputMode, warnings);
-        (Format format, ColorSpaceType colorSpace) = GetFormatAndColorSpace(actualOutputMode);
-
+        DisplayOutputMetadata displayMetadata = DisplayOutputMetadata.Unknown;
         SwapChainPanelHost hostWrapper = GetOrCreateHost(panel);
-        hostWrapper.EnsureSize(actualPhysicalSize.Width, actualPhysicalSize.Height, format, colorSpace);
+
+        // First create the swapchain at the requested format so we can probe the containing output.
+        (Format requestedFormat, ColorSpaceType requestedColorSpace) = GetFormatAndColorSpace(options.OutputMode);
+        hostWrapper.EnsureSize(actualPhysicalSize.Width, actualPhysicalSize.Height, requestedFormat, requestedColorSpace);
 
         using (ID3D11Texture2D backBuffer = hostWrapper.GetBackBuffer())
         {
-            _textureRenderer.Render(backBuffer, chart, placements, options, options.DebugOverlayEnabled);
+            displayMetadata = ProbeDisplayMetadata(hostWrapper.SwapChain);
+        }
+
+        RenderOutputMode actualOutputMode = OutputModeResolver.Resolve(
+            options.OutputMode,
+            displayMetadata,
+            options.AllowHdrClippingExperiment,
+            warnings);
+        (Format format, ColorSpaceType colorSpace) = GetFormatAndColorSpace(actualOutputMode);
+
+        // Recreate swapchain if the resolved format differs from the requested one.
+        if (format != requestedFormat)
+        {
+            hostWrapper.EnsureSize(actualPhysicalSize.Width, actualPhysicalSize.Height, format, colorSpace);
+        }
+
+        ToneMappingMode toneMappingMode = chart.RenderingParameters?.ToneMappingMode ?? ToneMappingMode.DirectScRgb;
+        IToneMapper toneMapper = ResolveToneMapper(toneMappingMode);
+
+        using (ID3D11Texture2D backBuffer = hostWrapper.GetBackBuffer())
+        {
+            _textureRenderer.Render(backBuffer, chart, placements, toneMapper, options, options.DebugOverlayEnabled);
             hostWrapper.Present();
         }
 
@@ -81,6 +106,7 @@ public sealed class D3D11ChartRenderer : IChartRenderer, IDisposable
             intendedPhysicalSize,
             actualPhysicalSize,
             options.ToneMappingParameters,
+            displayMetadata,
             warnings,
             DateTimeOffset.UtcNow);
     }
@@ -135,15 +161,17 @@ public sealed class D3D11ChartRenderer : IChartRenderer, IDisposable
         return new SizeInt(Math.Max(1, width), Math.Max(1, height));
     }
 
-    private static RenderOutputMode ResolveOutputMode(RenderOutputMode requested, List<string> warnings)
+    private IToneMapper ResolveToneMapper(ToneMappingMode mode)
     {
-        if (requested == RenderOutputMode.SdrSrgb)
+        string id = mode switch
         {
-            return requested;
-        }
+            ToneMappingMode.DirectScRgb => "direct-scrgb",
+            ToneMappingMode.ReferenceWhiteScaled => "reference-white-scaled",
+            _ => throw new NotSupportedException($"Tone mapping mode {mode} is not supported.")
+        };
 
-        warnings.Add($"hdr-not-implemented: requested {requested}, falling back to SdrSrgb");
-        return RenderOutputMode.SdrSrgb;
+        IToneMapper? mapper = _toneMappers.FirstOrDefault(m => m.Id == id);
+        return mapper ?? _toneMappers.First(m => m.Id == "direct-scrgb");
     }
 
     private static (Format Format, ColorSpaceType ColorSpace) GetFormatAndColorSpace(RenderOutputMode mode)
@@ -155,5 +183,54 @@ public sealed class D3D11ChartRenderer : IChartRenderer, IDisposable
             RenderOutputMode.Hdr10 => (Format.R10G10B10A2_UNorm, ColorSpaceType.RgbFullG2084NoneP2020),
             _ => throw new NotSupportedException($"Output mode {mode} is not supported.")
         };
+    }
+
+    private static DisplayOutputMetadata ProbeDisplayMetadata(IDXGISwapChain1? swapChain)
+    {
+        if (swapChain is null)
+        {
+            return DisplayOutputMetadata.Unknown;
+        }
+
+        IDXGIOutput? output = null;
+        try
+        {
+            output = swapChain.GetContainingOutput();
+        }
+        catch
+        {
+            return DisplayOutputMetadata.Unknown;
+        }
+
+        if (output is null)
+        {
+            return DisplayOutputMetadata.Unknown;
+        }
+
+        using (output)
+        {
+            IDXGIOutput6? output6 = output.QueryInterface<IDXGIOutput6>();
+            if (output6 is null)
+            {
+                return DisplayOutputMetadata.Unknown;
+            }
+
+            using (output6)
+            {
+                OutputDescription1 desc = output6.Description1;
+                bool hdrActive =
+                    desc.ColorSpace == ColorSpaceType.RgbFullG10NoneP709 ||
+                    desc.ColorSpace == ColorSpaceType.RgbFullG2084NoneP2020;
+                bool hdrSupported = desc.MaxLuminance > 80.0f;
+
+                return new DisplayOutputMetadata(
+                    desc.DeviceName,
+                    hdrSupported,
+                    hdrActive,
+                    desc.MaxLuminance,
+                    desc.MaxFullFrameLuminance,
+                    desc.MinLuminance);
+            }
+        }
     }
 }

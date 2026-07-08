@@ -336,4 +336,19 @@
   <data name="HdrStatusInactive" xml:space="preserve">
     <value>HDR 未启用</value>
   </data>
+  <data name="HdrBehaviorLabel.Text" xml:space="preserve">
+    <value>如果 HDR 不可用</value>
+  </data>
+  <data name="HdrBehaviorComboBox.Header" xml:space="preserve">
+    <value>HDR 回退策略</value>
+  </data>
+  <data name="HdrBehaviorCancel.Content" xml:space="preserve">
+    <value>取消</value>
+  </data>
+  <data name="HdrBehaviorSwitchToSdr.Content" xml:space="preserve">
+    <value>切换到 SDR</value>
+  </data>
+  <data name="HdrBehaviorAllowClipping.Content" xml:space="preserve">
+    <value>裁剪实验</value>
+  </data>
 </root>

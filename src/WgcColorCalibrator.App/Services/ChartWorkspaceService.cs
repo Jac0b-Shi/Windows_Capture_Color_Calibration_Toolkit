@@ -16,24 +16,29 @@ public sealed class ChartWorkspaceService
     private readonly IReadOnlyDictionary<string, IChartProvider> _providers;
     private readonly IChartRenderer _renderer;
     private readonly IChartWindowFactory _windowFactory;
+    private readonly IDisplayOutputProbe _displayOutputProbe;
     private ChartWindow? _chartWindow;
 
     public ChartWorkspaceService(
         IEnumerable<IChartProvider> providers,
         IChartRenderer renderer,
-        IChartWindowFactory windowFactory)
+        IChartWindowFactory windowFactory,
+        IDisplayOutputProbe displayOutputProbe)
     {
         ArgumentNullException.ThrowIfNull(providers);
         ArgumentNullException.ThrowIfNull(renderer);
         ArgumentNullException.ThrowIfNull(windowFactory);
+        ArgumentNullException.ThrowIfNull(displayOutputProbe);
 
         _providers = providers.ToDictionary(p => p.Id, StringComparer.Ordinal);
         _renderer = renderer;
         _windowFactory = windowFactory;
+        _displayOutputProbe = displayOutputProbe;
 
         CurrentLayout = ChartLayoutDefinition.Default;
         CurrentToneMappingParameters = ToneMappingParameters.Default;
         CurrentOutputMode = RenderOutputMode.SdrSrgb;
+        HdrUnsupportedBehavior = HdrUnsupportedBehavior.Cancel;
     }
 
     public event EventHandler? StateChanged;
@@ -49,6 +54,8 @@ public sealed class ChartWorkspaceService
     public RenderOutputMode CurrentOutputMode { get; set; }
 
     public ToneMappingParameters CurrentToneMappingParameters { get; set; }
+
+    public HdrUnsupportedBehavior HdrUnsupportedBehavior { get; set; }
 
     public bool IsDebugOverlayEnabled { get; set; }
 
@@ -93,7 +100,34 @@ public sealed class ChartWorkspaceService
         SizeInt intendedPhysicalSize = CalculateIntendedPhysicalSize(CurrentPlacements, CurrentChart.Layout);
         _chartWindow.SetChartSize(intendedPhysicalSize, _chartWindow.GetRasterizationScale());
 
-        RenderChartWindow(_chartWindow);
+        DisplayOutputMetadata displayMetadata = _displayOutputProbe.Probe(_chartWindow.WindowHandle);
+        RenderOutputMode resolvedOutputMode = ResolveOutputMode(CurrentOutputMode, displayMetadata);
+        bool allowHdrClipping = resolvedOutputMode != RenderOutputMode.SdrSrgb &&
+                                CurrentOutputMode != RenderOutputMode.SdrSrgb &&
+                                HdrUnsupportedBehavior == HdrUnsupportedBehavior.AllowClippingExperiment;
+
+        RenderChartWindow(_chartWindow, resolvedOutputMode, allowHdrClipping, displayMetadata);
+    }
+
+    private RenderOutputMode ResolveOutputMode(RenderOutputMode requested, DisplayOutputMetadata metadata)
+    {
+        if (requested == RenderOutputMode.SdrSrgb)
+        {
+            return requested;
+        }
+
+        if (metadata.HdrActive)
+        {
+            return requested;
+        }
+
+        return HdrUnsupportedBehavior switch
+        {
+            HdrUnsupportedBehavior.SwitchToSdr => RenderOutputMode.SdrSrgb,
+            HdrUnsupportedBehavior.AllowClippingExperiment => requested,
+            _ => throw new InvalidOperationException(
+                "HDR is not active on the target display. Choose Switch to SDR or allow the clipping experiment.")
+        };
     }
 
     public void CloseChartWindow()
@@ -114,7 +148,12 @@ public sealed class ChartWorkspaceService
 
         if (_chartWindow is not null)
         {
-            RenderChartWindow(_chartWindow);
+            DisplayOutputMetadata metadata = _displayOutputProbe.Probe(_chartWindow.WindowHandle);
+            RenderOutputMode resolvedOutputMode = ResolveOutputMode(CurrentOutputMode, metadata);
+            bool allowHdrClipping = resolvedOutputMode != RenderOutputMode.SdrSrgb &&
+                                    CurrentOutputMode != RenderOutputMode.SdrSrgb &&
+                                    HdrUnsupportedBehavior == HdrUnsupportedBehavior.AllowClippingExperiment;
+            RenderChartWindow(_chartWindow, resolvedOutputMode, allowHdrClipping, metadata);
         }
 
         NotifyStateChanged();
@@ -170,7 +209,11 @@ public sealed class ChartWorkspaceService
         NotifyStateChanged();
     }
 
-    private void RenderChartWindow(ChartWindow window)
+    private void RenderChartWindow(
+        ChartWindow window,
+        RenderOutputMode outputMode,
+        bool allowHdrClippingExperiment,
+        DisplayOutputMetadata displayOutputMetadata)
     {
         if (CurrentChart is null || CurrentPlacements is null)
         {
@@ -182,8 +225,10 @@ public sealed class ChartWorkspaceService
             CurrentPlacements,
             window.GetRasterizationScale(),
             IsDebugOverlayEnabled,
-            CurrentOutputMode,
-            CurrentToneMappingParameters);
+            outputMode,
+            CurrentToneMappingParameters,
+            displayOutputMetadata,
+            allowHdrClippingExperiment);
 
         CurrentSession = window.Render(_renderer, options);
     }

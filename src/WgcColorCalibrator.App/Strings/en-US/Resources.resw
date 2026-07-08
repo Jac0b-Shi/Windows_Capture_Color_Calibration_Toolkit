@@ -336,4 +336,19 @@
   <data name="HdrStatusInactive" xml:space="preserve">
     <value>HDR inactive</value>
   </data>
+  <data name="HdrBehaviorLabel.Text" xml:space="preserve">
+    <value>If HDR is unavailable</value>
+  </data>
+  <data name="HdrBehaviorComboBox.Header" xml:space="preserve">
+    <value>HDR fallback</value>
+  </data>
+  <data name="HdrBehaviorCancel.Content" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="HdrBehaviorSwitchToSdr.Content" xml:space="preserve">
+    <value>Switch to SDR</value>
+  </data>
+  <data name="HdrBehaviorAllowClipping.Content" xml:space="preserve">
+    <value>Clipping experiment</value>
+  </data>
 </root>

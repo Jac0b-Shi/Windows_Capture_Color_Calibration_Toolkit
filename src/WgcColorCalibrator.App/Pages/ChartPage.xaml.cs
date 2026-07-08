@@ -30,6 +30,7 @@ public sealed partial class ChartPage : Page
         ChartTypeComboBox.SelectedIndex = 0;
         OutputModeComboBox.SelectedIndex = 0;
         ToneMappingModeComboBox.SelectedIndex = 1;
+        HdrBehaviorComboBox.SelectedIndex = 0;
         UpdateStatus();
     }
 
@@ -128,6 +129,7 @@ public sealed partial class ChartPage : Page
     {
         try
         {
+            _workspaceService.HdrUnsupportedBehavior = ReadHdrUnsupportedBehavior();
             _workspaceService.OpenChartWindow();
         }
         catch (Exception ex)
@@ -289,6 +291,12 @@ public sealed partial class ChartPage : Page
         return Enum.Parse<RenderOutputMode>(tag);
     }
 
+    private HdrUnsupportedBehavior ReadHdrUnsupportedBehavior()
+    {
+        string tag = GetSelectedTag(HdrBehaviorComboBox) ?? "Cancel";
+        return Enum.Parse<HdrUnsupportedBehavior>(tag);
+    }
+
     private ToneMappingParameters ReadToneMappingParameters()
     {
         double paperWhite = GetNumberBoxValue(PaperWhiteNumberBox, 200.0);
@@ -344,6 +352,26 @@ public sealed partial class ChartPage : Page
             return;
         }
 
-        StatusTextBlock.Text = $"{_resourceLoader.GetString("ChartStatusChart")}: {chart.Name}, {chart.Patches.Count} patches, {_workspaceService.CurrentOutputMode}";
+        ChartRenderSession? session = _workspaceService.CurrentSession;
+        if (session is null || session.DisplayOutput is null || session.DisplayOutput == DisplayOutputMetadata.Unknown)
+        {
+            StatusTextBlock.Text = $"{_resourceLoader.GetString("ChartStatusChart")}: {chart.Name}, {chart.Patches.Count} patches, {_workspaceService.CurrentOutputMode}";
+            HdrStatusTextBlock.Text = _resourceLoader.GetString("HdrStatusNotProbed");
+            return;
+        }
+
+        DisplayOutputMetadata metadata = session.DisplayOutput;
+        string statusText = $"{_resourceLoader.GetString("ChartStatusChart")}: {chart.Name}, {chart.Patches.Count} patches, {session.ActualOutputMode}";
+        string luminanceText = $"max={metadata.MaxLuminance:F1}, full={metadata.MaxFullFrameLuminance:F1}, min={metadata.MinLuminance:F2}";
+        HdrStatusTextBlock.Text = metadata.HdrActive
+            ? $"{_resourceLoader.GetString("HdrStatusActive")} ({metadata.DisplayName}, {luminanceText})"
+            : $"{_resourceLoader.GetString("HdrStatusInactive")} ({metadata.DisplayName}, {luminanceText})";
+
+        if (session.Warnings.Count > 0)
+        {
+            statusText += $" | {string.Join("; ", session.Warnings)}";
+        }
+
+        StatusTextBlock.Text = statusText;
     }
 }
