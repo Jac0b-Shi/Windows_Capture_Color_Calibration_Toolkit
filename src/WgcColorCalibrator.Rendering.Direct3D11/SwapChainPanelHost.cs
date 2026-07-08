@@ -219,7 +219,11 @@ public sealed class SwapChainPanelHost : IDisposable
             return;
         }
 
-        var native = SwapChainPanelNative.FromObject(_panel);
-        native.SetSwapChain(swapChain!);
+        ISwapChainPanelNative native = SwapChainPanelNative.FromObject(_panel);
+
+        nint swapChainPointer = swapChain?.NativePointer ?? nint.Zero;
+
+        int hr = native.SetSwapChain(swapChainPointer);
+        Marshal.ThrowExceptionForHR(hr);
     }
 }

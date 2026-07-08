@@ -1,18 +1,19 @@
 using System.Runtime.InteropServices;
-using Vortice.DXGI;
+using WinRT;
 
 namespace WgcColorCalibrator.Rendering.Direct3D11;
 
 /// <summary>
-/// Native COM interface used to bind a DXGI swap chain to a WinUI 3 SwapChainPanel.
+/// Native COM interface used to bind a DXGI swap chain
+/// to a WinUI 3 Microsoft.UI.Xaml.Controls.SwapChainPanel.
 /// </summary>
 [ComImport]
-[Guid("63AAD0B8-7C24-4469-8518-A71A07A2461F")]
+[Guid("63AAD0B8-7C24-40FF-85A8-640D944CC325")]
 [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
 internal interface ISwapChainPanelNative
 {
     [PreserveSig]
-    int SetSwapChain(IDXGISwapChain1 swapChain);
+    int SetSwapChain(nint swapChain);
 }
 
 internal static class SwapChainPanelNative
@@ -21,8 +22,20 @@ internal static class SwapChainPanelNative
     {
         ArgumentNullException.ThrowIfNull(panel);
 
-        var native = panel as ISwapChainPanelNative
-                     ?? throw new Direct3D11RenderingException("Host does not implement ISwapChainPanelNative. Ensure it is a SwapChainPanel.");
-        return native;
+        try
+        {
+            // A normal C# cast cannot discover implementation-only
+            // native interfaces on a projected WinRT object.
+            return panel.As<ISwapChainPanelNative>();
+        }
+        catch (Exception ex) when (
+            ex is COMException or
+            InvalidCastException or
+            ArgumentException)
+        {
+            throw new Direct3D11RenderingException(
+                $"Failed to query ISwapChainPanelNative from '{panel.GetType().FullName}'.",
+                ex);
+        }
     }
 }
