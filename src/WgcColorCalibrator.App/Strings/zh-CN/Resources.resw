@@ -366,4 +366,19 @@
   <data name="ManualHdrBlueNumberBox.Header" xml:space="preserve">
     <value>B</value>
   </data>
+  <data name="ChartStatusParametersDirty" xml:space="preserve">
+    <value>参数已更改，请重新生成以应用。</value>
+  </data>
+  <data name="PatchSizePresetComboBox.Header" xml:space="preserve">
+    <value>色块尺寸预设</value>
+  </data>
+  <data name="PatchSizePresetCompact.Content" xml:space="preserve">
+    <value>64（紧凑）</value>
+  </data>
+  <data name="PatchSizePresetStandard.Content" xml:space="preserve">
+    <value>128（标准）</value>
+  </data>
+  <data name="PatchSizePresetLarge.Content" xml:space="preserve">
+    <value>256（大）</value>
+  </data>
 </root>

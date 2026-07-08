@@ -1,4 +1,5 @@
 using Microsoft.UI.Dispatching;
+using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using System.Runtime.InteropServices;
 using WinRT.Interop;
@@ -13,6 +14,9 @@ public sealed partial class ChartWindow : Window
 {
     private IChartRenderer? _renderer;
     private bool _readyRaised;
+    private bool _surfaceReadyRaised;
+    private bool _appWindowChangedSubscribed;
+    private SizeInt _intendedPhysicalSize;
     private nint _lastMonitor;
     private double _lastScale = 1.0;
     private DispatcherQueueTimer? _hotplugTimer;
@@ -39,17 +43,36 @@ public sealed partial class ChartWindow : Window
 
     public event EventHandler? PanelReady;
 
+    public event EventHandler? SurfaceReady;
+
     public event EventHandler? DisplayChanged;
 
     public nint WindowHandle => WindowNative.GetWindowHandle(this);
 
-    public void SetChartSize(SizeInt physicalSize, double scale)
+    public void SetChartSize(SizeInt physicalSize)
     {
+        _intendedPhysicalSize = physicalSize;
+        _surfaceReadyRaised = false;
+
+        if (AppWindow.Presenter is OverlappedPresenter p)
+        {
+            p.IsResizable = false;
+            p.IsMaximizable = false;
+        }
+
         AppWindow.ResizeClient(new global::Windows.Graphics.SizeInt32
         {
             Width = physicalSize.Width,
             Height = physicalSize.Height
         });
+
+        if (!_appWindowChangedSubscribed)
+        {
+            AppWindow.Changed += AppWindow_Changed;
+            _appWindowChangedSubscribed = true;
+        }
+
+        CheckSizeSettled();
     }
 
     public double GetRasterizationScale() =>
@@ -62,6 +85,14 @@ public sealed partial class ChartWindow : Window
 
         _renderer = renderer;
         return renderer.Render(options.Chart, options.Placements, options, ChartSwapChainPanel);
+    }
+
+    private void AppWindow_Changed(AppWindow sender, AppWindowChangedEventArgs args)
+    {
+        if (args.DidSizeChange)
+        {
+            CheckSizeSettled();
+        }
     }
 
     private void OnPanelLoadedOrSizeChanged(object sender, object e)
@@ -84,6 +115,7 @@ public sealed partial class ChartWindow : Window
             PanelReady?.Invoke(this, EventArgs.Empty);
         }
 
+        CheckSizeSettled();
         CheckDisplayChanged();
     }
 
@@ -110,10 +142,60 @@ public sealed partial class ChartWindow : Window
         }
     }
 
+    private void CheckSizeSettled()
+    {
+        if (_surfaceReadyRaised)
+        {
+            return;
+        }
+
+        if (ChartSwapChainPanel.XamlRoot is null)
+        {
+            return;
+        }
+
+        if (ChartSwapChainPanel.ActualWidth <= 0 || ChartSwapChainPanel.ActualHeight <= 0)
+        {
+            return;
+        }
+
+        double scaleX = ChartSwapChainPanel.CompositionScaleX > 0
+            ? ChartSwapChainPanel.CompositionScaleX
+            : ChartSwapChainPanel.XamlRoot.RasterizationScale;
+        double scaleY = ChartSwapChainPanel.CompositionScaleY > 0
+            ? ChartSwapChainPanel.CompositionScaleY
+            : ChartSwapChainPanel.XamlRoot.RasterizationScale;
+
+        int panelPhysicalWidth = (int)Math.Round(ChartSwapChainPanel.ActualWidth * scaleX);
+        int panelPhysicalHeight = (int)Math.Round(ChartSwapChainPanel.ActualHeight * scaleY);
+
+        global::Windows.Graphics.SizeInt32 clientSize = AppWindow.ClientSize;
+
+        bool clientSizeMatches =
+            Math.Abs(clientSize.Width - _intendedPhysicalSize.Width) <= 1 &&
+            Math.Abs(clientSize.Height - _intendedPhysicalSize.Height) <= 1;
+
+        bool panelSizeMatches =
+            Math.Abs(panelPhysicalWidth - _intendedPhysicalSize.Width) <= 1 &&
+            Math.Abs(panelPhysicalHeight - _intendedPhysicalSize.Height) <= 1;
+
+        if (clientSizeMatches && panelSizeMatches)
+        {
+            _surfaceReadyRaised = true;
+            SurfaceReady?.Invoke(this, EventArgs.Empty);
+        }
+    }
+
     private void OnClosed(object sender, WindowEventArgs args)
     {
         _hotplugTimer?.Stop();
         _hotplugTimer = null;
+
+        if (_appWindowChangedSubscribed)
+        {
+            AppWindow.Changed -= AppWindow_Changed;
+            _appWindowChangedSubscribed = false;
+        }
 
         if (_renderer is not null)
         {

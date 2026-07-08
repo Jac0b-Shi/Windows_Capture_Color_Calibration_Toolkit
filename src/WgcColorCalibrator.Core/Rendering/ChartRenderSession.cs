@@ -26,8 +26,7 @@ public sealed record ChartRenderSession
         IReadOnlyList<string> warnings,
         DateTimeOffset createdAt,
         uint? colorSpaceSupportFlags = null,
-        int? setColorSpaceResult = null,
-        string? actualColorSpace = null)
+        int? setColorSpaceResult = null)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(rendererId);
         ArgumentNullException.ThrowIfNull(chart);
@@ -55,7 +54,6 @@ public sealed record ChartRenderSession
         CreatedAt = createdAt;
         ColorSpaceSupportFlags = colorSpaceSupportFlags;
         SetColorSpaceResult = setColorSpaceResult;
-        ActualColorSpace = actualColorSpace;
     }
 
     public string RendererId { get; }
@@ -93,8 +91,6 @@ public sealed record ChartRenderSession
     public uint? ColorSpaceSupportFlags { get; }
 
     public int? SetColorSpaceResult { get; }
-
-    public string? ActualColorSpace { get; }
 
     public bool IsDebugOverlayEnabled => Warnings.Contains("debug-overlay-enabled");
 }

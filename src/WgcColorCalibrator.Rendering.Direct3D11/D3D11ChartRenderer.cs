@@ -45,7 +45,7 @@ public sealed class D3D11ChartRenderer : IChartRenderer, IDisposable
 
         var warnings = new List<string>(options.Warnings ?? Array.Empty<string>());
         SizeInt intendedPhysicalSize = CalculateIntendedPhysicalSize(placements, chart.Layout);
-        SizeInt actualPhysicalSize = GetActualPhysicalSize(panel, options.RasterizationScale);
+        (SizeInt actualPhysicalSize, double actualScale) = GetActualPhysicalSize(panel);
 
         if (actualPhysicalSize.Width != intendedPhysicalSize.Width ||
             actualPhysicalSize.Height != intendedPhysicalSize.Height)
@@ -63,17 +63,17 @@ public sealed class D3D11ChartRenderer : IChartRenderer, IDisposable
         (Format format, ColorSpaceType colorSpace) = GetFormatAndColorSpace(actualOutputMode);
 
         SwapChainPanelHost hostWrapper = GetOrCreateHost(panel);
-        hostWrapper.EnsureSize(actualPhysicalSize.Width, actualPhysicalSize.Height, format, colorSpace);
+        hostWrapper.EnsureSize(actualPhysicalSize.Width, actualPhysicalSize.Height, format);
 
-        bool colorSpaceSet = hostWrapper.TrySetColorSpace(colorSpace, out ColorSpaceVerification colorSpaceVerification);
+        bool colorSpaceSet = hostWrapper.TrySetColorSpace(colorSpace, out ColorSpaceApplicationResult colorSpaceResult);
         if (!colorSpaceSet)
         {
-            warnings.Add("color-space-verification-failed");
+            warnings.Add("color-space-set-failed");
         }
 
         bool hdrOutputActive = actualOutputMode != RenderOutputMode.SdrSrgb &&
-                               colorSpaceSet &&
-                               colorSpaceVerification.ActualColorSpace == colorSpace;
+                               colorSpaceResult.SetSucceeded &&
+                               ((SwapChainColorSpaceSupportFlags)colorSpaceResult.SupportFlags).HasFlag(SwapChainColorSpaceSupportFlags.Present);
 
         DisplayOutputMetadata displayMetadata = options.DisplayOutput ?? DisplayOutputMetadata.Unknown;
         if (displayMetadata == DisplayOutputMetadata.Unknown)
@@ -99,7 +99,7 @@ public sealed class D3D11ChartRenderer : IChartRenderer, IDisposable
             format.ToString(),
             colorSpace.ToString(),
             hdrOutputActive,
-            options.RasterizationScale,
+            actualScale,
             new Size(panel.ActualWidth, panel.ActualHeight),
             intendedPhysicalSize,
             actualPhysicalSize,
@@ -107,9 +107,8 @@ public sealed class D3D11ChartRenderer : IChartRenderer, IDisposable
             displayMetadata,
             warnings,
             DateTimeOffset.UtcNow,
-            colorSpaceVerification.SupportFlags,
-            colorSpaceVerification.SetColorSpaceResult.Code,
-            colorSpaceVerification.ActualColorSpace?.ToString());
+            colorSpaceResult.SupportFlags,
+            colorSpaceResult.SetHResult.Code);
     }
 
     public void DetachHost(object host)
@@ -166,11 +165,15 @@ public sealed class D3D11ChartRenderer : IChartRenderer, IDisposable
         return new SizeInt(maxRight + layout.Border, maxBottom + layout.Border);
     }
 
-    private static SizeInt GetActualPhysicalSize(Microsoft.UI.Xaml.Controls.SwapChainPanel panel, double scale)
+    private static (SizeInt PhysicalSize, double Scale) GetActualPhysicalSize(Microsoft.UI.Xaml.Controls.SwapChainPanel panel)
     {
-        int width = (int)Math.Round(panel.ActualWidth * scale);
-        int height = (int)Math.Round(panel.ActualHeight * scale);
-        return new SizeInt(Math.Max(1, width), Math.Max(1, height));
+        double fallbackScale = panel.XamlRoot?.RasterizationScale ?? 1.0;
+        double scaleX = panel.CompositionScaleX > 0 ? panel.CompositionScaleX : fallbackScale;
+        double scaleY = panel.CompositionScaleY > 0 ? panel.CompositionScaleY : fallbackScale;
+
+        int width = (int)Math.Round(panel.ActualWidth * scaleX);
+        int height = (int)Math.Round(panel.ActualHeight * scaleY);
+        return (new SizeInt(Math.Max(1, width), Math.Max(1, height)), scaleX);
     }
 
     private IToneMapper ResolveToneMapper(ToneMappingMode mode)

@@ -22,6 +22,8 @@ public sealed partial class ChartPage : Page
     private readonly XamlChartPreviewRenderer _previewRenderer;
     private readonly EventHandler _onWorkspaceStateChanged;
     private bool _uiEventsAttached;
+    private bool _isDirty;
+    private bool _isInitializing;
 
     public ChartPage()
     {
@@ -55,28 +57,57 @@ public sealed partial class ChartPage : Page
 
         ChartTypeComboBox.SelectionChanged += ChartTypeComboBox_SelectionChanged;
         OutputModeComboBox.SelectionChanged += OutputModeComboBox_SelectionChanged;
+        ToneMappingModeComboBox.SelectionChanged += (s, e) => SetDirty();
+        HdrBehaviorComboBox.SelectionChanged += (s, e) => SetDirty();
+        PatchSizePresetComboBox.SelectionChanged += PatchSizePresetComboBox_SelectionChanged;
 
         ManualRedNumberBox.ValueChanged += ManualColorNumberBox_ValueChanged;
         ManualGreenNumberBox.ValueChanged += ManualColorNumberBox_ValueChanged;
         ManualBlueNumberBox.ValueChanged += ManualColorNumberBox_ValueChanged;
-
         ManualHdrRedNumberBox.ValueChanged += ManualHdrColorNumberBox_ValueChanged;
         ManualHdrGreenNumberBox.ValueChanged += ManualHdrColorNumberBox_ValueChanged;
         ManualHdrBlueNumberBox.ValueChanged += ManualHdrColorNumberBox_ValueChanged;
+
+        PatchWidthNumberBox.ValueChanged += (s, e) => SetDirty();
+        PatchHeightNumberBox.ValueChanged += (s, e) => SetDirty();
+        GapNumberBox.ValueChanged += (s, e) => SetDirty();
+        BorderNumberBox.ValueChanged += (s, e) => SetDirty();
+        SafeSampleInsetNumberBox.ValueChanged += (s, e) => SetDirty();
+        ColumnCountNumberBox.ValueChanged += (s, e) => SetDirty();
+        BackgroundColorTextBox.LostFocus += (s, e) => SetDirty();
+        PaperWhiteNumberBox.ValueChanged += (s, e) => SetDirty();
+        PeakBrightnessNumberBox.ValueChanged += (s, e) => SetDirty();
+        ExposureNumberBox.ValueChanged += (s, e) => SetDirty();
+        GrayscaleStepsNumberBox.ValueChanged += (s, e) => SetDirty();
 
         _uiEventsAttached = true;
     }
 
     private void InitializeUiState()
     {
+        _isInitializing = true;
         ChartTypeComboBox.SelectedIndex = 0;
         OutputModeComboBox.SelectedIndex = 0;
         ToneMappingModeComboBox.SelectedIndex = 1;
         HdrBehaviorComboBox.SelectedIndex = 0;
+        PatchSizePresetComboBox.SelectedIndex = 1;
 
         UpdateManualPanelVisibility();
         UpdateManualColorText();
         UpdateManualHdrColorText();
+        _isInitializing = false;
+        _isDirty = false;
+        UpdateStatus();
+    }
+
+    private void SetDirty()
+    {
+        if (_isInitializing)
+        {
+            return;
+        }
+
+        _isDirty = true;
         UpdateStatus();
     }
 
@@ -91,11 +122,27 @@ public sealed partial class ChartPage : Page
         UpdateManualPanelVisibility();
         string tag = GetSelectedTag(ChartTypeComboBox) ?? "manual-single-color";
         GrayscalePanel.Visibility = tag == "grayscale" ? Visibility.Visible : Visibility.Collapsed;
+        SetDirty();
     }
 
     private void OutputModeComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
         UpdateManualPanelVisibility();
+        _workspaceService.CurrentOutputMode = ReadOutputMode();
+        SetDirty();
+    }
+
+    private void PatchSizePresetComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (PatchSizePresetComboBox.SelectedItem is ComboBoxItem item &&
+            item.Tag is string tag &&
+            int.TryParse(tag, out int size))
+        {
+            PatchWidthNumberBox.Value = size;
+            PatchHeightNumberBox.Value = size;
+        }
+
+        SetDirty();
     }
 
     private void UpdateManualPanelVisibility()
@@ -118,11 +165,14 @@ public sealed partial class ChartPage : Page
             ManualBlueNumberBox.Value = color.B;
             UpdateColorPreview(color);
         }
+
+        SetDirty();
     }
 
     private void ManualColorNumberBox_ValueChanged(NumberBox sender, NumberBoxValueChangedEventArgs args)
     {
         UpdateManualColorText();
+        SetDirty();
     }
 
     private void UpdateManualColorText()
@@ -147,46 +197,14 @@ public sealed partial class ChartPage : Page
     {
         try
         {
-            string providerId = GetSelectedTag(ChartTypeComboBox) ?? "manual-single-color";
-            ChartLayoutDefinition layout = ReadLayoutDefinition();
-            RenderOutputMode outputMode = ReadOutputMode();
-            ToneMappingParameters toneMapping = ReadToneMappingParameters();
-            ToneMappingMode toneMappingMode = ReadToneMappingMode();
-
-            Rgb8? manualColor = null;
-            HdrColor? manualHdrColor = null;
-
-            if (providerId == "manual-single-color")
+            (string providerId, ChartGenerationOptions options)? result = GenerateChartFromUi();
+            if (result is null)
             {
-                if (outputMode == RenderOutputMode.HdrScRgb || outputMode == RenderOutputMode.Hdr10)
-                {
-                    // For HDR mode, interpret the manual input as scRGB linear values.
-                    manualHdrColor = ReadHdrColorFromManualInputs();
-                    manualColor = new Rgb8(255, 255, 255);
-                }
-                else
-                {
-                    if (!HexColorParser.TryParseRgb8(ManualColorHexTextBox.Text, out Rgb8 color))
-                    {
-                        ShowError(_resourceLoader.GetString("ValidationErrorInvalidHex"));
-                        return;
-                    }
-
-                    manualColor = color;
-                }
+                return;
             }
 
-            int grayscaleSteps = (int)GetNumberBoxValue(GrayscaleStepsNumberBox, 5.0);
-            var options = new ChartGenerationOptions(
-                manualColor,
-                grayscaleSteps,
-                layout,
-                outputMode,
-                toneMapping,
-                manualHdrColor,
-                toneMappingMode);
-
-            _workspaceService.GenerateChart(providerId, options);
+            _workspaceService.GenerateChart(result.Value.providerId, result.Value.options);
+            _isDirty = false;
             RenderPreview();
         }
         catch (Exception ex)
@@ -199,6 +217,18 @@ public sealed partial class ChartPage : Page
     {
         try
         {
+            if (_isDirty)
+            {
+                (string providerId, ChartGenerationOptions options)? result = GenerateChartFromUi();
+                if (result is null)
+                {
+                    return;
+                }
+
+                _workspaceService.GenerateChart(result.Value.providerId, result.Value.options);
+                _isDirty = false;
+            }
+
             _workspaceService.HdrUnsupportedBehavior = ReadHdrUnsupportedBehavior();
             _workspaceService.OpenChartWindow();
         }
@@ -218,6 +248,50 @@ public sealed partial class ChartPage : Page
         _workspaceService.ToggleDebugOverlay();
     }
 
+    private (string providerId, ChartGenerationOptions options)? GenerateChartFromUi()
+    {
+        string providerId = GetSelectedTag(ChartTypeComboBox) ?? "manual-single-color";
+        ChartLayoutDefinition layout = ReadLayoutDefinition();
+        RenderOutputMode outputMode = ReadOutputMode();
+        ToneMappingParameters toneMapping = ReadToneMappingParameters();
+        ToneMappingMode toneMappingMode = ReadToneMappingMode();
+
+        Rgb8? manualColor = null;
+        HdrColor? manualHdrColor = null;
+
+        if (providerId == "manual-single-color")
+        {
+            if (outputMode == RenderOutputMode.HdrScRgb || outputMode == RenderOutputMode.Hdr10)
+            {
+                // For HDR mode, interpret the manual input as scRGB linear values.
+                manualHdrColor = ReadHdrColorFromManualInputs();
+                manualColor = new Rgb8(255, 255, 255);
+            }
+            else
+            {
+                if (!HexColorParser.TryParseRgb8(ManualColorHexTextBox.Text, out Rgb8 color))
+                {
+                    ShowError(_resourceLoader.GetString("ValidationErrorInvalidHex"));
+                    return null;
+                }
+
+                manualColor = color;
+            }
+        }
+
+        int grayscaleSteps = (int)GetNumberBoxValue(GrayscaleStepsNumberBox, 5.0);
+        var options = new ChartGenerationOptions(
+            manualColor,
+            grayscaleSteps,
+            layout,
+            outputMode,
+            toneMapping,
+            manualHdrColor,
+            toneMappingMode);
+
+        return (providerId, options);
+    }
+
     private async void ImportJsonButton_Click(object sender, RoutedEventArgs e)
     {
         try
@@ -233,6 +307,7 @@ public sealed partial class ChartPage : Page
 
             string json = await FileIO.ReadTextAsync(file);
             _workspaceService.ImportJson(json);
+            _isDirty = false;
         }
         catch (Exception ex)
         {
@@ -256,6 +331,7 @@ public sealed partial class ChartPage : Page
             string csv = await FileIO.ReadTextAsync(file);
             string chartId = Path.GetFileNameWithoutExtension(file.Name);
             _workspaceService.ImportCsv(csv, chartId, chartId);
+            _isDirty = false;
         }
         catch (Exception ex)
         {
@@ -399,6 +475,7 @@ public sealed partial class ChartPage : Page
     private void ManualHdrColorNumberBox_ValueChanged(NumberBox sender, NumberBoxValueChangedEventArgs args)
     {
         UpdateManualHdrColorText();
+        SetDirty();
     }
 
     private void UpdateManualHdrColorText()
@@ -438,14 +515,24 @@ public sealed partial class ChartPage : Page
         ChartDefinition? chart = _workspaceService.CurrentChart;
         if (chart is null)
         {
-            StatusTextBlock.Text = _resourceLoader.GetString("ChartStatusNoChart");
+            StatusTextBlock.Text = _isDirty
+                ? _resourceLoader.GetString("ChartStatusParametersDirty")
+                : _resourceLoader.GetString("ChartStatusNoChart");
             return;
         }
 
         ChartRenderSession? session = _workspaceService.CurrentSession;
         if (session is null || session.DisplayOutput is null || session.DisplayOutput == DisplayOutputMetadata.Unknown)
         {
-            StatusTextBlock.Text = $"{_resourceLoader.GetString("ChartStatusChart")}: {chart.Name}, {chart.Patches.Count} patches, {_workspaceService.CurrentOutputMode}";
+            if (_isDirty)
+            {
+                StatusTextBlock.Text = _resourceLoader.GetString("ChartStatusParametersDirty");
+            }
+            else
+            {
+                StatusTextBlock.Text = $"{_resourceLoader.GetString("ChartStatusChart")}: {chart.Name}, {chart.Patches.Count} patches, {_workspaceService.CurrentOutputMode}";
+            }
+
             HdrStatusTextBlock.Text = _resourceLoader.GetString("HdrStatusNotProbed");
             return;
         }
@@ -462,6 +549,11 @@ public sealed partial class ChartPage : Page
         if (session.Warnings.Count > 0)
         {
             statusText += $" | {string.Join("; ", session.Warnings)}";
+        }
+
+        if (_isDirty)
+        {
+            statusText += $" | {_resourceLoader.GetString("ChartStatusParametersDirty")}";
         }
 
         StatusTextBlock.Text = statusText;

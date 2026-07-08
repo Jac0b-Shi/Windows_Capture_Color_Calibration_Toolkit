@@ -1,4 +1,3 @@
-using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using SharpGen.Runtime;
 using Vortice.Direct3D11;
@@ -11,12 +10,6 @@ namespace WgcColorCalibrator.Rendering.Direct3D11;
 /// </summary>
 public sealed class SwapChainPanelHost : IDisposable
 {
-    // IDXGISwapChain3 vtable indices for SetColorSpace1 and GetColorSpace1.
-    // Vortice 3.8.3 exposes CheckColorSpaceSupport and SetColorSpace1, but not GetColorSpace1,
-    // so the readback is performed through the COM vtable directly.
-    private const int SetColorSpace1VtableIndex = 33;
-    private const int GetColorSpace1VtableIndex = 34;
-
     private readonly D3D11DeviceResources _resources;
     private readonly object _panel;
     private IDXGISwapChain1? _swapChain;
@@ -36,7 +29,7 @@ public sealed class SwapChainPanelHost : IDisposable
 
     public int Height { get; private set; }
 
-    public void EnsureSize(int width, int height, Format format, ColorSpaceType colorSpace)
+    public void EnsureSize(int width, int height, Format format)
     {
         if (width <= 0 || height <= 0)
         {
@@ -112,9 +105,9 @@ public sealed class SwapChainPanelHost : IDisposable
         _disposed = true;
     }
 
-    public bool TrySetColorSpace(ColorSpaceType requested, out ColorSpaceVerification verification)
+    public bool TrySetColorSpace(ColorSpaceType requested, out ColorSpaceApplicationResult result)
     {
-        verification = default;
+        result = default;
 
         IDXGISwapChain3? swapChain3 = _swapChain?.QueryInterface<IDXGISwapChain3>();
         if (swapChain3 is null)
@@ -127,90 +120,25 @@ public sealed class SwapChainPanelHost : IDisposable
             SwapChainColorSpaceSupportFlags supportFlags = swapChain3.CheckColorSpaceSupport(requested);
             if (!supportFlags.HasFlag(SwapChainColorSpaceSupportFlags.Present))
             {
-                verification = new ColorSpaceVerification(requested, (uint)supportFlags, new Result(unchecked((int)0x80004005)), null);
+                result = new ColorSpaceApplicationResult(requested, (uint)supportFlags, false, new Result(unchecked((int)0x80004005)));
                 return false;
             }
 
-            Result setResult = SetColorSpace1WithHResult(swapChain3, requested);
-            ColorSpaceType? actual = null;
-            if (setResult.Success)
+            Result setResult;
+            try
             {
-                int getHr = GetColorSpace1WithHResult(swapChain3, out ColorSpaceType readBack);
-                if (getHr >= 0)
-                {
-                    actual = readBack;
-                }
+                swapChain3.SetColorSpace1(requested);
+                setResult = new Result(0);
+            }
+            catch (Exception ex)
+            {
+                setResult = new Result(ex.HResult);
             }
 
-            verification = new ColorSpaceVerification(requested, (uint)supportFlags, setResult, actual);
-            return setResult.Success && actual == requested;
+            result = new ColorSpaceApplicationResult(requested, (uint)supportFlags, setResult.Success, setResult);
+            return setResult.Success;
         }
     }
-
-    private static Result SetColorSpace1WithHResult(IDXGISwapChain3 swapChain3, ColorSpaceType colorSpace)
-    {
-        try
-        {
-            int hr = InvokeColorSpaceMethod(swapChain3, SetColorSpace1VtableIndex, colorSpace);
-            return new Result(hr);
-        }
-        catch (Exception ex)
-        {
-            return new Result(ex.HResult);
-        }
-    }
-
-    private static int GetColorSpace1WithHResult(IDXGISwapChain3 swapChain3, out ColorSpaceType colorSpace)
-    {
-        colorSpace = default;
-        try
-        {
-            int hr = InvokeColorSpaceMethod(swapChain3, GetColorSpace1VtableIndex, out int rawColorSpace);
-            colorSpace = (ColorSpaceType)rawColorSpace;
-            return hr;
-        }
-        catch
-        {
-            return unchecked((int)0x80004005);
-        }
-    }
-
-    private static int InvokeColorSpaceMethod(IDXGISwapChain3 swapChain3, int vtableIndex, ColorSpaceType colorSpace)
-    {
-        var cppObject = Unsafe.As<CppObject>(swapChain3);
-        IntPtr nativePointer = cppObject.NativePointer;
-        if (nativePointer == IntPtr.Zero)
-        {
-            return unchecked((int)0x80004003);
-        }
-
-        IntPtr vtable = Marshal.ReadIntPtr(nativePointer);
-        IntPtr methodPointer = Marshal.ReadIntPtr(vtable, vtableIndex * IntPtr.Size);
-        var method = Marshal.GetDelegateForFunctionPointer<SetColorSpace1Delegate>(methodPointer);
-        return method(nativePointer, colorSpace);
-    }
-
-    private static int InvokeColorSpaceMethod(IDXGISwapChain3 swapChain3, int vtableIndex, out int colorSpace)
-    {
-        var cppObject = Unsafe.As<CppObject>(swapChain3);
-        IntPtr nativePointer = cppObject.NativePointer;
-        if (nativePointer == IntPtr.Zero)
-        {
-            colorSpace = 0;
-            return unchecked((int)0x80004003);
-        }
-
-        IntPtr vtable = Marshal.ReadIntPtr(nativePointer);
-        IntPtr methodPointer = Marshal.ReadIntPtr(vtable, vtableIndex * IntPtr.Size);
-        var method = Marshal.GetDelegateForFunctionPointer<GetColorSpace1Delegate>(methodPointer);
-        return method(nativePointer, out colorSpace);
-    }
-
-    [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-    private delegate int SetColorSpace1Delegate(IntPtr thisPtr, ColorSpaceType colorSpace);
-
-    [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-    private delegate int GetColorSpace1Delegate(IntPtr thisPtr, out int colorSpace);
 
     private void SetSwapChainOnPanel(IDXGISwapChain1? swapChain)
     {

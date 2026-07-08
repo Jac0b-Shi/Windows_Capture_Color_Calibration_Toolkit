@@ -81,6 +81,11 @@
                 Grid.Column="1"
                 Spacing="12">
                 <TextBlock x:Uid="ChartLayoutLabel" FontWeight="SemiBold" />
+                <ComboBox x:Name="PatchSizePresetComboBox" x:Uid="PatchSizePresetComboBox" MinWidth="200">
+                    <ComboBoxItem x:Uid="PatchSizePresetCompact" Tag="64" />
+                    <ComboBoxItem x:Uid="PatchSizePresetStandard" Tag="128" />
+                    <ComboBoxItem x:Uid="PatchSizePresetLarge" Tag="256" />
+                </ComboBox>
                 <Grid ColumnSpacing="8" RowSpacing="8">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
