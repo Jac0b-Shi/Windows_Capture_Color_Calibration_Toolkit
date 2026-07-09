@@ -102,6 +102,46 @@ public sealed class MeasurementSessionBuilderTests
         Assert.True(captured.GetProperty("rgba").ValueKind == JsonValueKind.Null);
     }
 
+    [Fact]
+    public void Build_FloatSample_PreservesRgbaCapturedValue()
+    {
+        ChartDefinition chart = CreateChart();
+        IReadOnlyList<PatchPlacement> layout = CreateLayout(chart);
+        ChartRenderSession renderSession = CreateRenderSession(chart, layout);
+        CaptureSummary captureSummary = CreateCaptureSummary();
+        CaptureGeometry captureGeometry = CreateCaptureGeometry();
+        var sample = new PatchSample(
+            chart.Patches[0].Id,
+            SampleMethod.CenterMean,
+            16,
+            null,
+            new RgbaFloat(1.25f, 1.25f, 1.25f, 1.0f),
+            new ChannelStatistics(
+                new ChannelStatistic(1.25, 1.25, 1.25, 1.25, 0, 1),
+                new ChannelStatistic(1.25, 1.25, 1.25, 1.25, 0, 1),
+                new ChannelStatistic(1.25, 1.25, 1.25, 1.25, 0, 1)),
+            []);
+
+        MeasurementSession session = MeasurementSessionBuilder.Build(
+            new ApplicationInfo("WgcColorCalibrator", "0.1.0"),
+            new Dictionary<string, string>(),
+            new Dictionary<string, string>(),
+            new Dictionary<string, string>(),
+            new Dictionary<string, string>(),
+            chart,
+            layout,
+            renderSession,
+            captureSummary,
+            captureGeometry,
+            [sample]);
+
+        MeasurementRecord record = session.Measurements[0];
+        Assert.Equal(ColorEncoding.CaptureNative, record.Captured.Encoding);
+        Assert.Null(record.Captured.Rgb8);
+        Assert.True(record.Captured.Rgba.HasValue);
+        Assert.Equal(1.25f, record.Captured.Rgba.Value.R, 4);
+    }
+
     private static ChartDefinition CreateChart()
     {
         return new ChartDefinition(

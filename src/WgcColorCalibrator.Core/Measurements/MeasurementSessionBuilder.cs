@@ -59,7 +59,9 @@ public static class MeasurementSessionBuilder
                 patch.HdrColor is not null ? new RgbaFloat(patch.HdrColor.Value.R, patch.HdrColor.Value.G, patch.HdrColor.Value.B, 1.0f) : null);
             ColorValue captured = sample.Rgb8Value.HasValue
                 ? new ColorValue(ColorEncoding.CaptureNative, sample.Rgb8Value.Value, null)
-                : new ColorValue(ColorEncoding.Unknown, null, null);
+                : sample.FloatValue.HasValue
+                    ? new ColorValue(ColorEncoding.CaptureNative, null, sample.FloatValue.Value)
+                    : new ColorValue(ColorEncoding.Unknown, null, null);
 
             records.Add(new MeasurementRecord(
                 sample.PatchId,

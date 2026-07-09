@@ -36,6 +36,44 @@ public sealed class ProfileJsonSerializerTests
         Assert.Contains("manual-ffffff,#FFFFFF,255,255,255,242,242,242,242.0000,242.0000,242.0000,242.0000,242.0000,242.0000,0.0000,0.0000,0.0000,-13,-13,-13,B8G8R8A8UIntNormalized,CenterMedian", csv, StringComparison.Ordinal);
     }
 
+    [Fact]
+    public void MeasurementCsvSerializer_FloatCaptured_WritesFloatValuesAndDelta()
+    {
+        MeasurementSession session = CreateSession();
+        MeasurementRecord original = session.Measurements[0];
+        var floatRecord = new MeasurementRecord(
+            original.PatchId,
+            original.Expected,
+            original.DisplayObserved,
+            new ColorValue(ColorEncoding.CaptureNative, null, new RgbaFloat(1.25f, 1.25f, 1.25f, 1.0f)),
+            original.Sampling,
+            original.ChannelStatistics,
+            original.Validity,
+            original.Warnings);
+
+        MeasurementSession floatSession = new(
+            session.SchemaVersion,
+            session.Application,
+            session.System,
+            session.Gpu,
+            session.Display,
+            session.Hdr,
+            session.Capture,
+            session.Chart,
+            session.Layout,
+            session.RenderSummary,
+            session.CaptureGeometry,
+            [floatRecord],
+            session.Analysis,
+            session.Warnings,
+            session.CreatedAt,
+            session.Validity);
+
+        string csv = MeasurementCsvSerializer.Serialize(floatSession);
+
+        Assert.Contains("manual-ffffff,#FFFFFF,255,255,255,1.250000,1.250000,1.250000", csv, StringComparison.Ordinal);
+    }
+
     private static MeasurementSession CreateSession()
     {
         ChartDefinition chart = new ManualSingleColorChartProvider().Create(ChartGenerationOptions.Default);

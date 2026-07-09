@@ -38,6 +38,25 @@ public static class PatchSampler
             return CreateInvalidSample(placement, method, MeasurementValidity.EmptySample, "empty-sample-region");
         }
 
+        return frame.PixelFormat switch
+        {
+            CapturePixelFormat.B8G8R8A8UIntNormalized => SampleBgra8(frame, contentOffset, placement, method, sampleBounds, sampleLeft, sampleTop, sampleRight, sampleBottom),
+            CapturePixelFormat.R16G16B16A16Float => SampleRgba16Float(frame, contentOffset, placement, method, sampleBounds, sampleLeft, sampleTop, sampleRight, sampleBottom),
+            _ => throw new NotSupportedException($"Pixel format '{frame.PixelFormat}' is not supported for patch sampling.")
+        };
+    }
+
+    private static PatchSample SampleBgra8(
+        CapturedFrame frame,
+        PixelPoint contentOffset,
+        PatchPlacement placement,
+        SampleMethod method,
+        PixelRect sampleBounds,
+        int sampleLeft,
+        int sampleTop,
+        int sampleRight,
+        int sampleBottom)
+    {
         int sampleCount = sampleBounds.Width * sampleBounds.Height;
         List<byte> rValues = new(sampleCount);
         List<byte> gValues = new(sampleCount);
@@ -82,6 +101,69 @@ public static class PatchSampler
             warnings);
     }
 
+    private static PatchSample SampleRgba16Float(
+        CapturedFrame frame,
+        PixelPoint contentOffset,
+        PatchPlacement placement,
+        SampleMethod method,
+        PixelRect sampleBounds,
+        int sampleLeft,
+        int sampleTop,
+        int sampleRight,
+        int sampleBottom)
+    {
+        int sampleCount = sampleBounds.Width * sampleBounds.Height;
+        List<float> rValues = new(sampleCount);
+        List<float> gValues = new(sampleCount);
+        List<float> bValues = new(sampleCount);
+        List<float> aValues = new(sampleCount);
+
+        for (int y = sampleTop; y < sampleBottom; y++)
+        {
+            int rowStart = y * frame.PackedRowStride;
+            for (int x = sampleLeft; x < sampleRight; x++)
+            {
+                int offset = rowStart + x * 8;
+                rValues.Add(ReadHalf(frame.ContentPixels, offset));
+                gValues.Add(ReadHalf(frame.ContentPixels, offset + 2));
+                bValues.Add(ReadHalf(frame.ContentPixels, offset + 4));
+                aValues.Add(ReadHalf(frame.ContentPixels, offset + 6));
+            }
+        }
+
+        bool useMedian = method == SampleMethod.CenterMedian;
+        float r = useMedian ? Median(rValues) : (float)rValues.Average();
+        float g = useMedian ? Median(gValues) : (float)gValues.Average();
+        float b = useMedian ? Median(bValues) : (float)bValues.Average();
+        float a = useMedian ? Median(aValues) : (float)aValues.Average();
+
+        RgbaFloat rgba = new(r, g, b, a);
+        ChannelStatistics statistics = new(
+            new ChannelStatistic(rValues.Min(), rValues.Max(), rValues.Average(), MedianAsDouble(rValues), StdDev(rValues), rValues.Distinct().Count()),
+            new ChannelStatistic(gValues.Min(), gValues.Max(), gValues.Average(), MedianAsDouble(gValues), StdDev(gValues), gValues.Distinct().Count()),
+            new ChannelStatistic(bValues.Min(), bValues.Max(), bValues.Average(), MedianAsDouble(bValues), StdDev(bValues), bValues.Distinct().Count()));
+
+        List<string> warnings = new();
+        if (IsNonuniform(statistics))
+        {
+            warnings.Add("sample-region-nonuniform");
+        }
+
+        return new PatchSample(
+            placement.PatchId,
+            method,
+            sampleCount,
+            null,
+            rgba,
+            statistics,
+            warnings);
+    }
+
+    private static float ReadHalf(byte[] pixels, int offset)
+    {
+        return (float)BitConverter.ToHalf(pixels, offset);
+    }
+
     private static PatchSample CreateInvalidSample(
         PatchPlacement placement,
         SampleMethod method,
@@ -123,11 +205,37 @@ public static class PatchSampler
             : (byte)((values[values.Count / 2 - 1] + values[values.Count / 2]) / 2);
     }
 
+    private static float Median(List<float> values)
+    {
+        if (values.Count == 0)
+        {
+            return 0.0f;
+        }
+
+        values.Sort();
+        return values.Count % 2 == 1
+            ? values[values.Count / 2]
+            : (values[values.Count / 2 - 1] + values[values.Count / 2]) / 2.0f;
+    }
+
     private static double MedianAsDouble(List<byte> values)
     {
         if (values.Count == 0)
         {
             return 0;
+        }
+
+        values.Sort();
+        return values.Count % 2 == 1
+            ? values[values.Count / 2]
+            : (values[values.Count / 2 - 1] + values[values.Count / 2]) / 2.0;
+    }
+
+    private static double MedianAsDouble(List<float> values)
+    {
+        if (values.Count == 0)
+        {
+            return 0.0;
         }
 
         values.Sort();
@@ -144,6 +252,18 @@ public static class PatchSampler
         }
 
         double avg = values.Average(v => v);
+        double sum = values.Sum(v => (v - avg) * (v - avg));
+        return Math.Sqrt(sum / values.Count);
+    }
+
+    private static double StdDev(List<float> values)
+    {
+        if (values.Count == 0)
+        {
+            return 0;
+        }
+
+        double avg = values.Average();
         double sum = values.Sum(v => (v - avg) * (v - avg));
         return Math.Sqrt(sum / values.Count);
     }

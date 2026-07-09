@@ -81,6 +81,114 @@ public sealed class PatchSamplerTests
         Assert.DoesNotContain("sample-region-nonuniform", sample.Warnings);
     }
 
+    [Fact]
+    public void Sample_Rgba16Float_ReturnsFloatValue()
+    {
+        CapturedFrame frame = CreateSolidRgba16FloatFrame(4, 4, 1.25f, 1.5f, 2.0f);
+        PatchPlacement placement = new("p1", new PixelRect(0, 0, 2, 2), new PixelRect(0, 0, 1, 1));
+
+        PatchSample sample = PatchSampler.Sample(frame, new PixelPoint(0, 0), placement, SampleMethod.CenterMean);
+
+        Assert.Equal("p1", sample.PatchId);
+        Assert.Null(sample.Rgb8Value);
+        Assert.True(sample.FloatValue.HasValue);
+        Assert.Equal(1.25f, sample.FloatValue.Value.R, 4);
+        Assert.Equal(1.5f, sample.FloatValue.Value.G, 4);
+        Assert.Equal(2.0f, sample.FloatValue.Value.B, 4);
+    }
+
+    [Fact]
+    public void Sample_Rgba16Float_Mean_ComputesAverage()
+    {
+        CapturedFrame frame = CreateRgba16FloatFrameWithTwoColors(4, 4, new RgbaFloat(1.0f, 1.0f, 1.0f, 1.0f), new RgbaFloat(2.0f, 2.0f, 2.0f, 1.0f));
+        PatchPlacement placement = new("p1", new PixelRect(0, 0, 4, 4), new PixelRect(0, 0, 4, 4));
+
+        PatchSample sample = PatchSampler.Sample(frame, new PixelPoint(0, 0), placement, SampleMethod.CenterMean);
+
+        Assert.Null(sample.Rgb8Value);
+        Assert.True(sample.FloatValue.HasValue);
+        Assert.Equal(1.5f, sample.FloatValue.Value.R, 4);
+        Assert.Equal(1.5f, sample.Statistics.R.Mean, 4);
+    }
+
+    [Fact]
+    public void Sample_Rgba16Float_Median_ComputesMedian()
+    {
+        CapturedFrame frame = CreateRgba16FloatFrameWithTwoColors(4, 4, new RgbaFloat(1.0f, 1.0f, 1.0f, 1.0f), new RgbaFloat(2.0f, 2.0f, 2.0f, 1.0f));
+        PatchPlacement placement = new("p1", new PixelRect(0, 0, 4, 4), new PixelRect(0, 0, 4, 4));
+
+        PatchSample sample = PatchSampler.Sample(frame, new PixelPoint(0, 0), placement, SampleMethod.CenterMedian);
+
+        Assert.True(sample.FloatValue.HasValue);
+        Assert.Equal(1.5f, sample.FloatValue.Value.R, 4);
+    }
+
+    [Fact]
+    public void Sample_Rgba16Float_NonuniformRegion_AddsContaminationWarning()
+    {
+        CapturedFrame frame = CreateRgba16FloatFrameWithTwoColors(4, 4, new RgbaFloat(1.0f, 1.0f, 1.0f, 1.0f), new RgbaFloat(20.0f, 20.0f, 20.0f, 1.0f));
+        PatchPlacement placement = new("p1", new PixelRect(0, 0, 4, 4), new PixelRect(0, 0, 4, 4));
+
+        PatchSample sample = PatchSampler.Sample(frame, new PixelPoint(0, 0), placement, SampleMethod.CenterMean);
+
+        Assert.Contains("sample-region-nonuniform", sample.Warnings);
+    }
+
+    private static CapturedFrame CreateSolidRgba16FloatFrame(int width, int height, float r, float g, float b)
+    {
+        byte[] pixels = new byte[width * height * 8];
+        for (int i = 0; i < width * height; i++)
+        {
+            WriteRgba16Float(pixels, i * 8, r, g, b, 1.0f);
+        }
+
+        return new CapturedFrame(
+            new SizeInt(width, height),
+            new SizeInt(width, height),
+            new SizeInt(width, height),
+            CapturePixelFormat.R16G16B16A16Float,
+            width * 8,
+            pixels,
+            CaptureSourceKind.Window,
+            null,
+            DateTimeOffset.UtcNow,
+            []);
+    }
+
+    private static CapturedFrame CreateRgba16FloatFrameWithTwoColors(int width, int height, RgbaFloat first, RgbaFloat second)
+    {
+        byte[] pixels = new byte[width * height * 8];
+        for (int y = 0; y < height; y++)
+        {
+            for (int x = 0; x < width; x++)
+            {
+                RgbaFloat color = x < width / 2 ? first : second;
+                int offset = (y * width + x) * 8;
+                WriteRgba16Float(pixels, offset, color.R, color.G, color.B, color.A);
+            }
+        }
+
+        return new CapturedFrame(
+            new SizeInt(width, height),
+            new SizeInt(width, height),
+            new SizeInt(width, height),
+            CapturePixelFormat.R16G16B16A16Float,
+            width * 8,
+            pixels,
+            CaptureSourceKind.Window,
+            null,
+            DateTimeOffset.UtcNow,
+            []);
+    }
+
+    private static void WriteRgba16Float(byte[] pixels, int offset, float r, float g, float b, float a)
+    {
+        BitConverter.GetBytes((Half)r).CopyTo(pixels, offset);
+        BitConverter.GetBytes((Half)g).CopyTo(pixels, offset + 2);
+        BitConverter.GetBytes((Half)b).CopyTo(pixels, offset + 4);
+        BitConverter.GetBytes((Half)a).CopyTo(pixels, offset + 6);
+    }
+
     private static CapturedFrame CreateSolidFrame(int width, int height, byte b, byte g, byte r)
     {
         byte[] pixels = new byte[width * height * 4];
