@@ -36,6 +36,7 @@
                     <ComboBoxItem x:Uid="ChartTypeManual" Tag="manual-single-color" />
                     <ComboBoxItem x:Uid="ChartTypeNearWhite" Tag="near-white" />
                     <ComboBoxItem x:Uid="ChartTypeGrayscale" Tag="grayscale" />
+                    <ComboBoxItem x:Uid="ChartTypeHdrRamp" Tag="hdr-ramp" />
                 </ComboBox>
 
                 <StackPanel x:Name="SdrManualPanel" Spacing="8" Visibility="Collapsed">

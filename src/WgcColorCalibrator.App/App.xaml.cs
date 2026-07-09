@@ -56,6 +56,7 @@ public partial class App : Application
         services.AddSingleton<IChartProvider, ManualSingleColorChartProvider>();
         services.AddSingleton<IChartProvider, NearWhiteChartProvider>();
         services.AddSingleton<IChartProvider, GrayscaleChartProvider>();
+        services.AddSingleton<IChartProvider, HdrRampChartProvider>();
         services.AddDirect3D11Rendering();
         services.AddWindowsGraphicsCapture();
         services.AddSingleton<IChartWindowFactory, ChartWindowFactory>();

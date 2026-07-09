@@ -165,6 +165,15 @@
   <data name="ChartTypeGrayscale.Content" xml:space="preserve">
     <value>灰阶</value>
   </data>
+  <data name="ChartTypeHdrRamp.Content" xml:space="preserve">
+    <value>HDR scRGB 阶梯</value>
+  </data>
+  <data name="Chart.HdrRamp.Name" xml:space="preserve">
+    <value>HDR scRGB 阶梯</value>
+  </data>
+  <data name="Chart.HdrRamp.Description" xml:space="preserve">
+    <value>用于 HDR 捕获映射实验的线性 scRGB 阶梯。</value>
+  </data>
   <data name="ManualColorLabel.Text" xml:space="preserve">
     <value>颜色</value>
   </data>

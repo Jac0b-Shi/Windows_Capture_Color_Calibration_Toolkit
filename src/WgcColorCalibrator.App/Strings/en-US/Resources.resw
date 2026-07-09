@@ -165,6 +165,15 @@
   <data name="ChartTypeGrayscale.Content" xml:space="preserve">
     <value>Grayscale</value>
   </data>
+  <data name="ChartTypeHdrRamp.Content" xml:space="preserve">
+    <value>HDR scRGB Ramp</value>
+  </data>
+  <data name="Chart.HdrRamp.Name" xml:space="preserve">
+    <value>HDR scRGB Ramp</value>
+  </data>
+  <data name="Chart.HdrRamp.Description" xml:space="preserve">
+    <value>Linear scRGB ramp for HDR capture mapping experiments.</value>
+  </data>
   <data name="ManualColorLabel.Text" xml:space="preserve">
     <value>Color</value>
   </data>
