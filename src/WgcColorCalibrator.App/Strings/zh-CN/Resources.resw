@@ -439,10 +439,25 @@
     <value>导出 CSV</value>
   </data>
   <data name="ExportBgraButton.Content" xml:space="preserve">
-    <value>导出 BGRA</value>
+    <value>导出 BGRA8</value>
+  </data>
+  <data name="ExportRgba16fButton.Content" xml:space="preserve">
+    <value>导出 FP16 原始帧</value>
   </data>
   <data name="ExportDebugOverlayButton.Content" xml:space="preserve">
     <value>导出 BGRA8 调试覆盖层</value>
+  </data>
+  <data name="ExportLuminanceOverlayButton.Content" xml:space="preserve">
+    <value>导出亮度热力图</value>
+  </data>
+  <data name="CaptureFormatLabel.Text" xml:space="preserve">
+    <value>捕获格式</value>
+  </data>
+  <data name="CaptureFormatBgra8.Content" xml:space="preserve">
+    <value>BGRA8</value>
+  </data>
+  <data name="CaptureFormatRgba16Float.Content" xml:space="preserve">
+    <value>FP16 RGBA</value>
   </data>
   <data name="MeasurementOverlayNote" xml:space="preserve">
     <value>导出的调试覆盖层来自 WGC BGRA8 捕获数据，不保留 SDR 白点以上的 HDR 亮度。</value>

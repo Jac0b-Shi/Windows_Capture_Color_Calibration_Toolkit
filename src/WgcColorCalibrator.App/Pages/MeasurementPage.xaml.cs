@@ -42,7 +42,29 @@ public sealed partial class MeasurementPage : Page
 
     private void OnLoaded(object sender, RoutedEventArgs e)
     {
+        InitializeCaptureFormatSelection();
         Refresh();
+    }
+
+    private void InitializeCaptureFormatSelection()
+    {
+        CaptureFormatComboBox.SelectedItem = _measurementService.SelectedCapturePixelFormat switch
+        {
+            CapturePixelFormat.R16G16B16A16Float => CaptureFormatComboBox.Items.OfType<ComboBoxItem>().First(i => i.Tag as string == "r16g16b16a16-float"),
+            _ => CaptureFormatComboBox.Items.OfType<ComboBoxItem>().First(i => i.Tag as string == "b8g8r8a8-uint-normalized")
+        };
+    }
+
+    private void CaptureFormatComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (CaptureFormatComboBox.SelectedItem is ComboBoxItem item && item.Tag is string tag)
+        {
+            _measurementService.SelectedCapturePixelFormat = tag switch
+            {
+                "r16g16b16a16-float" => CapturePixelFormat.R16G16B16A16Float,
+                _ => CapturePixelFormat.B8G8R8A8UIntNormalized
+            };
+        }
     }
 
     protected override void OnNavigatedTo(NavigationEventArgs e)
@@ -77,12 +99,17 @@ public sealed partial class MeasurementPage : Page
     private void Refresh()
     {
         MeasurementSession? session = _measurementService.CurrentSession;
-        if (session is null)
+        CapturedFrame? frame = _measurementService.CurrentFrame;
+        if (session is null || frame is null)
         {
             StatusInfoBar.IsOpen = false;
             SummaryTextBlock.Text = string.Empty;
             RecordsGridView.ItemsSource = null;
             ExportJsonButton.IsEnabled = false;
+            ExportCsvButton.IsEnabled = false;
+            ExportRawButton.IsEnabled = false;
+            ExportDebugOverlayButton.IsEnabled = false;
+            ExportLuminanceOverlayButton.IsEnabled = false;
             return;
         }
 
@@ -91,6 +118,7 @@ public sealed partial class MeasurementPage : Page
         SummaryTextBlock.Text =
             $"Validity: {session.Validity}\n" +
             $"Geometry: {geometryStatus}\n" +
+            $"Format: {session.Capture.ActualPixelFormat}\n" +
             $"Patches: {session.Measurements.Count}\n" +
             $"Warnings: {string.Join(", ", session.Warnings)}\n" +
             _resourceLoader.GetString("MeasurementOverlayNote");
@@ -106,8 +134,14 @@ public sealed partial class MeasurementPage : Page
         RecordsGridView.ItemsSource = session.Measurements.Select(ToViewModel).ToList();
         ExportJsonButton.IsEnabled = true;
         ExportCsvButton.IsEnabled = true;
-        ExportBgraButton.IsEnabled = _measurementService.CurrentFrame is not null;
-        ExportDebugOverlayButton.IsEnabled = _measurementService.CurrentFrame is not null;
+        ExportRawButton.IsEnabled = true;
+        ExportRawButton.Content = _resourceLoader.GetString(frame.PixelFormat == CapturePixelFormat.R16G16B16A16Float ? "ExportRgba16fButton.Content" : "ExportBgraButton.Content");
+
+        bool isBgra8 = frame.PixelFormat == CapturePixelFormat.B8G8R8A8UIntNormalized;
+        ExportDebugOverlayButton.IsEnabled = isBgra8;
+        ExportDebugOverlayButton.Visibility = isBgra8 ? Visibility.Visible : Visibility.Collapsed;
+        ExportLuminanceOverlayButton.IsEnabled = !isBgra8;
+        ExportLuminanceOverlayButton.Visibility = isBgra8 ? Visibility.Collapsed : Visibility.Visible;
     }
 
     private static MeasurementRecordViewModel ToViewModel(MeasurementRecord record)
@@ -226,13 +260,20 @@ public sealed partial class MeasurementPage : Page
         await global::Windows.Storage.FileIO.WriteTextAsync(file, csv);
     }
 
-    private async void ExportBgraButton_Click(object sender, RoutedEventArgs e)
+    private async void ExportRawButton_Click(object sender, RoutedEventArgs e)
     {
-        byte[]? pixels = _measurementService.ExportCurrentFrameAsBgra();
-        if (pixels is null)
+        byte[]? pixels = _measurementService.ExportCurrentFrameRawBytes();
+        CapturedFrame? frame = _measurementService.CurrentFrame;
+        if (pixels is null || frame is null)
         {
             return;
         }
+
+        (string fileTypeName, string extension) = frame.PixelFormat switch
+        {
+            CapturePixelFormat.R16G16B16A16Float => ("FP16 RGBA", ".rgba16f"),
+            _ => ("BGRA", ".bgra")
+        };
 
         MeasurementSession? session = _measurementService.CurrentSession;
         var picker = new global::Windows.Storage.Pickers.FileSavePicker();
@@ -240,7 +281,7 @@ public sealed partial class MeasurementPage : Page
         picker.SuggestedFileName = session is not null
             ? $"capture-{session.CreatedAt:yyyyMMdd-HHmmss}"
             : "capture-frame";
-        picker.FileTypeChoices.Add("BGRA", new[] { ".bgra" });
+        picker.FileTypeChoices.Add(fileTypeName, new[] { extension });
 
         WinRT.Interop.InitializeWithWindow.Initialize(picker, ((App)App.Current).WindowHandle);
         global::Windows.Storage.StorageFile? file = await picker.PickSaveFileAsync();
@@ -264,6 +305,34 @@ public sealed partial class MeasurementPage : Page
         var picker = new global::Windows.Storage.Pickers.FileSavePicker();
         picker.SuggestedStartLocation = global::Windows.Storage.Pickers.PickerLocationId.DocumentsLibrary;
         picker.SuggestedFileName = $"overlay-{session.CreatedAt:yyyyMMdd-HHmmss}";
+        picker.FileTypeChoices.Add("PNG", new[] { ".png" });
+
+        WinRT.Interop.InitializeWithWindow.Initialize(picker, ((App)App.Current).WindowHandle);
+        global::Windows.Storage.StorageFile? file = await picker.PickSaveFileAsync();
+        if (file is null)
+        {
+            return;
+        }
+
+        await _overlayService.SaveDebugOverlayAsync(
+            frame,
+            session.CaptureGeometry,
+            session.Layout,
+            file);
+    }
+
+    private async void ExportLuminanceOverlayButton_Click(object sender, RoutedEventArgs e)
+    {
+        MeasurementSession? session = _measurementService.CurrentSession;
+        CapturedFrame? frame = _measurementService.CurrentFrame;
+        if (session is null || frame is null || session.CaptureGeometry is null)
+        {
+            return;
+        }
+
+        var picker = new global::Windows.Storage.Pickers.FileSavePicker();
+        picker.SuggestedStartLocation = global::Windows.Storage.Pickers.PickerLocationId.DocumentsLibrary;
+        picker.SuggestedFileName = $"overlay-luminance-{session.CreatedAt:yyyyMMdd-HHmmss}";
         picker.FileTypeChoices.Add("PNG", new[] { ".png" });
 
         WinRT.Interop.InitializeWithWindow.Initialize(picker, ((App)App.Current).WindowHandle);

@@ -27,11 +27,20 @@
                 Grid.Row="1"
                 Spacing="12"
                 Orientation="Horizontal">
+                <ComboBox
+                    x:Name="CaptureFormatComboBox"
+                    x:Uid="CaptureFormatLabel"
+                    MinWidth="160"
+                    SelectionChanged="CaptureFormatComboBox_SelectionChanged">
+                    <ComboBoxItem x:Uid="CaptureFormatBgra8" Tag="b8g8r8a8-uint-normalized" />
+                    <ComboBoxItem x:Uid="CaptureFormatRgba16Float" Tag="r16g16b16a16-float" />
+                </ComboBox>
                 <Button x:Name="CaptureButton" x:Uid="CaptureButton" Click="CaptureButton_Click" />
                 <Button x:Name="ExportJsonButton" x:Uid="ExportJsonButton" Click="ExportJsonButton_Click" IsEnabled="False" />
                 <Button x:Name="ExportCsvButton" x:Uid="ExportCsvButton" Click="ExportCsvButton_Click" IsEnabled="False" />
-                <Button x:Name="ExportBgraButton" x:Uid="ExportBgraButton" Click="ExportBgraButton_Click" IsEnabled="False" />
+                <Button x:Name="ExportRawButton" x:Uid="ExportBgraButton" Click="ExportRawButton_Click" IsEnabled="False" />
                 <Button x:Name="ExportDebugOverlayButton" x:Uid="ExportDebugOverlayButton" Click="ExportDebugOverlayButton_Click" IsEnabled="False" />
+                <Button x:Name="ExportLuminanceOverlayButton" x:Uid="ExportLuminanceOverlayButton" Click="ExportLuminanceOverlayButton_Click" IsEnabled="False" />
                 <Button x:Name="BackToChartButton" x:Uid="BackToChartButton" Click="BackToChartButton_Click" />
             </StackPanel>
 

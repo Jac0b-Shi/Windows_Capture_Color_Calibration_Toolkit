@@ -25,8 +25,7 @@ public sealed class MeasurementDebugOverlayService
 
         int width = frame.ContentSize.Width;
         int height = frame.ContentSize.Height;
-        byte[] overlay = new byte[frame.ContentPixels.Length];
-        frame.ContentPixels.CopyTo(overlay);
+        byte[] overlay = CreateBgra8Overlay(frame);
 
         int contentLeft = geometry.ContentOffset.X;
         int contentTop = geometry.ContentOffset.Y;
@@ -64,6 +63,74 @@ public sealed class MeasurementDebugOverlayService
         await encoder.FlushAsync();
 
         cancellationToken.ThrowIfCancellationRequested();
+    }
+
+    private static byte[] CreateBgra8Overlay(CapturedFrame frame)
+    {
+        return frame.PixelFormat switch
+        {
+            CapturePixelFormat.B8G8R8A8UIntNormalized => CreateBgra8OverlayFromBgra8(frame),
+            CapturePixelFormat.R16G16B16A16Float => CreateBgra8OverlayFromRgba16Float(frame),
+            _ => throw new NotSupportedException($"Debug overlay is not supported for pixel format '{frame.PixelFormat}'.")
+        };
+    }
+
+    private static byte[] CreateBgra8OverlayFromBgra8(CapturedFrame frame)
+    {
+        byte[] overlay = new byte[frame.ContentPixels.Length];
+        frame.ContentPixels.CopyTo(overlay, 0);
+        return overlay;
+    }
+
+    private static byte[] CreateBgra8OverlayFromRgba16Float(CapturedFrame frame)
+    {
+        int width = frame.ContentSize.Width;
+        int height = frame.ContentSize.Height;
+        byte[] overlay = new byte[width * height * 4];
+        double maxObserved = 0.0;
+
+        for (int y = 0; y < height; y++)
+        {
+            int rowStart = y * frame.PackedRowStride;
+            for (int x = 0; x < width; x++)
+            {
+                int offset = rowStart + x * 8;
+                float r = ReadHalf(frame.ContentPixels, offset);
+                float g = ReadHalf(frame.ContentPixels, offset + 2);
+                float b = ReadHalf(frame.ContentPixels, offset + 4);
+                maxObserved = Math.Max(maxObserved, Math.Max(r, Math.Max(g, b)));
+            }
+        }
+
+        double logMax = Math.Log2(1.0 + maxObserved);
+
+        for (int y = 0; y < height; y++)
+        {
+            int rowStart = y * frame.PackedRowStride;
+            int overlayRowStart = y * width * 4;
+            for (int x = 0; x < width; x++)
+            {
+                int offset = rowStart + x * 8;
+                int overlayOffset = overlayRowStart + x * 4;
+                float r = ReadHalf(frame.ContentPixels, offset);
+                float g = ReadHalf(frame.ContentPixels, offset + 2);
+                float b = ReadHalf(frame.ContentPixels, offset + 4);
+                double luminance = Math.Max(r, Math.Max(g, b));
+                double normalized = logMax > 0.0 ? Math.Log2(1.0 + luminance) / logMax : 0.0;
+                byte gray = (byte)Math.Clamp((int)Math.Round(normalized * 255.0, MidpointRounding.AwayFromZero), 0, 255);
+                overlay[overlayOffset] = gray;
+                overlay[overlayOffset + 1] = gray;
+                overlay[overlayOffset + 2] = gray;
+                overlay[overlayOffset + 3] = 0xFF;
+            }
+        }
+
+        return overlay;
+    }
+
+    private static float ReadHalf(byte[] pixels, int offset)
+    {
+        return (float)BitConverter.ToHalf(pixels, offset);
     }
 
     private static void DrawRectangle(

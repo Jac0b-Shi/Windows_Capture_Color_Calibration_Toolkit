@@ -22,6 +22,8 @@ public sealed class MeasurementService
     private readonly ChartWorkspaceService _workspace;
     private readonly AppDefaults _defaults;
 
+    public CapturePixelFormat SelectedCapturePixelFormat { get; set; }
+
     public MeasurementService(
         ISingleFrameCaptureBackend captureBackend,
         IWindowGeometryProbe geometryProbe,
@@ -37,6 +39,7 @@ public sealed class MeasurementService
         _geometryProbe = geometryProbe;
         _workspace = workspace;
         _defaults = defaults;
+        SelectedCapturePixelFormat = ParseCapturePixelFormat(_defaults.PreferredCapturePixelFormat);
     }
 
     public event EventHandler? StateChanged;
@@ -47,6 +50,11 @@ public sealed class MeasurementService
 
     public CaptureFailure? LastFailure { get; private set; }
 
+    public byte[]? ExportCurrentFrameRawBytes()
+    {
+        return CurrentFrame?.ContentPixels.ToArray();
+    }
+
     public string ExportCurrentSessionAsCsv()
     {
         if (CurrentSession is null)
@@ -55,11 +63,6 @@ public sealed class MeasurementService
         }
 
         return MeasurementCsvSerializer.Serialize(CurrentSession);
-    }
-
-    public byte[]? ExportCurrentFrameAsBgra()
-    {
-        return CurrentFrame?.ContentPixels.ToArray();
     }
 
     public bool CanCapture(out string? reason)
@@ -121,9 +124,10 @@ public sealed class MeasurementService
         ArgumentNullException.ThrowIfNull(target);
 
         LastFailure = null;
+        CapturePixelFormat requestedFormat = SelectedCapturePixelFormat;
         WindowGeometrySnapshot before = _geometryProbe.Capture(target.WindowHandle);
         CurrentFrame = await _captureBackend.CaptureAsync(
-            new WindowCaptureRequest(target.WindowHandle, CapturePixelFormat.B8G8R8A8UIntNormalized, TimeSpan.FromSeconds(5)),
+            new WindowCaptureRequest(target.WindowHandle, requestedFormat, TimeSpan.FromSeconds(5)),
             cancellationToken);
         WindowGeometrySnapshot after = _geometryProbe.Capture(target.WindowHandle);
 
@@ -136,8 +140,8 @@ public sealed class MeasurementService
         CaptureSummary captureSummary = new(
             _captureBackend.BackendId,
             CaptureSourceKind.Window,
-            CapturePixelFormat.B8G8R8A8UIntNormalized,
-            CapturePixelFormat.B8G8R8A8UIntNormalized,
+            requestedFormat,
+            CurrentFrame.PixelFormat,
             ColorEncoding.CaptureNative,
             false);
 
@@ -240,6 +244,16 @@ public sealed class MeasurementService
             "center-mean" or "mean" => SampleMethod.CenterMean,
             "center-median" or "median" => SampleMethod.CenterMedian,
             _ => SampleMethod.CenterMedian
+        };
+    }
+
+    private static CapturePixelFormat ParseCapturePixelFormat(string? value)
+    {
+        return value?.ToLowerInvariant() switch
+        {
+            "b8g8r8a8-uint-normalized" or "bgra8" => CapturePixelFormat.B8G8R8A8UIntNormalized,
+            "r16g16b16a16-float" or "rgba16f" or "fp16" => CapturePixelFormat.R16G16B16A16Float,
+            _ => CapturePixelFormat.B8G8R8A8UIntNormalized
         };
     }
 
