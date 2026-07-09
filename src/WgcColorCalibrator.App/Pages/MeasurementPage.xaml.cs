@@ -135,7 +135,10 @@ public sealed partial class MeasurementPage : Page
         ExportJsonButton.IsEnabled = true;
         ExportCsvButton.IsEnabled = true;
         ExportRawButton.IsEnabled = true;
-        ExportRawButton.Content = _resourceLoader.GetString(frame.PixelFormat == CapturePixelFormat.R16G16B16A16Float ? "ExportRgba16fButton.Content" : "ExportBgraButton.Content");
+        string exportRawLabelKey = frame.PixelFormat == CapturePixelFormat.R16G16B16A16Float
+            ? "ExportRawRgba16fLabel"
+            : "ExportRawBgra8Label";
+        ExportRawButton.Content = _resourceLoader.GetString(exportRawLabelKey);
 
         bool isBgra8 = frame.PixelFormat == CapturePixelFormat.B8G8R8A8UIntNormalized;
         ExportDebugOverlayButton.IsEnabled = isBgra8;

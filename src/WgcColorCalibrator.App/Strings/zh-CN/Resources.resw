@@ -441,7 +441,13 @@
   <data name="ExportBgraButton.Content" xml:space="preserve">
     <value>导出 BGRA8</value>
   </data>
+  <data name="ExportRawBgra8Label" xml:space="preserve">
+    <value>导出 BGRA8</value>
+  </data>
   <data name="ExportRgba16fButton.Content" xml:space="preserve">
+    <value>导出 FP16 原始帧</value>
+  </data>
+  <data name="ExportRawRgba16fLabel" xml:space="preserve">
     <value>导出 FP16 原始帧</value>
   </data>
   <data name="ExportDebugOverlayButton.Content" xml:space="preserve">
