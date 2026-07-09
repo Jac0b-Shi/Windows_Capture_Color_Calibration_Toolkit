@@ -43,8 +43,9 @@ public sealed class MeasurementOperatorComparisonExportService
 
         IReadOnlyList<OperatorComparisonResult> results = _operatorComparisonService.Compare(session, operators, cancellationToken);
 
-        List<string> fileNames = new(results.Count + 2)
+        List<string> fileNames = new(results.Count + 3)
         {
+            "README.txt",
             "manifest.json",
             "operator-comparison.csv"
         };
@@ -57,6 +58,7 @@ public sealed class MeasurementOperatorComparisonExportService
         string csv = OperatorComparisonCsvSerializer.Serialize(results, session);
         await WriteTextFileAsync(outputFolder, "operator-comparison.csv", csv);
 
+        await WriteReadmeFileAsync(outputFolder, results);
         await WriteManifestFileAsync(outputFolder, timestamp, session, operators, results, fileNames);
 
         foreach (OperatorComparisonResult result in results)
@@ -85,6 +87,30 @@ public sealed class MeasurementOperatorComparisonExportService
     {
         StorageFile file = await folder.CreateFileAsync(fileName, CreationCollisionOption.FailIfExists);
         await FileIO.WriteTextAsync(file, content);
+    }
+
+    private static async Task WriteReadmeFileAsync(StorageFolder folder, IReadOnlyList<OperatorComparisonResult> results)
+    {
+        var sb = new System.Text.StringBuilder();
+        sb.AppendLine("WGC Color Calibrator — HDR-to-SDR Operator Comparison Export");
+        sb.AppendLine("============================================================");
+        sb.AppendLine();
+        sb.AppendLine("This folder contains SDR preview images and per-patch comparison data");
+        sb.AppendLine("generated from a single FP16 WGC capture frame.");
+        sb.AppendLine();
+        sb.AppendLine("The preview PNGs are false-color SDR diagnostic images. They are NOT");
+        sb.AppendLine("the original HDR capture and do NOT represent actual display luminance.");
+        sb.AppendLine();
+        sb.AppendLine("Files:");
+        sb.AppendLine("  README.txt              — this file");
+        sb.AppendLine("  manifest.json           — export metadata (schema version, chart, operators, file list)");
+        sb.AppendLine("  operator-comparison.csv — per-patch mapped values for each operator");
+        foreach (OperatorComparisonResult result in results)
+        {
+            sb.AppendLine($"  preview-{result.OperatorId}.png — SDR preview via {result.OperatorDisplayName}");
+        }
+
+        await WriteTextFileAsync(folder, "README.txt", sb.ToString());
     }
 
     private static async Task WriteManifestFileAsync(

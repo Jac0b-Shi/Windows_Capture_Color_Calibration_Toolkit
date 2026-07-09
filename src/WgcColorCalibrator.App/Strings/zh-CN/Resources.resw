@@ -490,7 +490,7 @@
     <value>自定义算子...</value>
   </data>
   <data name="OperatorComparisonMenuItemToolTip" xml:space="preserve">
-    <value>需要先用 FP16 RGBA 捕获一帧。</value>
+    <value>基于当前 FP16 捕获帧，为内置色调映射算子生成 SDR 预览和逐色块 CSV。需要先用 FP16 RGBA 捕获一帧。</value>
   </data>
   <data name="CustomOperatorMenuItemToolTip" xml:space="preserve">
     <value>尚未实现。用户自定义标量表达式将保存到 LocalAppData。</value>
@@ -503,15 +503,6 @@
   </data>
   <data name="OperatorComparisonExported" xml:space="preserve">
     <value>算子对比已导出。</value>
-  </data>
-  <data name="CustomOperatorMenuItem.Text" xml:space="preserve">
-    <value>自定义算子...</value>
-  </data>
-  <data name="OperatorComparisonMenuItemToolTip" xml:space="preserve">
-    <value>需要先用 FP16 RGBA 捕获一帧。</value>
-  </data>
-  <data name="CustomOperatorMenuItemToolTip" xml:space="preserve">
-    <value>尚未实现。用户自定义标量表达式将保存到 LocalAppData。</value>
   </data>
   <data name="ExportCompleted" xml:space="preserve">
     <value>导出完成。</value>

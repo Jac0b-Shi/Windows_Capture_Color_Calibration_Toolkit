@@ -490,7 +490,7 @@
     <value>Custom operator...</value>
   </data>
   <data name="OperatorComparisonMenuItemToolTip" xml:space="preserve">
-    <value>Requires an FP16 RGBA capture first.</value>
+    <value>Based on the current FP16 capture frame, generates SDR previews and per-patch CSV for built-in tone-mapping operators. Requires an FP16 RGBA capture first.</value>
   </data>
   <data name="CustomOperatorMenuItemToolTip" xml:space="preserve">
     <value>Not yet implemented. User-defined scalar expressions will be saved to LocalAppData.</value>
@@ -503,15 +503,6 @@
   </data>
   <data name="OperatorComparisonExported" xml:space="preserve">
     <value>Operator comparison exported.</value>
-  </data>
-  <data name="CustomOperatorMenuItem.Text" xml:space="preserve">
-    <value>Custom operator...</value>
-  </data>
-  <data name="OperatorComparisonMenuItemToolTip" xml:space="preserve">
-    <value>Requires an FP16 RGBA capture first.</value>
-  </data>
-  <data name="CustomOperatorMenuItemToolTip" xml:space="preserve">
-    <value>Not yet implemented. User-defined scalar expressions will be saved to LocalAppData.</value>
   </data>
   <data name="ExportCompleted" xml:space="preserve">
     <value>Export completed.</value>
