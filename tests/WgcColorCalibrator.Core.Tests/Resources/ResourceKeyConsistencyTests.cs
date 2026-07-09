@@ -7,40 +7,32 @@ public class ResourceKeyConsistencyTests
     [Fact]
     public void EnUsAndZhCn_ResourceKeys_AreConsistent()
     {
-        string enUsPath = Path.Combine(
-            AppContext.BaseDirectory,
-            "..",
-            "..",
-            "..",
-            "..",
-            "..",
-            "src",
-            "WgcColorCalibrator.App",
-            "Strings",
-            "en-US",
-            "Resources.resw");
-        string zhCnPath = Path.Combine(
-            AppContext.BaseDirectory,
-            "..",
-            "..",
-            "..",
-            "..",
-            "..",
-            "src",
-            "WgcColorCalibrator.App",
-            "Strings",
-            "zh-CN",
-            "Resources.resw");
+        string repoRoot = FindRepositoryRoot(AppContext.BaseDirectory)
+            ?? throw new InvalidOperationException("Could not locate repository root from test output directory.");
 
-        // Tests run from the test project bin folder; resolve relative to repository root.
-        string repoRoot = Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "..");
-        enUsPath = Path.GetFullPath(Path.Combine(repoRoot, "src", "WgcColorCalibrator.App", "Strings", "en-US", "Resources.resw"));
-        zhCnPath = Path.GetFullPath(Path.Combine(repoRoot, "src", "WgcColorCalibrator.App", "Strings", "zh-CN", "Resources.resw"));
+        string enUsPath = Path.GetFullPath(Path.Combine(repoRoot, "src", "WgcColorCalibrator.App", "Strings", "en-US", "Resources.resw"));
+        string zhCnPath = Path.GetFullPath(Path.Combine(repoRoot, "src", "WgcColorCalibrator.App", "Strings", "zh-CN", "Resources.resw"));
 
         HashSet<string> enUsKeys = LoadKeys(enUsPath);
         HashSet<string> zhCnKeys = LoadKeys(zhCnPath);
 
         Assert.Equal(enUsKeys, zhCnKeys);
+    }
+
+    private static string? FindRepositoryRoot(string startDirectory)
+    {
+        DirectoryInfo? directory = new(startDirectory);
+        while (directory is not null)
+        {
+            if (directory.EnumerateDirectories(".git").Any())
+            {
+                return directory.FullName;
+            }
+
+            directory = directory.Parent;
+        }
+
+        return null;
     }
 
     private static HashSet<string> LoadKeys(string path)
