@@ -444,7 +444,7 @@
   <data name="ExportDebugOverlayButton.Content" xml:space="preserve">
     <value>导出 BGRA8 调试覆盖层</value>
   </data>
-  <data name="MeasurementOverlayNote.Text" xml:space="preserve">
+  <data name="MeasurementOverlayNote" xml:space="preserve">
     <value>导出的调试覆盖层来自 WGC BGRA8 捕获数据，不保留 SDR 白点以上的 HDR 亮度。</value>
   </data>
 </root>

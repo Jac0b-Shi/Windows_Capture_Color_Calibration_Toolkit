@@ -444,7 +444,7 @@
   <data name="ExportDebugOverlayButton.Content" xml:space="preserve">
     <value>Export BGRA8 Overlay</value>
   </data>
-  <data name="MeasurementOverlayNote.Text" xml:space="preserve">
+  <data name="MeasurementOverlayNote" xml:space="preserve">
     <value>The exported overlay is generated from WGC BGRA8 capture data and does not preserve HDR luminance above SDR white.</value>
   </data>
 </root>

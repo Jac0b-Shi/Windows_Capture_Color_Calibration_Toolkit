@@ -1,6 +1,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Navigation;
 using Microsoft.Windows.ApplicationModel.Resources;
 using WgcColorCalibrator.App.Services;
 using WgcColorCalibrator.Core.Capture;
@@ -25,6 +26,8 @@ public sealed partial class MeasurementPage : Page
     private readonly ProfileJsonSerializerService _serializer;
     private readonly MeasurementDebugOverlayService _overlayService;
     private readonly ResourceLoader _resourceLoader;
+    private readonly EventHandler _onMeasurementServiceStateChanged;
+    private bool _measurementServiceEventsAttached;
 
     public MeasurementPage()
     {
@@ -33,13 +36,37 @@ public sealed partial class MeasurementPage : Page
         _serializer = App.Services.GetRequiredService<ProfileJsonSerializerService>();
         _overlayService = App.Services.GetRequiredService<MeasurementDebugOverlayService>();
         _resourceLoader = new ResourceLoader();
-        _measurementService.StateChanged += OnMeasurementServiceStateChanged;
+        _onMeasurementServiceStateChanged = OnMeasurementServiceStateChanged;
         Loaded += OnLoaded;
     }
 
     private void OnLoaded(object sender, RoutedEventArgs e)
     {
         Refresh();
+    }
+
+    protected override void OnNavigatedTo(NavigationEventArgs e)
+    {
+        base.OnNavigatedTo(e);
+
+        if (!_measurementServiceEventsAttached)
+        {
+            _measurementService.StateChanged += _onMeasurementServiceStateChanged;
+            _measurementServiceEventsAttached = true;
+        }
+
+        Refresh();
+    }
+
+    protected override void OnNavigatedFrom(NavigationEventArgs e)
+    {
+        base.OnNavigatedFrom(e);
+
+        if (_measurementServiceEventsAttached)
+        {
+            _measurementService.StateChanged -= _onMeasurementServiceStateChanged;
+            _measurementServiceEventsAttached = false;
+        }
     }
 
     private void OnMeasurementServiceStateChanged(object? sender, EventArgs e)
