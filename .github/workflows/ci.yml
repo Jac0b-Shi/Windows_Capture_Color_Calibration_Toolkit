@@ -21,11 +21,11 @@ jobs:
           dotnet-version: 10.0.x
 
       - name: Restore
-        run: dotnet restore WgcColorCalibrator.sln --locked-mode
+        run: dotnet restore WgcColorCalibrator.sln --locked-mode -p:Platform=x64
 
       - name: Build
         run: dotnet build WgcColorCalibrator.sln --configuration Release --no-restore -p:Platform=x64
 
       - name: Test
-        run: dotnet test WgcColorCalibrator.sln --configuration Release --no-build --verbosity normal
+        run: dotnet test WgcColorCalibrator.sln --configuration Release --no-build -p:Platform=x64 --verbosity normal
 
