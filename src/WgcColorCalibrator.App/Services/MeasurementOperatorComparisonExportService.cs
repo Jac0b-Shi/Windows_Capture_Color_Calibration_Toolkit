@@ -1,3 +1,5 @@
+using System.Text.Json;
+using System.Text.Json.Nodes;
 using Windows.Graphics.Imaging;
 using Windows.Security.Cryptography;
 using Windows.Storage;
@@ -8,10 +10,13 @@ using WgcColorCalibrator.Core.Rendering.HdrToSdr;
 namespace WgcColorCalibrator.App.Services;
 
 /// <summary>
-/// Exports an HDR-to-SDR operator comparison CSV and per-operator preview PNGs.
+/// Exports an HDR-to-SDR operator comparison CSV, per-operator preview PNGs, and a manifest file
+/// into a single dedicated folder. All file names are deterministic and collisions are treated as bugs.
 /// </summary>
 public sealed class MeasurementOperatorComparisonExportService
 {
+    private const string ManifestSchemaVersion = "1.0.0";
+
     private readonly OperatorComparisonService _operatorComparisonService;
 
     public MeasurementOperatorComparisonExportService(OperatorComparisonService operatorComparisonService)
@@ -38,22 +43,28 @@ public sealed class MeasurementOperatorComparisonExportService
 
         IReadOnlyList<OperatorComparisonResult> results = _operatorComparisonService.Compare(session, operators, cancellationToken);
 
-        List<string> fileNames = new(results.Count + 1);
-        string csvFileName = $"operator-comparison-{timestamp:yyyyMMdd-HHmmss}.csv";
-        fileNames.Add(csvFileName);
+        List<string> fileNames = new(results.Count + 2)
+        {
+            "manifest.json",
+            "operator-comparison.csv"
+        };
+
+        foreach (OperatorComparisonResult result in results)
+        {
+            fileNames.Add($"preview-{result.OperatorId}.png");
+        }
 
         string csv = OperatorComparisonCsvSerializer.Serialize(results, session);
-        StorageFile csvFile = await outputFolder.CreateFileAsync(csvFileName, CreationCollisionOption.GenerateUniqueName);
-        await FileIO.WriteTextAsync(csvFile, csv);
+        await WriteTextFileAsync(outputFolder, "operator-comparison.csv", csv);
+
+        await WriteManifestFileAsync(outputFolder, timestamp, session, operators, results, fileNames);
 
         foreach (OperatorComparisonResult result in results)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            string pngFileName = $"operator-preview-{result.OperatorId}-{timestamp:yyyyMMdd-HHmmss}.png";
-            fileNames.Add(pngFileName);
-
-            StorageFile pngFile = await outputFolder.CreateFileAsync(pngFileName, CreationCollisionOption.GenerateUniqueName);
+            string pngFileName = $"preview-{result.OperatorId}.png";
+            StorageFile pngFile = await outputFolder.CreateFileAsync(pngFileName, CreationCollisionOption.FailIfExists);
 
             using IRandomAccessStream stream = await pngFile.OpenAsync(FileAccessMode.ReadWrite);
             BitmapEncoder encoder = await BitmapEncoder.CreateAsync(BitmapEncoder.PngEncoderId, stream);
@@ -68,5 +79,37 @@ public sealed class MeasurementOperatorComparisonExportService
         }
 
         return new OperatorComparisonExportResult(results.Count, session.Measurements.Count, fileNames);
+    }
+
+    private static async Task WriteTextFileAsync(StorageFolder folder, string fileName, string content)
+    {
+        StorageFile file = await folder.CreateFileAsync(fileName, CreationCollisionOption.FailIfExists);
+        await FileIO.WriteTextAsync(file, content);
+    }
+
+    private static async Task WriteManifestFileAsync(
+        StorageFolder folder,
+        DateTimeOffset timestamp,
+        MeasurementSession session,
+        IReadOnlyList<IHdrToSdrOperator> operators,
+        IReadOnlyList<OperatorComparisonResult> results,
+        IReadOnlyList<string> fileNames)
+    {
+        var manifest = new JsonObject
+        {
+            ["schemaVersion"] = ManifestSchemaVersion,
+            ["appVersion"] = session.Application.Version,
+            ["createdAt"] = timestamp.ToString("O", System.Globalization.CultureInfo.InvariantCulture),
+            ["sourceCapturePixelFormat"] = session.Capture.ActualPixelFormat.ToString(),
+            ["chartId"] = session.Chart.Id,
+            ["chartName"] = session.Chart.Name,
+            ["operatorCount"] = operators.Count,
+            ["patchCount"] = session.Measurements.Count,
+            ["operators"] = new JsonArray(results.Select(r => JsonValue.Create(r.OperatorId)).ToArray()),
+            ["exportedFiles"] = new JsonArray(fileNames.Select(f => JsonValue.Create(f)).ToArray())
+        };
+
+        StorageFile manifestFile = await folder.CreateFileAsync("manifest.json", CreationCollisionOption.FailIfExists);
+        await FileIO.WriteTextAsync(manifestFile, manifest.ToJsonString(new JsonSerializerOptions { WriteIndented = true }));
     }
 }

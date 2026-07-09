@@ -484,7 +484,7 @@
     <value>导出 FP16 亮度热力图</value>
   </data>
   <data name="ExportBuiltInOperatorComparisonMenuItem.Text" xml:space="preserve">
-    <value>导出内置 HDR→SDR 算子对比包...</value>
+    <value>导出内置 HDR→SDR 算子对比文件夹...</value>
   </data>
   <data name="CustomOperatorMenuItem.Text" xml:space="preserve">
     <value>自定义算子...</value>
@@ -495,11 +495,11 @@
   <data name="CustomOperatorMenuItemToolTip" xml:space="preserve">
     <value>尚未实现。用户自定义标量表达式将保存到 LocalAppData。</value>
   </data>
-  <data name="OperatorComparisonPackageExported" xml:space="preserve">
-    <value>算子对比包已导出。</value>
+  <data name="OperatorComparisonFolderExported" xml:space="preserve">
+    <value>算子对比文件夹已导出。</value>
   </data>
-  <data name="OperatorComparisonPackageExportedMessage" xml:space="preserve">
-    <value>已导出 {0} 个文件：{1} 个 CSV 和 {2} 个 PNG 预览。</value>
+  <data name="OperatorComparisonFolderExportedMessage" xml:space="preserve">
+    <value>已导出到：{0}</value>
   </data>
   <data name="OperatorComparisonExported" xml:space="preserve">
     <value>算子对比已导出。</value>

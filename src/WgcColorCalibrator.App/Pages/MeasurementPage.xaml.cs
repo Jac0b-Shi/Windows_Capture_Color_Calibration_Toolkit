@@ -1,10 +1,10 @@
-using System.IO.Compression;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
 using Microsoft.Windows.ApplicationModel.Resources;
 using Windows.Storage;
+using Windows.Storage.Pickers;
 using WgcColorCalibrator.App.Services;
 using WgcColorCalibrator.Core.Capture;
 using WgcColorCalibrator.Core.Colors;
@@ -335,6 +335,43 @@ public sealed partial class MeasurementPage : Page
         }
     }
 
+    private async Task<StorageFolder?> PickFolderAsync()
+    {
+        if (_isFilePickerOpen)
+        {
+            return null;
+        }
+
+        _isFilePickerOpen = true;
+        RefreshExportMenuButtonEnabled();
+
+        try
+        {
+            if (ExportMenuButton.Flyout is MenuFlyout flyout)
+            {
+                flyout.Hide();
+            }
+
+            await Task.Yield();
+
+            var picker = new FolderPicker();
+            picker.SuggestedStartLocation = PickerLocationId.DocumentsLibrary;
+            picker.ViewMode = PickerViewMode.List;
+            picker.FileTypeFilter.Add("*");
+
+            WinRT.Interop.InitializeWithWindow.Initialize(picker, ((App)App.Current).WindowHandle);
+            return await picker.PickSingleFolderAsync();
+        }
+        finally
+        {
+            _isFilePickerOpen = false;
+            RefreshExportMenuButtonEnabled();
+            await Task.Yield();
+            ((App)App.Current).MainWindow?.Activate();
+            WindowRecoveryService.RecoverIfDisabled(((App)App.Current).WindowHandle);
+        }
+    }
+
     private async Task RunExportAsync(Func<Task<bool>> export, string successResourceKey)
     {
         _isExporting = true;
@@ -347,6 +384,45 @@ public sealed partial class MeasurementPage : Page
             if (completed)
             {
                 ShowExportSuccess(successResourceKey);
+            }
+            else
+            {
+                StatusInfoBar.IsOpen = false;
+            }
+        }
+        catch (Exception ex)
+        {
+            ShowExportError(ex);
+        }
+        finally
+        {
+            _isExporting = false;
+            RefreshExportMenuButtonEnabled();
+        }
+    }
+
+    private async Task RunExportAsync(Func<Task<bool>> export, string successResourceKey, string successMessageResourceKey)
+    {
+        await RunExportAsync(export, successResourceKey, () => _resourceLoader.GetString(successMessageResourceKey));
+    }
+
+    private async Task RunExportAsync(Func<Task<bool>> export, string successResourceKey, Func<string>? successMessageFactory)
+    {
+        _isExporting = true;
+        RefreshExportMenuButtonEnabled();
+        ShowExportInfo("Exporting");
+
+        try
+        {
+            bool completed = await export();
+            if (completed)
+            {
+                StatusInfoBar.Title = _resourceLoader.GetString(successResourceKey);
+                StatusInfoBar.Message = successMessageFactory is not null
+                    ? successMessageFactory()
+                    : string.Empty;
+                StatusInfoBar.Severity = InfoBarSeverity.Success;
+                StatusInfoBar.IsOpen = true;
             }
             else
             {
@@ -582,56 +658,64 @@ public sealed partial class MeasurementPage : Page
             return;
         }
 
-        _isExporting = true;
-        RefreshExportMenuButtonEnabled();
-        ShowExportInfo("Exporting");
-
-        try
-        {
-            StorageFile? file = await PickSaveFileAsync(
-                $"operator-comparison-{session.CreatedAt:yyyyMMdd-HHmmss}",
-                "ZIP",
-                ".zip");
-            if (file is null)
+        string? exportedPath = null;
+        await RunExportAsync(
+            async () =>
             {
-                StatusInfoBar.IsOpen = false;
-                return;
-            }
+                StorageFolder? parentFolder = await PickFolderAsync();
+                if (parentFolder is null)
+                {
+                    return false;
+                }
 
-            string tempFolderName = $"operator-comparison-{session.CreatedAt:yyyyMMdd-HHmmss}-{Guid.NewGuid():N}";
-            StorageFolder tempFolder = await ApplicationData.Current.TemporaryFolder.CreateFolderAsync(
-                tempFolderName,
-                CreationCollisionOption.GenerateUniqueName);
+                string timestamp = session.CreatedAt.ToString("yyyyMMdd-HHmmss", System.Globalization.CultureInfo.InvariantCulture);
+                string finalFolderName = await ResolveUniqueFolderNameAsync(parentFolder, $"operator-comparison-{timestamp}");
+                StorageFolder finalFolder = await parentFolder.CreateFolderAsync(finalFolderName, CreationCollisionOption.FailIfExists);
 
-            try
-            {
-                OperatorComparisonExportResult result = await _operatorComparisonExportService.ExportAsync(session, tempFolder, session.CreatedAt);
-                ZipFile.CreateFromDirectory(tempFolder.Path, file.Path, CompressionLevel.Optimal, includeBaseDirectory: true);
+                string stagingFolderName = $"operator-comparison-staging-{Guid.NewGuid():N}";
+                StorageFolder stagingFolder = await ApplicationData.Current.TemporaryFolder.CreateFolderAsync(
+                    stagingFolderName,
+                    CreationCollisionOption.GenerateUniqueName);
 
-                int csvCount = result.FileNames.Count - result.OperatorCount;
-                StatusInfoBar.Title = _resourceLoader.GetString("OperatorComparisonPackageExported");
-                StatusInfoBar.Message = string.Format(
+                try
+                {
+                    await _operatorComparisonExportService.ExportAsync(session, stagingFolder, session.CreatedAt);
+                    await CopyFolderContentsAsync(stagingFolder, finalFolder);
+                    exportedPath = finalFolder.Path;
+                    return true;
+                }
+                finally
+                {
+                    await stagingFolder.DeleteAsync(StorageDeleteOption.PermanentDelete);
+                }
+            },
+            "OperatorComparisonFolderExported",
+            () => exportedPath is not null
+                ? string.Format(
                     System.Globalization.CultureInfo.CurrentCulture,
-                    _resourceLoader.GetString("OperatorComparisonPackageExportedMessage"),
-                    result.FileNames.Count,
-                    csvCount,
-                    result.OperatorCount);
-                StatusInfoBar.Severity = InfoBarSeverity.Success;
-                StatusInfoBar.IsOpen = true;
-            }
-            finally
-            {
-                await tempFolder.DeleteAsync(StorageDeleteOption.PermanentDelete);
-            }
-        }
-        catch (Exception ex)
+                    _resourceLoader.GetString("OperatorComparisonFolderExportedMessage"),
+                    exportedPath)
+                : string.Empty);
+    }
+
+    private static async Task<string> ResolveUniqueFolderNameAsync(StorageFolder parentFolder, string desiredName)
+    {
+        IStorageItem? existing = await parentFolder.TryGetItemAsync(desiredName);
+        if (existing is null)
         {
-            ShowExportError(ex);
+            return desiredName;
         }
-        finally
+
+        string suffix = Guid.NewGuid().ToString("N")[..8];
+        return $"{desiredName}-{suffix}";
+    }
+
+    private static async Task CopyFolderContentsAsync(StorageFolder sourceFolder, StorageFolder destinationFolder)
+    {
+        IReadOnlyList<StorageFile> files = await sourceFolder.GetFilesAsync();
+        foreach (StorageFile file in files)
         {
-            _isExporting = false;
-            RefreshExportMenuButtonEnabled();
+            await file.CopyAsync(destinationFolder, file.Name, NameCollisionOption.FailIfExists);
         }
     }
 
