@@ -495,6 +495,21 @@
   <data name="CustomOperatorMenuItemToolTip" xml:space="preserve">
     <value>Not yet implemented. User-defined scalar expressions will be saved to LocalAppData.</value>
   </data>
+  <data name="ExportCompleted" xml:space="preserve">
+    <value>Export completed.</value>
+  </data>
+  <data name="Exporting" xml:space="preserve">
+    <value>Exporting...</value>
+  </data>
+  <data name="ExportFailed" xml:space="preserve">
+    <value>Export failed: {0}</value>
+  </data>
+  <data name="Bgra8OverlayFormatError" xml:space="preserve">
+    <value>The BGRA8 debug overlay is only available for BGRA8 captures.</value>
+  </data>
+  <data name="Fp16LuminanceFormatError" xml:space="preserve">
+    <value>The FP16 luminance heatmap is only available for FP16 captures.</value>
+  </data>
   <data name="OperatorComparisonExported" xml:space="preserve">
     <value>Operator comparison exported.</value>
   </data>

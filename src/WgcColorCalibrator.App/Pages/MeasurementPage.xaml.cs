@@ -31,6 +31,8 @@ public sealed partial class MeasurementPage : Page
     private readonly ResourceLoader _resourceLoader;
     private readonly EventHandler _onMeasurementServiceStateChanged;
     private bool _measurementServiceEventsAttached;
+    private bool _isFilePickerOpen;
+    private bool _isExporting;
 
     public MeasurementPage()
     {
@@ -286,6 +288,112 @@ public sealed partial class MeasurementPage : Page
         return (null, null, null);
     }
 
+    private void RefreshExportMenuButtonEnabled()
+    {
+        ExportMenuButton.IsEnabled = !(_isFilePickerOpen || _isExporting);
+    }
+
+    private async Task<global::Windows.Storage.StorageFile?> PickSaveFileAsync(
+        string suggestedFileName,
+        string fileTypeName,
+        string extension)
+    {
+        if (_isFilePickerOpen)
+        {
+            return null;
+        }
+
+        _isFilePickerOpen = true;
+        RefreshExportMenuButtonEnabled();
+
+        try
+        {
+            if (ExportMenuButton.Flyout is MenuFlyout flyout)
+            {
+                flyout.Hide();
+            }
+
+            await Task.Yield();
+
+            var picker = new global::Windows.Storage.Pickers.FileSavePicker();
+            picker.SuggestedStartLocation = global::Windows.Storage.Pickers.PickerLocationId.DocumentsLibrary;
+            picker.SuggestedFileName = suggestedFileName;
+            picker.FileTypeChoices.Add(fileTypeName, new[] { extension });
+
+            WinRT.Interop.InitializeWithWindow.Initialize(picker, ((App)App.Current).WindowHandle);
+            return await picker.PickSaveFileAsync();
+        }
+        finally
+        {
+            _isFilePickerOpen = false;
+            RefreshExportMenuButtonEnabled();
+            await Task.Yield();
+            ((App)App.Current).MainWindow?.Activate();
+            WindowRecoveryService.RecoverIfDisabled(((App)App.Current).WindowHandle);
+        }
+    }
+
+    private async Task RunExportAsync(Func<Task<bool>> export, string successResourceKey)
+    {
+        _isExporting = true;
+        RefreshExportMenuButtonEnabled();
+        ShowExportInfo("Exporting");
+
+        try
+        {
+            bool completed = await export();
+            if (completed)
+            {
+                ShowExportSuccess(successResourceKey);
+            }
+            else
+            {
+                StatusInfoBar.IsOpen = false;
+            }
+        }
+        catch (Exception ex)
+        {
+            ShowExportError(ex);
+        }
+        finally
+        {
+            _isExporting = false;
+            RefreshExportMenuButtonEnabled();
+        }
+    }
+
+    private async Task RunExportAsync(Func<Task<bool>> export)
+    {
+        await RunExportAsync(export, "ExportCompleted");
+    }
+
+    private void ShowExportInfo(string resourceKey)
+    {
+        StatusInfoBar.Title = _resourceLoader.GetString(resourceKey);
+        StatusInfoBar.Message = string.Empty;
+        StatusInfoBar.Severity = InfoBarSeverity.Informational;
+        StatusInfoBar.IsOpen = true;
+    }
+
+    private void ShowExportSuccess(string resourceKey)
+    {
+        StatusInfoBar.Title = _resourceLoader.GetString(resourceKey);
+        StatusInfoBar.Message = string.Empty;
+        StatusInfoBar.Severity = InfoBarSeverity.Success;
+        StatusInfoBar.IsOpen = true;
+    }
+
+    private void ShowExportError(Exception ex)
+    {
+        StatusInfoBar.Title = _resourceLoader.GetString("ExportErrorTitle");
+        StatusInfoBar.Message = string.Format(
+            System.Globalization.CultureInfo.CurrentCulture,
+            _resourceLoader.GetString("ExportFailed"),
+            ex.Message);
+        StatusInfoBar.Severity = InfoBarSeverity.Error;
+        StatusInfoBar.IsOpen = true;
+    }
+
     private async void CaptureButton_Click(object sender, RoutedEventArgs e)
     {
         CaptureButton.IsEnabled = false;
@@ -316,20 +424,21 @@ public sealed partial class MeasurementPage : Page
             return;
         }
 
-        var picker = new global::Windows.Storage.Pickers.FileSavePicker();
-        picker.SuggestedStartLocation = global::Windows.Storage.Pickers.PickerLocationId.DocumentsLibrary;
-        picker.SuggestedFileName = $"measurement-{session.CreatedAt:yyyyMMdd-HHmmss}";
-        picker.FileTypeChoices.Add("JSON", new[] { ".json" });
-
-        WinRT.Interop.InitializeWithWindow.Initialize(picker, ((App)App.Current).WindowHandle);
-        global::Windows.Storage.StorageFile? file = await picker.PickSaveFileAsync();
-        if (file is null)
+        await RunExportAsync(async () =>
         {
-            return;
-        }
+            global::Windows.Storage.StorageFile? file = await PickSaveFileAsync(
+                $"measurement-{session.CreatedAt:yyyyMMdd-HHmmss}",
+                "JSON",
+                ".json");
+            if (file is null)
+            {
+                return false;
+            }
 
-        string json = _serializer.SerializeMeasurement(session);
-        await global::Windows.Storage.FileIO.WriteTextAsync(file, json);
+            string json = _serializer.SerializeMeasurement(session);
+            await global::Windows.Storage.FileIO.WriteTextAsync(file, json);
+            return true;
+        });
     }
 
     private async void ExportCsvButton_Click(object sender, RoutedEventArgs e)
@@ -340,20 +449,21 @@ public sealed partial class MeasurementPage : Page
             return;
         }
 
-        var picker = new global::Windows.Storage.Pickers.FileSavePicker();
-        picker.SuggestedStartLocation = global::Windows.Storage.Pickers.PickerLocationId.DocumentsLibrary;
-        picker.SuggestedFileName = $"measurement-{session.CreatedAt:yyyyMMdd-HHmmss}";
-        picker.FileTypeChoices.Add("CSV", new[] { ".csv" });
-
-        WinRT.Interop.InitializeWithWindow.Initialize(picker, ((App)App.Current).WindowHandle);
-        global::Windows.Storage.StorageFile? file = await picker.PickSaveFileAsync();
-        if (file is null)
+        await RunExportAsync(async () =>
         {
-            return;
-        }
+            global::Windows.Storage.StorageFile? file = await PickSaveFileAsync(
+                $"measurement-{session.CreatedAt:yyyyMMdd-HHmmss}",
+                "CSV",
+                ".csv");
+            if (file is null)
+            {
+                return false;
+            }
 
-        string csv = _measurementService.ExportCurrentSessionAsCsv();
-        await global::Windows.Storage.FileIO.WriteTextAsync(file, csv);
+            string csv = _measurementService.ExportCurrentSessionAsCsv();
+            await global::Windows.Storage.FileIO.WriteTextAsync(file, csv);
+            return true;
+        });
     }
 
     private async void ExportRawButton_Click(object sender, RoutedEventArgs e)
@@ -372,21 +482,24 @@ public sealed partial class MeasurementPage : Page
         };
 
         MeasurementSession? session = _measurementService.CurrentSession;
-        var picker = new global::Windows.Storage.Pickers.FileSavePicker();
-        picker.SuggestedStartLocation = global::Windows.Storage.Pickers.PickerLocationId.DocumentsLibrary;
-        picker.SuggestedFileName = session is not null
+        string suggestedFileName = session is not null
             ? $"capture-{session.CreatedAt:yyyyMMdd-HHmmss}"
             : "capture-frame";
-        picker.FileTypeChoices.Add(fileTypeName, new[] { extension });
 
-        WinRT.Interop.InitializeWithWindow.Initialize(picker, ((App)App.Current).WindowHandle);
-        global::Windows.Storage.StorageFile? file = await picker.PickSaveFileAsync();
-        if (file is null)
+        await RunExportAsync(async () =>
         {
-            return;
-        }
+            global::Windows.Storage.StorageFile? file = await PickSaveFileAsync(
+                suggestedFileName,
+                fileTypeName,
+                extension);
+            if (file is null)
+            {
+                return false;
+            }
 
-        await global::Windows.Storage.FileIO.WriteBytesAsync(file, pixels);
+            await global::Windows.Storage.FileIO.WriteBytesAsync(file, pixels);
+            return true;
+        });
     }
 
     private async void ExportDebugOverlayButton_Click(object sender, RoutedEventArgs e)
@@ -398,23 +511,30 @@ public sealed partial class MeasurementPage : Page
             return;
         }
 
-        var picker = new global::Windows.Storage.Pickers.FileSavePicker();
-        picker.SuggestedStartLocation = global::Windows.Storage.Pickers.PickerLocationId.DocumentsLibrary;
-        picker.SuggestedFileName = $"overlay-{session.CreatedAt:yyyyMMdd-HHmmss}";
-        picker.FileTypeChoices.Add("PNG", new[] { ".png" });
-
-        WinRT.Interop.InitializeWithWindow.Initialize(picker, ((App)App.Current).WindowHandle);
-        global::Windows.Storage.StorageFile? file = await picker.PickSaveFileAsync();
-        if (file is null)
+        if (frame.PixelFormat != CapturePixelFormat.B8G8R8A8UIntNormalized)
         {
+            ShowExportError(new InvalidOperationException(_resourceLoader.GetString("Bgra8OverlayFormatError")));
             return;
         }
 
-        await _overlayService.SaveDebugOverlayAsync(
-            frame,
-            session.CaptureGeometry,
-            session.Layout,
-            file);
+        await RunExportAsync(async () =>
+        {
+            global::Windows.Storage.StorageFile? file = await PickSaveFileAsync(
+                $"overlay-{session.CreatedAt:yyyyMMdd-HHmmss}",
+                "PNG",
+                ".png");
+            if (file is null)
+            {
+                return false;
+            }
+
+            await _overlayService.SaveDebugOverlayAsync(
+                frame,
+                session.CaptureGeometry,
+                session.Layout,
+                file);
+            return true;
+        });
     }
 
     private async void ExportLuminanceOverlayButton_Click(object sender, RoutedEventArgs e)
@@ -426,23 +546,30 @@ public sealed partial class MeasurementPage : Page
             return;
         }
 
-        var picker = new global::Windows.Storage.Pickers.FileSavePicker();
-        picker.SuggestedStartLocation = global::Windows.Storage.Pickers.PickerLocationId.DocumentsLibrary;
-        picker.SuggestedFileName = $"overlay-luminance-{session.CreatedAt:yyyyMMdd-HHmmss}";
-        picker.FileTypeChoices.Add("PNG", new[] { ".png" });
-
-        WinRT.Interop.InitializeWithWindow.Initialize(picker, ((App)App.Current).WindowHandle);
-        global::Windows.Storage.StorageFile? file = await picker.PickSaveFileAsync();
-        if (file is null)
+        if (frame.PixelFormat != CapturePixelFormat.R16G16B16A16Float)
         {
+            ShowExportError(new InvalidOperationException(_resourceLoader.GetString("Fp16LuminanceFormatError")));
             return;
         }
 
-        await _overlayService.SaveDebugOverlayAsync(
-            frame,
-            session.CaptureGeometry,
-            session.Layout,
-            file);
+        await RunExportAsync(async () =>
+        {
+            global::Windows.Storage.StorageFile? file = await PickSaveFileAsync(
+                $"overlay-luminance-{session.CreatedAt:yyyyMMdd-HHmmss}",
+                "PNG",
+                ".png");
+            if (file is null)
+            {
+                return false;
+            }
+
+            await _overlayService.SaveDebugOverlayAsync(
+                frame,
+                session.CaptureGeometry,
+                session.Layout,
+                file);
+            return true;
+        });
     }
 
     private async void ExportOperatorComparisonButton_Click(object sender, RoutedEventArgs e)
@@ -453,44 +580,27 @@ public sealed partial class MeasurementPage : Page
             return;
         }
 
-        var picker = new global::Windows.Storage.Pickers.FileSavePicker();
-        picker.SuggestedStartLocation = global::Windows.Storage.Pickers.PickerLocationId.DocumentsLibrary;
-        picker.SuggestedFileName = $"operator-comparison-{session.CreatedAt:yyyyMMdd-HHmmss}";
-        picker.FileTypeChoices.Add("CSV", new[] { ".csv" });
-
-        WinRT.Interop.InitializeWithWindow.Initialize(picker, ((App)App.Current).WindowHandle);
-        global::Windows.Storage.StorageFile? file = await picker.PickSaveFileAsync();
-        if (file is null)
+        await RunExportAsync(async () =>
         {
-            return;
-        }
+            global::Windows.Storage.StorageFile? file = await PickSaveFileAsync(
+                $"operator-comparison-{session.CreatedAt:yyyyMMdd-HHmmss}",
+                "CSV",
+                ".csv");
+            if (file is null)
+            {
+                return false;
+            }
 
-        string? folderPath = Path.GetDirectoryName(file.Path);
-        if (folderPath is null)
-        {
-            return;
-        }
+            string? folderPath = global::System.IO.Path.GetDirectoryName(file.Path);
+            if (folderPath is null)
+            {
+                return false;
+            }
 
-        try
-        {
             global::Windows.Storage.StorageFolder outputFolder = await global::Windows.Storage.StorageFolder.GetFolderFromPathAsync(folderPath);
             await _operatorComparisonExportService.ExportAsync(session, outputFolder, session.CreatedAt);
-
-            StatusInfoBar.Title = _resourceLoader.GetString("OperatorComparisonExported");
-            StatusInfoBar.Message = string.Empty;
-            StatusInfoBar.Severity = InfoBarSeverity.Success;
-            StatusInfoBar.IsOpen = true;
-        }
-        catch (Exception ex)
-        {
-            StatusInfoBar.Title = _resourceLoader.GetString("ExportErrorTitle");
-            StatusInfoBar.Message = string.Format(
-                System.Globalization.CultureInfo.CurrentCulture,
-                _resourceLoader.GetString("OperatorComparisonExportFailed"),
-                ex.Message);
-            StatusInfoBar.Severity = InfoBarSeverity.Error;
-            StatusInfoBar.IsOpen = true;
-        }
+            return true;
+        }, "OperatorComparisonExported");
     }
 
     private void BackToChartButton_Click(object sender, RoutedEventArgs e)

@@ -495,6 +495,21 @@
   <data name="CustomOperatorMenuItemToolTip" xml:space="preserve">
     <value>尚未实现。用户自定义标量表达式将保存到 LocalAppData。</value>
   </data>
+  <data name="ExportCompleted" xml:space="preserve">
+    <value>导出完成。</value>
+  </data>
+  <data name="Exporting" xml:space="preserve">
+    <value>正在导出...</value>
+  </data>
+  <data name="ExportFailed" xml:space="preserve">
+    <value>导出失败：{0}</value>
+  </data>
+  <data name="Bgra8OverlayFormatError" xml:space="preserve">
+    <value>BGRA8 调试覆盖层仅适用于 BGRA8 捕获。</value>
+  </data>
+  <data name="Fp16LuminanceFormatError" xml:space="preserve">
+    <value>FP16 亮度热力图仅适用于 FP16 捕获。</value>
+  </data>
   <data name="OperatorComparisonExported" xml:space="preserve">
     <value>算子对比已导出。</value>
   </data>
