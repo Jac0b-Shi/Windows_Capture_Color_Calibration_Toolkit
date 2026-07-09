@@ -448,19 +448,10 @@
     <value>Export BGRA8</value>
   </data>
   <data name="ExportRawBgra8Label" xml:space="preserve">
-    <value>Export BGRA8</value>
-  </data>
-  <data name="ExportRgba16fButton.Content" xml:space="preserve">
-    <value>Export FP16 Raw</value>
+    <value>Export raw BGRA8 frame</value>
   </data>
   <data name="ExportRawRgba16fLabel" xml:space="preserve">
-    <value>Export FP16 Raw</value>
-  </data>
-  <data name="ExportDebugOverlayButton.Content" xml:space="preserve">
-    <value>Export BGRA8 Overlay</value>
-  </data>
-  <data name="ExportLuminanceOverlayButton.Content" xml:space="preserve">
-    <value>Export Luminance Heatmap</value>
+    <value>Export raw FP16 frame</value>
   </data>
   <data name="CaptureFormatLabel.Text" xml:space="preserve">
     <value>Capture format</value>
@@ -477,8 +468,32 @@
   <data name="MeasurementFp16OverlayNote" xml:space="preserve">
     <value>The FP16 luminance heatmap is an SDR diagnostic preview generated from WGC FP16 capture data. It is not the original HDR image and does not represent actual display luminance.</value>
   </data>
-  <data name="ExportOperatorComparisonButton.Content" xml:space="preserve">
-    <value>Export operator comparison</value>
+  <data name="ExportMenuButton.Content" xml:space="preserve">
+    <value>Export</value>
+  </data>
+  <data name="ExportJsonMenuItem.Text" xml:space="preserve">
+    <value>Export JSON</value>
+  </data>
+  <data name="ExportCsvMenuItem.Text" xml:space="preserve">
+    <value>Export CSV</value>
+  </data>
+  <data name="ExportDebugOverlayMenuItem.Text" xml:space="preserve">
+    <value>Export BGRA8 debug overlay</value>
+  </data>
+  <data name="ExportLuminanceOverlayMenuItem.Text" xml:space="preserve">
+    <value>Export FP16 luminance heatmap</value>
+  </data>
+  <data name="ExportBuiltInOperatorComparisonMenuItem.Text" xml:space="preserve">
+    <value>Export built-in HDR-to-SDR operator comparison...</value>
+  </data>
+  <data name="CustomOperatorMenuItem.Text" xml:space="preserve">
+    <value>Custom operator...</value>
+  </data>
+  <data name="OperatorComparisonMenuItemToolTip" xml:space="preserve">
+    <value>Requires an FP16 RGBA capture first.</value>
+  </data>
+  <data name="CustomOperatorMenuItemToolTip" xml:space="preserve">
+    <value>Not yet implemented. User-defined scalar expressions will be saved to LocalAppData.</value>
   </data>
   <data name="OperatorComparisonExported" xml:space="preserve">
     <value>Operator comparison exported.</value>

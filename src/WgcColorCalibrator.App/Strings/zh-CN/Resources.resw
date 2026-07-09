@@ -448,19 +448,10 @@
     <value>导出 BGRA8</value>
   </data>
   <data name="ExportRawBgra8Label" xml:space="preserve">
-    <value>导出 BGRA8</value>
-  </data>
-  <data name="ExportRgba16fButton.Content" xml:space="preserve">
-    <value>导出 FP16 原始帧</value>
+    <value>导出 BGRA8 原始帧</value>
   </data>
   <data name="ExportRawRgba16fLabel" xml:space="preserve">
     <value>导出 FP16 原始帧</value>
-  </data>
-  <data name="ExportDebugOverlayButton.Content" xml:space="preserve">
-    <value>导出 BGRA8 调试覆盖层</value>
-  </data>
-  <data name="ExportLuminanceOverlayButton.Content" xml:space="preserve">
-    <value>导出亮度热力图</value>
   </data>
   <data name="CaptureFormatLabel.Text" xml:space="preserve">
     <value>捕获格式</value>
@@ -477,8 +468,32 @@
   <data name="MeasurementFp16OverlayNote" xml:space="preserve">
     <value>FP16 亮度热力图是从 WGC FP16 捕获数据生成的 SDR 诊断预览，不是原始 HDR 图像，也不代表实际显示亮度。</value>
   </data>
-  <data name="ExportOperatorComparisonButton.Content" xml:space="preserve">
-    <value>导出算子对比</value>
+  <data name="ExportMenuButton.Content" xml:space="preserve">
+    <value>导出</value>
+  </data>
+  <data name="ExportJsonMenuItem.Text" xml:space="preserve">
+    <value>导出 JSON</value>
+  </data>
+  <data name="ExportCsvMenuItem.Text" xml:space="preserve">
+    <value>导出 CSV</value>
+  </data>
+  <data name="ExportDebugOverlayMenuItem.Text" xml:space="preserve">
+    <value>导出 BGRA8 调试覆盖层</value>
+  </data>
+  <data name="ExportLuminanceOverlayMenuItem.Text" xml:space="preserve">
+    <value>导出 FP16 亮度热力图</value>
+  </data>
+  <data name="ExportBuiltInOperatorComparisonMenuItem.Text" xml:space="preserve">
+    <value>导出内置 HDR→SDR 算子对比...</value>
+  </data>
+  <data name="CustomOperatorMenuItem.Text" xml:space="preserve">
+    <value>自定义算子...</value>
+  </data>
+  <data name="OperatorComparisonMenuItemToolTip" xml:space="preserve">
+    <value>需要先用 FP16 RGBA 捕获一帧。</value>
+  </data>
+  <data name="CustomOperatorMenuItemToolTip" xml:space="preserve">
+    <value>尚未实现。用户自定义标量表达式将保存到 LocalAppData。</value>
   </data>
   <data name="OperatorComparisonExported" xml:space="preserve">
     <value>算子对比已导出。</value>

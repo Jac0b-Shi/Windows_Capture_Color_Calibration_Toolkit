@@ -36,12 +36,21 @@
                     <ComboBoxItem x:Uid="CaptureFormatRgba16Float" Tag="r16g16b16a16-float" />
                 </ComboBox>
                 <Button x:Name="CaptureButton" x:Uid="CaptureButton" Click="CaptureButton_Click" />
-                <Button x:Name="ExportJsonButton" x:Uid="ExportJsonButton" Click="ExportJsonButton_Click" IsEnabled="False" />
-                <Button x:Name="ExportCsvButton" x:Uid="ExportCsvButton" Click="ExportCsvButton_Click" IsEnabled="False" />
-                <Button x:Name="ExportRawButton" x:Uid="ExportBgraButton" Click="ExportRawButton_Click" IsEnabled="False" />
-                <Button x:Name="ExportDebugOverlayButton" x:Uid="ExportDebugOverlayButton" Click="ExportDebugOverlayButton_Click" IsEnabled="False" />
-                <Button x:Name="ExportLuminanceOverlayButton" x:Uid="ExportLuminanceOverlayButton" Click="ExportLuminanceOverlayButton_Click" IsEnabled="False" />
-                <Button x:Name="ExportOperatorComparisonButton" x:Uid="ExportOperatorComparisonButton" Click="ExportOperatorComparisonButton_Click" IsEnabled="False" />
+                <Button x:Name="ExportMenuButton" x:Uid="ExportMenuButton">
+                    <Button.Flyout>
+                        <MenuFlyout>
+                            <MenuFlyoutItem x:Name="ExportJsonMenuItem" x:Uid="ExportJsonMenuItem" Click="ExportJsonButton_Click" />
+                            <MenuFlyoutItem x:Name="ExportCsvMenuItem" x:Uid="ExportCsvMenuItem" Click="ExportCsvButton_Click" />
+                            <MenuFlyoutItem x:Name="ExportRawMenuItem" Click="ExportRawButton_Click" />
+                            <MenuFlyoutSeparator />
+                            <MenuFlyoutItem x:Name="ExportDebugOverlayMenuItem" x:Uid="ExportDebugOverlayMenuItem" Click="ExportDebugOverlayButton_Click" />
+                            <MenuFlyoutItem x:Name="ExportLuminanceOverlayMenuItem" x:Uid="ExportLuminanceOverlayMenuItem" Click="ExportLuminanceOverlayButton_Click" />
+                            <MenuFlyoutItem x:Name="ExportBuiltInOperatorComparisonMenuItem" x:Uid="ExportBuiltInOperatorComparisonMenuItem" Click="ExportOperatorComparisonButton_Click" />
+                            <MenuFlyoutSeparator />
+                            <MenuFlyoutItem x:Name="CustomOperatorMenuItem" x:Uid="CustomOperatorMenuItem" IsEnabled="False" />
+                        </MenuFlyout>
+                    </Button.Flyout>
+                </Button>
                 <Button x:Name="BackToChartButton" x:Uid="BackToChartButton" Click="BackToChartButton_Click" />
             </StackPanel>
 

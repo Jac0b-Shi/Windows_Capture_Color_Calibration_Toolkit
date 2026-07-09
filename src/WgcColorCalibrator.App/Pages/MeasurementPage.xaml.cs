@@ -109,12 +109,13 @@ public sealed partial class MeasurementPage : Page
             StatusInfoBar.IsOpen = false;
             SummaryTextBlock.Text = string.Empty;
             RecordsGridView.ItemsSource = null;
-            ExportJsonButton.IsEnabled = false;
-            ExportCsvButton.IsEnabled = false;
-            ExportRawButton.IsEnabled = false;
-            ExportDebugOverlayButton.IsEnabled = false;
-            ExportLuminanceOverlayButton.IsEnabled = false;
-            ExportOperatorComparisonButton.IsEnabled = false;
+            ExportJsonMenuItem.IsEnabled = false;
+            ExportCsvMenuItem.IsEnabled = false;
+            ExportRawMenuItem.IsEnabled = false;
+            ExportDebugOverlayMenuItem.IsEnabled = false;
+            ExportLuminanceOverlayMenuItem.IsEnabled = false;
+            ExportBuiltInOperatorComparisonMenuItem.IsEnabled = false;
+            CustomOperatorMenuItem.IsEnabled = false;
             return;
         }
 
@@ -140,20 +141,30 @@ public sealed partial class MeasurementPage : Page
         StatusInfoBar.IsOpen = true;
 
         RecordsGridView.ItemsSource = session.Measurements.Select(ToViewModel).ToList();
-        ExportJsonButton.IsEnabled = true;
-        ExportCsvButton.IsEnabled = true;
-        ExportRawButton.IsEnabled = true;
+        ExportJsonMenuItem.IsEnabled = true;
+        ExportCsvMenuItem.IsEnabled = true;
+        ExportRawMenuItem.IsEnabled = true;
         string exportRawLabelKey = frame.PixelFormat == CapturePixelFormat.R16G16B16A16Float
             ? "ExportRawRgba16fLabel"
             : "ExportRawBgra8Label";
-        ExportRawButton.Content = _resourceLoader.GetString(exportRawLabelKey);
+        ExportRawMenuItem.Text = _resourceLoader.GetString(exportRawLabelKey);
 
         bool isBgra8 = frame.PixelFormat == CapturePixelFormat.B8G8R8A8UIntNormalized;
-        ExportDebugOverlayButton.IsEnabled = isBgra8;
-        ExportDebugOverlayButton.Visibility = isBgra8 ? Visibility.Visible : Visibility.Collapsed;
-        ExportLuminanceOverlayButton.IsEnabled = !isBgra8;
-        ExportLuminanceOverlayButton.Visibility = isBgra8 ? Visibility.Collapsed : Visibility.Visible;
-        ExportOperatorComparisonButton.IsEnabled = !isBgra8;
+        ExportDebugOverlayMenuItem.IsEnabled = isBgra8;
+        ExportDebugOverlayMenuItem.Visibility = isBgra8 ? Visibility.Visible : Visibility.Collapsed;
+        ExportLuminanceOverlayMenuItem.IsEnabled = !isBgra8;
+        ExportLuminanceOverlayMenuItem.Visibility = isBgra8 ? Visibility.Collapsed : Visibility.Visible;
+
+        bool isFp16 = frame.PixelFormat == CapturePixelFormat.R16G16B16A16Float;
+        ExportBuiltInOperatorComparisonMenuItem.IsEnabled = isFp16;
+        ToolTipService.SetToolTip(
+            ExportBuiltInOperatorComparisonMenuItem,
+            isFp16 ? null : _resourceLoader.GetString("OperatorComparisonMenuItemToolTip"));
+
+        CustomOperatorMenuItem.IsEnabled = false;
+        ToolTipService.SetToolTip(
+            CustomOperatorMenuItem,
+            _resourceLoader.GetString("CustomOperatorMenuItemToolTip"));
     }
 
     private static MeasurementRecordViewModel ToViewModel(MeasurementRecord record)
