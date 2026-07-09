@@ -390,4 +390,40 @@
   <data name="PatchSizePresetLarge.Content" xml:space="preserve">
     <value>256（大）</value>
   </data>
+  <data name="NavigationMeasurement.Content" xml:space="preserve">
+    <value>测量</value>
+  </data>
+  <data name="MeasurementTitle.Text" xml:space="preserve">
+    <value>测量</value>
+  </data>
+  <data name="CaptureButton.Content" xml:space="preserve">
+    <value>捕获</value>
+  </data>
+  <data name="BackToChartButton.Content" xml:space="preserve">
+    <value>返回色卡</value>
+  </data>
+  <data name="MeasurementSummaryLabel.Text" xml:space="preserve">
+    <value>摘要</value>
+  </data>
+  <data name="MeasurementRecordsLabel.Text" xml:space="preserve">
+    <value>记录</value>
+  </data>
+  <data name="MeasurementExpectedRun.Text" xml:space="preserve">
+    <value>预期：</value>
+  </data>
+  <data name="MeasurementCapturedRun.Text" xml:space="preserve">
+    <value>捕获：</value>
+  </data>
+  <data name="MeasurementValidityRun.Text" xml:space="preserve">
+    <value>有效性：</value>
+  </data>
+  <data name="ExportCsvButton.Content" xml:space="preserve">
+    <value>导出 CSV</value>
+  </data>
+  <data name="ExportBgraButton.Content" xml:space="preserve">
+    <value>导出 BGRA</value>
+  </data>
+  <data name="ExportDebugOverlayButton.Content" xml:space="preserve">
+    <value>导出调试覆盖层</value>
+  </data>
 </root>

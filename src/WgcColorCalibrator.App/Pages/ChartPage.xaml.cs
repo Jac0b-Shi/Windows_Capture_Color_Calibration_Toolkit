@@ -97,6 +97,7 @@ public sealed partial class ChartPage : Page
         UpdateManualHdrColorText();
         _isInitializing = false;
         _isDirty = false;
+        _workspaceService.AreParametersDirty = false;
         UpdateStatus();
     }
 
@@ -108,6 +109,7 @@ public sealed partial class ChartPage : Page
         }
 
         _isDirty = true;
+        _workspaceService.AreParametersDirty = true;
         UpdateStatus();
     }
 
@@ -205,6 +207,7 @@ public sealed partial class ChartPage : Page
 
             _workspaceService.GenerateChart(result.Value.providerId, result.Value.options);
             _isDirty = false;
+        _workspaceService.AreParametersDirty = false;
             RenderPreview();
         }
         catch (Exception ex)
@@ -227,6 +230,7 @@ public sealed partial class ChartPage : Page
 
                 _workspaceService.GenerateChart(result.Value.providerId, result.Value.options);
                 _isDirty = false;
+        _workspaceService.AreParametersDirty = false;
             }
 
             _workspaceService.HdrUnsupportedBehavior = ReadHdrUnsupportedBehavior();
@@ -308,6 +312,7 @@ public sealed partial class ChartPage : Page
             string json = await FileIO.ReadTextAsync(file);
             _workspaceService.ImportJson(json);
             _isDirty = false;
+        _workspaceService.AreParametersDirty = false;
         }
         catch (Exception ex)
         {
@@ -332,6 +337,7 @@ public sealed partial class ChartPage : Page
             string chartId = Path.GetFileNameWithoutExtension(file.Name);
             _workspaceService.ImportCsv(csv, chartId, chartId);
             _isDirty = false;
+        _workspaceService.AreParametersDirty = false;
         }
         catch (Exception ex)
         {

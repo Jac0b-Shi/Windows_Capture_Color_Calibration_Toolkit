@@ -22,6 +22,7 @@
       "items": {
         "type": "object",
         "required": ["id", "label", "expectedColor", "weight"],
+        "additionalProperties": true,
         "properties": {
           "id": { "type": "string", "minLength": 1 },
           "label": { "type": "string" },

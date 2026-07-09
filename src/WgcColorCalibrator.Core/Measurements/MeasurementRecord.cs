@@ -11,12 +11,15 @@ public sealed record MeasurementRecord
         ColorValue? displayObserved,
         ColorValue captured,
         SamplingSummary sampling,
+        ChannelStatistics channelStatistics,
+        MeasurementValidity validity,
         IReadOnlyList<string> warnings)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(patchId);
         ArgumentNullException.ThrowIfNull(expected);
         ArgumentNullException.ThrowIfNull(captured);
         ArgumentNullException.ThrowIfNull(sampling);
+        ArgumentNullException.ThrowIfNull(channelStatistics);
         ArgumentNullException.ThrowIfNull(warnings);
 
         PatchId = patchId;
@@ -24,6 +27,8 @@ public sealed record MeasurementRecord
         DisplayObserved = displayObserved;
         Captured = captured;
         Sampling = sampling;
+        ChannelStatistics = channelStatistics;
+        Validity = validity;
         Warnings = warnings;
     }
 
@@ -36,6 +41,10 @@ public sealed record MeasurementRecord
     public ColorValue Captured { get; }
 
     public SamplingSummary Sampling { get; }
+
+    public ChannelStatistics ChannelStatistics { get; }
+
+    public MeasurementValidity Validity { get; }
 
     public IReadOnlyList<string> Warnings { get; }
 }

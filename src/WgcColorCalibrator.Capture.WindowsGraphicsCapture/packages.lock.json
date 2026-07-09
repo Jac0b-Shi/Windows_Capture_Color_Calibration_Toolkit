@@ -11,18 +11,6 @@
           "Microsoft.Extensions.DependencyInjection.Abstractions": "10.0.9"
         }
       },
-      "Microsoft.Windows.SDK.BuildTools": {
-        "type": "Direct",
-        "requested": "[10.0.26100.4654, )",
-        "resolved": "10.0.26100.4654",
-        "contentHash": "2mgcOlj/t2RfSyyw+pVESfO+Tk1RkfQzto9Vrq42M1lUQIfQEwbi8QLha9GXWIOj+TFzeHIEJckIoF25mgiM8A=="
-      },
-      "Microsoft.Windows.SDK.BuildTools.WinApp": {
-        "type": "Direct",
-        "requested": "[0.3.1, )",
-        "resolved": "0.3.1",
-        "contentHash": "QOJTNCLXq9YC04atytO1EQOkvBXqghbbAh4Gxs9BR4g7BZ8vGEqgjbclq6CTe30RPFsa2LeyNtWh+GmG5jWdsw=="
-      },
       "Microsoft.WindowsAppSDK": {
         "type": "Direct",
         "requested": "[2.2.0, )",
@@ -40,16 +28,6 @@
           "Microsoft.WindowsAppSDK.WinUI": "2.2.1"
         }
       },
-      "Vortice.D3DCompiler": {
-        "type": "Direct",
-        "requested": "[3.8.3, )",
-        "resolved": "3.8.3",
-        "contentHash": "OmGPMhf/xnD8/HZ0ms1x7xSFyz+6e6mveCqhu0EioMFQYKJM35/ZVLLo+FIB5KpsrlqhM/jvYHYPAxu45YONGg==",
-        "dependencies": {
-          "SharpGen.Runtime": "2.4.2-beta",
-          "Vortice.DirectX": "3.8.3"
-        }
-      },
       "Vortice.Direct3D11": {
         "type": "Direct",
         "requested": "[3.8.3, )",
@@ -58,17 +36,6 @@
         "dependencies": {
           "SharpGen.Runtime": "2.4.2-beta",
           "Vortice.DXGI": "3.8.3"
-        }
-      },
-      "Vortice.Dxc": {
-        "type": "Direct",
-        "requested": "[3.8.3, )",
-        "resolved": "3.8.3",
-        "contentHash": "DkiIQe2qWzWOxalxgLgKTkm5Yqk9fg2ucylxnKXnicf31IKRnxuWvVSwVXz9vq8d+C+KviDCaYnZMzCEB6Hgzw==",
-        "dependencies": {
-          "SharpGen.Runtime": "2.4.2-beta",
-          "SharpGen.Runtime.COM": "2.4.2-beta",
-          "Vortice.Dxc.Native": "1.0.5"
         }
       },
       "Vortice.DXGI": {
@@ -202,13 +169,14 @@
         "resolved": "9.0.0",
         "contentHash": "hyJB4UlpAi19Xr9AXzu2NuagKC4lPfHObNMEAA0HmqFz2rX7wKgzeYzO/jM/eBHDhnUGFFEjk5cOoJaxqg5J4A=="
       },
-      "Vortice.Dxc.Native": {
-        "type": "Transitive",
-        "resolved": "1.0.5",
-        "contentHash": "10HX74WI4glwJNLolxN0CPo8snGwtoo5jElWs2ytBAPLsfL/CnK9t+kyiED7AhTp4OsE5pINzDXoAxBvREUKPw=="
-      },
       "wgccolorcalibrator.core": {
         "type": "Project"
+      },
+      "Microsoft.Windows.SDK.BuildTools": {
+        "type": "CentralTransitive",
+        "requested": "[10.0.26100.4654, )",
+        "resolved": "10.0.26100.4654",
+        "contentHash": "2mgcOlj/t2RfSyyw+pVESfO+Tk1RkfQzto9Vrq42M1lUQIfQEwbi8QLha9GXWIOj+TFzeHIEJckIoF25mgiM8A=="
       },
       "Vortice.DirectX": {
         "type": "CentralTransitive",
@@ -250,11 +218,6 @@
           "Microsoft.WindowsAppSDK.Base": "2.0.4",
           "Microsoft.WindowsAppSDK.InteractiveExperiences": "2.0.15"
         }
-      },
-      "Vortice.Dxc.Native": {
-        "type": "Transitive",
-        "resolved": "1.0.5",
-        "contentHash": "10HX74WI4glwJNLolxN0CPo8snGwtoo5jElWs2ytBAPLsfL/CnK9t+kyiED7AhTp4OsE5pINzDXoAxBvREUKPw=="
       }
     },
     "net10.0-windows10.0.26100/win-x64": {
@@ -279,11 +242,6 @@
           "Microsoft.WindowsAppSDK.Base": "2.0.4",
           "Microsoft.WindowsAppSDK.InteractiveExperiences": "2.0.15"
         }
-      },
-      "Vortice.Dxc.Native": {
-        "type": "Transitive",
-        "resolved": "1.0.5",
-        "contentHash": "10HX74WI4glwJNLolxN0CPo8snGwtoo5jElWs2ytBAPLsfL/CnK9t+kyiED7AhTp4OsE5pINzDXoAxBvREUKPw=="
       }
     },
     "net10.0-windows10.0.26100/win-x86": {
@@ -308,11 +266,6 @@
           "Microsoft.WindowsAppSDK.Base": "2.0.4",
           "Microsoft.WindowsAppSDK.InteractiveExperiences": "2.0.15"
         }
-      },
-      "Vortice.Dxc.Native": {
-        "type": "Transitive",
-        "resolved": "1.0.5",
-        "contentHash": "10HX74WI4glwJNLolxN0CPo8snGwtoo5jElWs2ytBAPLsfL/CnK9t+kyiED7AhTp4OsE5pINzDXoAxBvREUKPw=="
       }
     }
   }

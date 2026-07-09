@@ -2,6 +2,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.UI.Xaml;
+using WgcColorCalibrator.Capture.WindowsGraphicsCapture;
 using WgcColorCalibrator.Rendering.Direct3D11;
 using WgcColorCalibrator.App.Models;
 using WgcColorCalibrator.Core.Rendering;
@@ -22,6 +23,8 @@ public partial class App : Application
     }
 
     public static IServiceProvider Services { get; private set; } = null!;
+
+    public nint WindowHandle => (window as MainWindow)?.WindowHandle ?? 0;
 
     protected override void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs args)
     {
@@ -54,8 +57,12 @@ public partial class App : Application
         services.AddSingleton<IChartProvider, NearWhiteChartProvider>();
         services.AddSingleton<IChartProvider, GrayscaleChartProvider>();
         services.AddDirect3D11Rendering();
+        services.AddWindowsGraphicsCapture();
         services.AddSingleton<IChartWindowFactory, ChartWindowFactory>();
         services.AddSingleton<ChartWorkspaceService>();
+        services.AddSingleton<MeasurementService>();
+        services.AddSingleton<ProfileJsonSerializerService>();
+        services.AddSingleton<MeasurementDebugOverlayService>();
 
         services.AddTransient<MainWindow>();
         return services.BuildServiceProvider();

@@ -15,7 +15,7 @@ public sealed record ChartDefinition
         IReadOnlyList<ColorPatchDefinition> patches,
         ChartLayoutDefinition layout,
         IReadOnlyDictionary<string, string>? metadata)
-        : this(SchemaVersions.Current, id, name, patches, layout, metadata, null)
+        : this(SchemaVersions.ChartCurrent, id, name, patches, layout, metadata, null)
     {
     }
 
@@ -26,7 +26,7 @@ public sealed record ChartDefinition
         ChartLayoutDefinition layout,
         IReadOnlyDictionary<string, string>? metadata,
         ChartRenderingParameters? renderingParameters)
-        : this(SchemaVersions.Current, id, name, patches, layout, metadata, renderingParameters)
+        : this(SchemaVersions.ChartCurrent, id, name, patches, layout, metadata, renderingParameters)
     {
     }
 

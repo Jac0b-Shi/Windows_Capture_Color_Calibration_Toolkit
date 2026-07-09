@@ -61,8 +61,32 @@ public sealed class ChartWorkspaceService
 
     public bool IsDebugOverlayEnabled { get; set; }
 
+    public bool AreParametersDirty { get; set; }
+
     public IReadOnlyList<IChartProvider> Providers => _providers.Values.ToList();
 
+    public bool TryGetCaptureTarget(out ChartCaptureTarget target)
+    {
+        if (_chartWindow is null ||
+            CurrentChart is null ||
+            CurrentPlacements is null ||
+            CurrentSession is null)
+        {
+            target = null!;
+            return false;
+        }
+
+        target = new ChartCaptureTarget(
+            _chartWindow.WindowHandle,
+            CurrentChart,
+            CurrentPlacements,
+            CurrentSession,
+            true,
+            IsDebugOverlayEnabled,
+            AreParametersDirty);
+
+        return true;
+    }
     public void GenerateChart(string providerId, ChartGenerationOptions options)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(providerId);

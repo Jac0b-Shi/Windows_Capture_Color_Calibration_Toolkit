@@ -26,8 +26,10 @@ public readonly record struct PixelRect
 
     public int Height { get; }
 
+    [System.Text.Json.Serialization.JsonIgnore]
     public int Right => checked(X + Width);
 
+    [System.Text.Json.Serialization.JsonIgnore]
     public int Bottom => checked(Y + Height);
 
     public PixelRect Inset(int inset)

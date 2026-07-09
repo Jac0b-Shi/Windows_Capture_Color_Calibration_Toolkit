@@ -6,6 +6,9 @@
 # dotenv files
 .env
 
+# Agent-local planning directory
+.mimocode/
+
 # User-specific files
 *.rsuser
 *.suo

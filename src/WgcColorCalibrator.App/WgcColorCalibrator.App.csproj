@@ -23,6 +23,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\WgcColorCalibrator.Capture.WindowsGraphicsCapture\WgcColorCalibrator.Capture.WindowsGraphicsCapture.csproj" />
     <ProjectReference Include="..\WgcColorCalibrator.Core\WgcColorCalibrator.Core.csproj" />
     <ProjectReference Include="..\WgcColorCalibrator.Rendering.Direct3D11\WgcColorCalibrator.Rendering.Direct3D11.csproj" />
   </ItemGroup>

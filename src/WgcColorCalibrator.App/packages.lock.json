@@ -275,6 +275,16 @@
         "resolved": "1.0.5",
         "contentHash": "10HX74WI4glwJNLolxN0CPo8snGwtoo5jElWs2ytBAPLsfL/CnK9t+kyiED7AhTp4OsE5pINzDXoAxBvREUKPw=="
       },
+      "wgccolorcalibrator.capture.windowsgraphicscapture": {
+        "type": "Project",
+        "dependencies": {
+          "Microsoft.Extensions.DependencyInjection": "[10.0.9, )",
+          "Microsoft.WindowsAppSDK": "[2.2.0, )",
+          "Vortice.DXGI": "[3.8.3, )",
+          "Vortice.Direct3D11": "[3.8.3, )",
+          "WgcColorCalibrator.Core": "[1.0.0, )"
+        }
+      },
       "wgccolorcalibrator.core": {
         "type": "Project"
       },

@@ -28,6 +28,11 @@
                         <FontIcon Glyph="&#xE7FB;" />
                     </NavigationViewItem.Icon>
                 </NavigationViewItem>
+                <NavigationViewItem x:Uid="NavigationMeasurement" Tag="measurement">
+                    <NavigationViewItem.Icon>
+                        <FontIcon Glyph="&#xE9F9;" />
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
                 <NavigationViewItem x:Uid="NavigationSettings" Tag="settings">
                     <NavigationViewItem.Icon>
                         <FontIcon Glyph="&#xE713;" />

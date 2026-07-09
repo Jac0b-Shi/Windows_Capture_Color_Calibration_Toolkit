@@ -23,6 +23,12 @@ public static class ProfileJsonSerializer
         options.Converters.Add(new JsonStringEnumConverter<CapturePixelFormat>(JsonNamingPolicy.CamelCase));
         options.Converters.Add(new JsonStringEnumConverter<CaptureSourceKind>(JsonNamingPolicy.CamelCase));
         options.Converters.Add(new JsonStringEnumConverter<SampleMethod>(JsonNamingPolicy.CamelCase));
+        options.Converters.Add(new JsonStringEnumConverter<MeasurementValidity>(JsonNamingPolicy.CamelCase));
+        options.Converters.Add(new JsonStringEnumConverter<MeasurementSessionValidity>(JsonNamingPolicy.CamelCase));
+        options.Converters.Add(new JsonStringEnumConverter<CaptureFrameOriginBasis>(JsonNamingPolicy.CamelCase));
+        options.Converters.Add(new JsonStringEnumConverter<CaptureMappingStatus>(JsonNamingPolicy.CamelCase));
+        options.Converters.Add(new JsonStringEnumConverter<Rendering.RenderOutputMode>(JsonNamingPolicy.CamelCase));
+        options.Converters.Add(new JsonStringEnumConverter<Rendering.ToneMappingMode>(JsonNamingPolicy.CamelCase));
         return options;
     }
 

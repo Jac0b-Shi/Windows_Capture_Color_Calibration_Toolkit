@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page
+    x:Class="WgcColorCalibrator.App.Pages.MeasurementPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="using:WgcColorCalibrator.App.Pages"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+    <ScrollViewer>
+        <Grid Padding="32" RowSpacing="24">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+
+            <TextBlock
+                Grid.Row="0"
+                x:Uid="MeasurementTitle"
+                Style="{ThemeResource TitleTextBlockStyle}" />
+
+            <StackPanel
+                Grid.Row="1"
+                Spacing="12"
+                Orientation="Horizontal">
+                <Button x:Name="CaptureButton" x:Uid="CaptureButton" Click="CaptureButton_Click" />
+                <Button x:Name="ExportJsonButton" x:Uid="ExportJsonButton" Click="ExportJsonButton_Click" IsEnabled="False" />
+                <Button x:Name="ExportCsvButton" x:Uid="ExportCsvButton" Click="ExportCsvButton_Click" IsEnabled="False" />
+                <Button x:Name="ExportBgraButton" x:Uid="ExportBgraButton" Click="ExportBgraButton_Click" IsEnabled="False" />
+                <Button x:Name="ExportDebugOverlayButton" x:Uid="ExportDebugOverlayButton" Click="ExportDebugOverlayButton_Click" IsEnabled="False" />
+                <Button x:Name="BackToChartButton" x:Uid="BackToChartButton" Click="BackToChartButton_Click" />
+            </StackPanel>
+
+            <InfoBar
+                x:Name="StatusInfoBar"
+                Grid.Row="2"
+                IsOpen="False" />
+
+            <StackPanel
+                Grid.Row="3"
+                Spacing="8">
+                <TextBlock x:Uid="MeasurementSummaryLabel" FontWeight="SemiBold" />
+                <TextBlock x:Name="SummaryTextBlock" TextWrapping="WrapWholeWords" IsTextSelectionEnabled="True" />
+            </StackPanel>
+
+            <TextBlock
+                Grid.Row="4"
+                x:Uid="MeasurementRecordsLabel"
+                FontWeight="SemiBold" />
+
+            <GridView
+                x:Name="RecordsGridView"
+                Grid.Row="5"
+                IsItemClickEnabled="False"
+                SelectionMode="None">
+                <GridView.ItemTemplate>
+                    <DataTemplate x:DataType="local:MeasurementRecordViewModel">
+                        <Border
+                            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                            BorderThickness="1"
+                            CornerRadius="8"
+                            Padding="12"
+                            Width="240"
+                            Background="{ThemeResource CardBackgroundFillColorDefaultBrush}">
+                            <Grid RowSpacing="8">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                </Grid.RowDefinitions>
+                                <TextBlock Text="{x:Bind PatchId}" FontWeight="SemiBold" />
+                                <TextBlock Grid.Row="1">
+                                    <Run x:Uid="MeasurementExpectedRun" />
+                                    <Run Text="{x:Bind ExpectedText}" />
+                                </TextBlock>
+                                <TextBlock Grid.Row="2">
+                                    <Run x:Uid="MeasurementCapturedRun" />
+                                    <Run Text="{x:Bind CapturedText}" />
+                                </TextBlock>
+                                <TextBlock Grid.Row="3">
+                                    <Run x:Uid="MeasurementValidityRun" />
+                                    <Run Text="{x:Bind ValidityText}" />
+                                </TextBlock>
+                                <TextBlock
+                                    Grid.Row="4"
+                                    Text="{x:Bind WarningsText}"
+                                    TextWrapping="WrapWholeWords"
+                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </GridView.ItemTemplate>
+            </GridView>
+        </Grid>
+    </ScrollViewer>
+</Page>

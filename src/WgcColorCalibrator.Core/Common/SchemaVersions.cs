@@ -6,8 +6,13 @@ namespace WgcColorCalibrator.Core.Common;
 public static class SchemaVersions
 {
     /// <summary>
-    /// Initial profile and chart schema version.
+    /// Current chart definition schema version.
     /// </summary>
-    public const string Current = "0.1.0";
+    public const string ChartCurrent = "0.1.0";
+
+    /// <summary>
+    /// Current measurement profile schema version.
+    /// </summary>
+    public const string MeasurementProfileCurrent = "0.2.0";
 }
 

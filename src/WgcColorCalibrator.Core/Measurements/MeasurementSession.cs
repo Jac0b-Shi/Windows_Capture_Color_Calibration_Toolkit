@@ -19,11 +19,30 @@ public sealed record MeasurementSession
         CaptureSummary capture,
         ChartDefinition chart,
         IReadOnlyList<PatchPlacement> layout,
+        RenderSummary renderSummary,
+        CaptureGeometry captureGeometry,
         IReadOnlyList<MeasurementRecord> measurements,
         IReadOnlyList<AnalyzerResult> analysis,
         IReadOnlyList<string> warnings,
-        DateTimeOffset createdAt)
-        : this(SchemaVersions.Current, application, system, gpu, display, hdr, capture, chart, layout, measurements, analysis, warnings, createdAt)
+        DateTimeOffset createdAt,
+        MeasurementSessionValidity? validity = null)
+        : this(
+            SchemaVersions.MeasurementProfileCurrent,
+            application,
+            system,
+            gpu,
+            display,
+            hdr,
+            capture,
+            chart,
+            layout,
+            renderSummary,
+            captureGeometry,
+            measurements,
+            analysis,
+            warnings,
+            createdAt,
+            validity ?? DeriveValidity(captureGeometry, measurements))
     {
     }
 
@@ -38,10 +57,13 @@ public sealed record MeasurementSession
         CaptureSummary capture,
         ChartDefinition chart,
         IReadOnlyList<PatchPlacement> layout,
+        RenderSummary? renderSummary,
+        CaptureGeometry? captureGeometry,
         IReadOnlyList<MeasurementRecord> measurements,
         IReadOnlyList<AnalyzerResult> analysis,
         IReadOnlyList<string> warnings,
-        DateTimeOffset createdAt)
+        DateTimeOffset createdAt,
+        MeasurementSessionValidity validity = MeasurementSessionValidity.Valid)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(schemaVersion);
         ArgumentNullException.ThrowIfNull(application);
@@ -65,10 +87,31 @@ public sealed record MeasurementSession
         Capture = capture;
         Chart = chart;
         Layout = layout;
+        RenderSummary = renderSummary;
+        CaptureGeometry = captureGeometry;
         Measurements = measurements;
         Analysis = analysis;
         Warnings = warnings;
         CreatedAt = createdAt;
+        Validity = validity;
+    }
+
+    private static MeasurementSessionValidity DeriveValidity(CaptureGeometry? captureGeometry, IReadOnlyList<MeasurementRecord> measurements)
+    {
+        if (captureGeometry?.MappingStatus == CaptureMappingStatus.Unverified)
+        {
+            return MeasurementSessionValidity.DiagnosticOnly;
+        }
+
+        foreach (MeasurementRecord measurement in measurements)
+        {
+            if (measurement.Validity != MeasurementValidity.Valid)
+            {
+                return MeasurementSessionValidity.DiagnosticOnly;
+            }
+        }
+
+        return MeasurementSessionValidity.Valid;
     }
 
     public string SchemaVersion { get; }
@@ -89,6 +132,10 @@ public sealed record MeasurementSession
 
     public IReadOnlyList<PatchPlacement> Layout { get; }
 
+    public RenderSummary? RenderSummary { get; }
+
+    public CaptureGeometry? CaptureGeometry { get; }
+
     public IReadOnlyList<MeasurementRecord> Measurements { get; }
 
     public IReadOnlyList<AnalyzerResult> Analysis { get; }
@@ -96,4 +143,6 @@ public sealed record MeasurementSession
     public IReadOnlyList<string> Warnings { get; }
 
     public DateTimeOffset CreatedAt { get; }
+
+    public MeasurementSessionValidity Validity { get; }
 }

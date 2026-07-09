@@ -5,7 +5,7 @@
   "type": "object",
   "required": ["schemaVersion", "application", "system", "capture", "chart", "layout", "measurements", "warnings", "createdAt"],
   "properties": {
-    "schemaVersion": { "const": "0.1.0" },
+    "schemaVersion": { "const": "0.2.0" },
     "application": {
       "type": "object",
       "required": ["name", "version"],
@@ -30,9 +30,53 @@
         "formatDowngraded": { "type": "boolean" }
       }
     },
+    "renderSummary": {
+      "type": ["object", "null"],
+      "required": ["rendererId", "requestedOutputMode", "actualOutputMode", "swapChainFormat", "dxgiColorSpace", "hdrOutputActive", "toneMappingParameters", "intendedPhysicalSize", "actualPhysicalSize", "clientPhysicalSize", "contentOrigin", "compositionScaleX", "compositionScaleY", "warnings"],
+      "properties": {
+        "rendererId": { "type": "string", "minLength": 1 },
+        "toneMapperId": { "type": ["string", "null"] },
+        "requestedOutputMode": { "type": "string", "enum": ["sdrSrgb", "hdrScRgb", "hdr10"] },
+        "actualOutputMode": { "type": "string", "enum": ["sdrSrgb", "hdrScRgb", "hdr10"] },
+        "swapChainFormat": { "type": "string" },
+        "dxgiColorSpace": { "type": "string" },
+        "hdrOutputActive": { "type": "boolean" },
+        "toneMappingParameters": {
+          "type": "object",
+          "required": ["paperWhiteNits", "peakBrightnessNits", "exposureEv"],
+          "properties": {
+            "paperWhiteNits": { "type": "number" },
+            "peakBrightnessNits": { "type": "number" },
+            "exposureEv": { "type": "number" }
+          }
+        },
+        "intendedPhysicalSize": { "$ref": "#/$defs/sizeInt" },
+        "actualPhysicalSize": { "$ref": "#/$defs/sizeInt" },
+        "clientPhysicalSize": { "$ref": "#/$defs/sizeInt" },
+        "contentOrigin": { "$ref": "#/$defs/pixelPoint" },
+        "compositionScaleX": { "type": "number" },
+        "compositionScaleY": { "type": "number" },
+        "matrixTransform": { "type": ["string", "null"] },
+        "displayOutput": { "type": ["object", "null"] },
+        "warnings": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "captureGeometry": {
+      "type": ["object", "null"],
+      "required": ["beforeCaptureGeometry", "afterCaptureGeometry", "frameOriginBasis", "mappingStatus", "contentOffset", "warnings"],
+      "properties": {
+        "beforeCaptureGeometry": { "$ref": "#/$defs/windowGeometrySnapshot" },
+        "afterCaptureGeometry": { "$ref": "#/$defs/windowGeometrySnapshot" },
+        "frameOriginBasis": { "type": "string", "enum": ["windowRect", "extendedFrameBounds", "clientRect", "unverified"] },
+        "mappingStatus": { "type": "string", "enum": ["verified", "unverified"] },
+        "contentOffset": { "$ref": "#/$defs/pixelPoint" },
+        "warnings": { "type": "array", "items": { "type": "string" } }
+      }
+    },
     "chart": {
       "type": "object",
       "required": ["schemaVersion", "id", "name", "patches", "layout"],
+      "additionalProperties": true,
       "properties": {
         "schemaVersion": { "const": "0.1.0" },
         "id": { "type": "string", "minLength": 1 },
@@ -43,6 +87,7 @@
           "items": {
             "type": "object",
             "required": ["id", "label", "expectedColor", "weight"],
+            "additionalProperties": true,
             "properties": {
               "id": { "type": "string", "minLength": 1 },
               "label": { "type": "string" },
@@ -72,26 +117,8 @@
         "required": ["patchId", "bounds", "safeSampleBounds"],
         "properties": {
           "patchId": { "type": "string", "minLength": 1 },
-          "bounds": {
-            "type": "object",
-            "required": ["x", "y", "width", "height"],
-            "properties": {
-              "x": { "type": "integer", "minimum": 0 },
-              "y": { "type": "integer", "minimum": 0 },
-              "width": { "type": "integer", "minimum": 1 },
-              "height": { "type": "integer", "minimum": 1 }
-            }
-          },
-          "safeSampleBounds": {
-            "type": "object",
-            "required": ["x", "y", "width", "height"],
-            "properties": {
-              "x": { "type": "integer", "minimum": 0 },
-              "y": { "type": "integer", "minimum": 0 },
-              "width": { "type": "integer", "minimum": 1 },
-              "height": { "type": "integer", "minimum": 1 }
-            }
-          }
+          "bounds": { "$ref": "#/$defs/pixelRect" },
+          "safeSampleBounds": { "$ref": "#/$defs/pixelRect" }
         }
       }
     },
@@ -99,65 +126,116 @@
       "type": "array",
       "items": {
         "type": "object",
-        "required": ["patchId", "expected", "captured", "sampling", "warnings"],
+        "required": ["patchId", "expected", "captured", "sampling", "channelStatistics", "validity", "warnings"],
         "properties": {
           "patchId": { "type": "string", "minLength": 1 },
-          "expected": {
-            "type": "object",
-            "required": ["encoding"],
-            "properties": {
-              "encoding": { "type": "string", "enum": ["unknown", "srgbEncoded", "linearScRgb", "displayObserved", "captureNative"] },
-              "rgb8": { "type": "object", "oneOf": [
-                { "type": "object", "required": ["r", "g", "b"],
-                  "properties": { "r": { "type": "integer", "minimum": 0, "maximum": 255 }, "g": { "type": "integer", "minimum": 0, "maximum": 255 }, "b": { "type": "integer", "minimum": 0, "maximum": 255 } } },
-                { "type": "null" }
-              ]},
-              "rgba": { "oneOf": [
-                { "type": "object", "required": ["r", "g", "b", "a"],
-                  "properties": { "r": { "type": "number" }, "g": { "type": "number" }, "b": { "type": "number" }, "a": { "type": "number" } } },
-                { "type": "null" }
-              ]}
-            }
-          },
-          "displayObserved": { "oneOf": [
-            { "type": "object", "required": ["encoding"],
-              "properties": { "encoding": { "type": "string", "enum": ["unknown", "srgbEncoded", "linearScRgb", "displayObserved", "captureNative"] } } },
-            { "type": "null" }
-          ]},
-          "captured": {
-            "type": "object",
-            "required": ["encoding"],
-            "properties": {
-              "encoding": { "type": "string", "enum": ["unknown", "srgbEncoded", "linearScRgb", "displayObserved", "captureNative"] },
-              "rgb8": { "oneOf": [
-                { "type": "object", "required": ["r", "g", "b"],
-                  "properties": { "r": { "type": "integer", "minimum": 0, "maximum": 255 }, "g": { "type": "integer", "minimum": 0, "maximum": 255 }, "b": { "type": "integer", "minimum": 0, "maximum": 255 } } },
-                { "type": "null" }
-              ]},
-              "rgba": { "oneOf": [
-                { "type": "object", "required": ["r", "g", "b", "a"],
-                  "properties": { "r": { "type": "number" }, "g": { "type": "number" }, "b": { "type": "number" }, "a": { "type": "number" } } },
-                { "type": "null" }
-              ]}
-            }
-          },
+          "expected": { "$ref": "#/$defs/colorValue" },
+          "displayObserved": { "oneOf": [{ "$ref": "#/$defs/colorValue" }, { "type": "null" }] },
+          "captured": { "$ref": "#/$defs/colorValue" },
           "sampling": {
             "type": "object",
             "required": ["method", "sampleCount"],
             "properties": {
               "method": { "type": "string", "enum": ["centerPixel", "centerMean", "centerMedian"] },
-              "sampleCount": { "type": "integer", "minimum": 1 }
+              "sampleCount": { "type": "integer", "minimum": 0 }
             }
           },
+          "channelStatistics": {
+            "type": "object",
+            "required": ["r", "g", "b"],
+            "properties": {
+              "r": { "$ref": "#/$defs/channelStatistic" },
+              "g": { "$ref": "#/$defs/channelStatistic" },
+              "b": { "$ref": "#/$defs/channelStatistic" }
+            }
+          },
+          "validity": { "type": "string", "enum": ["valid", "emptySample", "sampleRegionClipped", "geometryUnverified"] },
           "warnings": { "type": "array", "items": { "type": "string" } }
         }
       }
     },
     "analysis": { "type": "array" },
+    "validity": { "type": "string", "enum": ["valid", "diagnosticOnly"] },
     "warnings": { "type": "array", "items": { "type": "string" } },
     "createdAt": {
       "type": "string",
       "format": "date-time"
+    }
+  },
+  "$defs": {
+    "pixelRect": {
+      "type": "object",
+      "required": ["x", "y", "width", "height"],
+      "properties": {
+        "x": { "type": "integer" },
+        "y": { "type": "integer" },
+        "width": { "type": "integer", "minimum": 1 },
+        "height": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "pixelPoint": {
+      "type": "object",
+      "required": ["x", "y"],
+      "properties": {
+        "x": { "type": "integer" },
+        "y": { "type": "integer" }
+      }
+    },
+    "sizeInt": {
+      "type": "object",
+      "required": ["width", "height"],
+      "properties": {
+        "width": { "type": "integer", "minimum": 1 },
+        "height": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "screenRectInt": {
+      "type": "object",
+      "required": ["x", "y", "width", "height"],
+      "properties": {
+        "x": { "type": "integer" },
+        "y": { "type": "integer" },
+        "width": { "type": "integer", "minimum": 1 },
+        "height": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "windowGeometrySnapshot": {
+      "type": "object",
+      "required": ["windowRect", "clientRectInScreen"],
+      "properties": {
+        "windowRect": { "$ref": "#/$defs/screenRectInt" },
+        "extendedFrameBounds": { "oneOf": [{ "$ref": "#/$defs/screenRectInt" }, { "type": "null" }] },
+        "clientRectInScreen": { "$ref": "#/$defs/screenRectInt" }
+      }
+    },
+    "colorValue": {
+      "type": "object",
+      "required": ["encoding"],
+      "properties": {
+        "encoding": { "type": "string", "enum": ["unknown", "srgbEncoded", "linearScRgb", "displayObserved", "captureNative"] },
+        "rgb8": { "oneOf": [
+          { "type": "object", "required": ["r", "g", "b"],
+            "properties": { "r": { "type": "integer", "minimum": 0, "maximum": 255 }, "g": { "type": "integer", "minimum": 0, "maximum": 255 }, "b": { "type": "integer", "minimum": 0, "maximum": 255 } } },
+          { "type": "null" }
+        ]},
+        "rgba": { "oneOf": [
+          { "type": "object", "required": ["r", "g", "b", "a"],
+            "properties": { "r": { "type": "number" }, "g": { "type": "number" }, "b": { "type": "number" }, "a": { "type": "number" } } },
+          { "type": "null" }
+        ]}
+      }
+    },
+    "channelStatistic": {
+      "type": "object",
+      "required": ["min", "max", "mean", "median", "standardDeviation", "uniqueValueCount"],
+      "properties": {
+        "min": { "type": "number" },
+        "max": { "type": "number" },
+        "mean": { "type": "number" },
+        "median": { "type": "number" },
+        "standardDeviation": { "type": "number" },
+        "uniqueValueCount": { "type": "integer", "minimum": 0 }
+      }
     }
   },
   "additionalProperties": true

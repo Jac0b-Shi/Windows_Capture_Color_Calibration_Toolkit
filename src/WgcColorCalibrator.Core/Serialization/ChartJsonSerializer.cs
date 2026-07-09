@@ -35,9 +35,9 @@ public static class ChartJsonSerializer
         ChartDefinition chart = JsonSerializer.Deserialize<ChartDefinition>(json, CreateOptions())
             ?? throw new JsonException("JSON did not contain a ChartDefinition payload.");
 
-        if (!string.Equals(chart.SchemaVersion, SchemaVersions.Current, StringComparison.Ordinal))
+        if (!string.Equals(chart.SchemaVersion, SchemaVersions.ChartCurrent, StringComparison.Ordinal))
         {
-            throw new JsonException($"Unsupported schema version '{chart.SchemaVersion}'. Expected '{SchemaVersions.Current}'.");
+            throw new JsonException($"Unsupported schema version '{chart.SchemaVersion}'. Expected '{SchemaVersions.ChartCurrent}'.");
         }
 
         return chart;
