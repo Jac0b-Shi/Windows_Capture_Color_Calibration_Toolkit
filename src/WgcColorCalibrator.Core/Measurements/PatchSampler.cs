@@ -86,7 +86,7 @@ public static class PatchSampler
             new ChannelStatistic(bValues.Min(), bValues.Max(), bValues.Average(v => v), MedianAsDouble(bValues), StdDev(bValues), bValues.Distinct().Count()));
 
         List<string> warnings = new();
-        if (IsNonuniform(statistics))
+        if (IsNonuniformByte(statistics))
         {
             warnings.Add("sample-region-nonuniform");
         }
@@ -144,7 +144,7 @@ public static class PatchSampler
             new ChannelStatistic(bValues.Min(), bValues.Max(), bValues.Average(), MedianAsDouble(bValues), StdDev(bValues), bValues.Distinct().Count()));
 
         List<string> warnings = new();
-        if (IsNonuniform(statistics))
+        if (IsNonuniformFloat(statistics))
         {
             warnings.Add("sample-region-nonuniform");
         }
@@ -182,14 +182,24 @@ public static class PatchSampler
             new List<string> { warning, validity.ToString().ToLowerInvariant() });
     }
 
-    private static bool IsNonuniform(ChannelStatistics stats)
+    private static bool IsNonuniformByte(ChannelStatistics stats)
     {
-        return IsNonuniform(stats.R) || IsNonuniform(stats.G) || IsNonuniform(stats.B);
+        return IsNonuniformByte(stats.R) || IsNonuniformByte(stats.G) || IsNonuniformByte(stats.B);
     }
 
-    private static bool IsNonuniform(ChannelStatistic stat)
+    private static bool IsNonuniformByte(ChannelStatistic stat)
     {
         return Math.Abs(stat.Mean - stat.Median) > 3.0 || stat.StandardDeviation > 5.0;
+    }
+
+    private static bool IsNonuniformFloat(ChannelStatistics stats)
+    {
+        return IsNonuniformFloat(stats.R) || IsNonuniformFloat(stats.G) || IsNonuniformFloat(stats.B);
+    }
+
+    private static bool IsNonuniformFloat(ChannelStatistic stat)
+    {
+        return Math.Abs(stat.Mean - stat.Median) > 0.01 || stat.StandardDeviation > 0.01;
     }
 
     private static byte Median(List<byte> values)

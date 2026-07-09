@@ -134,6 +134,28 @@ public sealed class PatchSamplerTests
         Assert.Contains("sample-region-nonuniform", sample.Warnings);
     }
 
+    [Fact]
+    public void Sample_Rgba16Float_UniformRegion_HasNoContaminationWarning()
+    {
+        CapturedFrame frame = CreateSolidRgba16FloatFrame(4, 4, 1.0f, 1.0f, 1.0f);
+        PatchPlacement placement = new("p1", new PixelRect(0, 0, 4, 4), new PixelRect(0, 0, 4, 4));
+
+        PatchSample sample = PatchSampler.Sample(frame, new PixelPoint(0, 0), placement, SampleMethod.CenterMean);
+
+        Assert.DoesNotContain("sample-region-nonuniform", sample.Warnings);
+    }
+
+    [Fact]
+    public void Sample_Rgba16Float_SmallVariation_AddsContaminationWarning()
+    {
+        CapturedFrame frame = CreateRgba16FloatFrameWithTwoColors(4, 4, new RgbaFloat(1.0f, 1.0f, 1.0f, 1.0f), new RgbaFloat(1.05f, 1.05f, 1.05f, 1.0f));
+        PatchPlacement placement = new("p1", new PixelRect(0, 0, 4, 4), new PixelRect(0, 0, 4, 4));
+
+        PatchSample sample = PatchSampler.Sample(frame, new PixelPoint(0, 0), placement, SampleMethod.CenterMean);
+
+        Assert.Contains("sample-region-nonuniform", sample.Warnings);
+    }
+
     private static CapturedFrame CreateSolidRgba16FloatFrame(int width, int height, float r, float g, float b)
     {
         byte[] pixels = new byte[width * height * 8];

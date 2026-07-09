@@ -432,6 +432,12 @@
   <data name="MeasurementStdDevRun.Text" xml:space="preserve">
     <value>StdDev: </value>
   </data>
+  <data name="MeasurementDeltaRun.Text" xml:space="preserve">
+    <value>Delta: </value>
+  </data>
+  <data name="MeasurementRelativeErrorRun.Text" xml:space="preserve">
+    <value>Relative error: </value>
+  </data>
   <data name="MeasurementValidityRun.Text" xml:space="preserve">
     <value>Validity: </value>
   </data>

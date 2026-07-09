@@ -17,6 +17,8 @@ public sealed record MeasurementRecordViewModel(
     string MeanText,
     string MedianText,
     string StdDevText,
+    string DeltaText,
+    string RelativeErrorText,
     string ValidityText,
     string WarningsText);
 
@@ -155,6 +157,7 @@ public sealed partial class MeasurementPage : Page
         string median = FormatChannelStatistics(record.ChannelStatistics, s => s.Median);
         string stdDev = FormatChannelStatistics(record.ChannelStatistics, s => s.StandardDeviation);
         string validity = record.Validity.ToString();
+        (string delta, string relativeError) = ComputeDeltaAndRelativeError(record);
         return new MeasurementRecordViewModel(
             record.PatchId,
             expected,
@@ -162,6 +165,8 @@ public sealed partial class MeasurementPage : Page
             mean,
             median,
             stdDev,
+            delta,
+            relativeError,
             validity,
             string.Join(", ", record.Warnings));
     }
@@ -191,6 +196,72 @@ public sealed partial class MeasurementPage : Page
         }
 
         return color.Encoding.ToString();
+    }
+
+    private static (string Delta, string RelativeError) ComputeDeltaAndRelativeError(MeasurementRecord record)
+    {
+        (float? expectedR, float? expectedG, float? expectedB) = ToFloatChannels(record.Expected);
+        (float? capturedR, float? capturedG, float? capturedB) = ToFloatChannels(record.Captured);
+
+        if (!expectedR.HasValue || !capturedR.HasValue)
+        {
+            return ("-", "-");
+        }
+
+        float dr = capturedR.Value - expectedR.Value;
+        float dg = capturedG!.Value - expectedG!.Value;
+        float db = capturedB!.Value - expectedB!.Value;
+        string delta = $"ΔR{dr:F4} G{dg:F4} B{db:F4}";
+
+        double relativeError = AverageRelativeError(expectedR.Value, expectedG.Value, expectedB.Value, dr, dg, db);
+        string relativeErrorText = double.IsFinite(relativeError)
+            ? $"{relativeError:P2}"
+            : "-";
+
+        return (delta, relativeErrorText);
+    }
+
+    private static (float? R, float? G, float? B) ToFloatChannels(ColorValue color)
+    {
+        if (color.Rgba.HasValue)
+        {
+            RgbaFloat rgba = color.Rgba.Value;
+            return (rgba.R, rgba.G, rgba.B);
+        }
+
+        if (color.Rgb8.HasValue)
+        {
+            Rgb8 rgb = color.Rgb8.Value;
+            return (rgb.R / 255.0f, rgb.G / 255.0f, rgb.B / 255.0f);
+        }
+
+        return (null, null, null);
+    }
+
+    private static double AverageRelativeError(float eR, float eG, float eB, float dR, float dG, float dB)
+    {
+        double sum = 0.0;
+        int count = 0;
+
+        if (eR != 0.0f)
+        {
+            sum += Math.Abs(dR / eR);
+            count++;
+        }
+
+        if (eG != 0.0f)
+        {
+            sum += Math.Abs(dG / eG);
+            count++;
+        }
+
+        if (eB != 0.0f)
+        {
+            sum += Math.Abs(dB / eB);
+            count++;
+        }
+
+        return count > 0 ? sum / count : 0.0;
     }
 
     private async void CaptureButton_Click(object sender, RoutedEventArgs e)

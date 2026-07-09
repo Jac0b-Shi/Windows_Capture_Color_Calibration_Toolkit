@@ -432,6 +432,12 @@
   <data name="MeasurementStdDevRun.Text" xml:space="preserve">
     <value>标准差：</value>
   </data>
+  <data name="MeasurementDeltaRun.Text" xml:space="preserve">
+    <value>差值：</value>
+  </data>
+  <data name="MeasurementRelativeErrorRun.Text" xml:space="preserve">
+    <value>相对误差：</value>
+  </data>
   <data name="MeasurementValidityRun.Text" xml:space="preserve">
     <value>有效性：</value>
   </data>

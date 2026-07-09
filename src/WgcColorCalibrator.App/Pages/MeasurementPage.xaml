@@ -85,6 +85,8 @@
                                     <RowDefinition Height="Auto" />
                                     <RowDefinition Height="Auto" />
                                     <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
                                 </Grid.RowDefinitions>
                                 <TextBlock Text="{x:Bind PatchId}" FontWeight="SemiBold" />
                                 <TextBlock Grid.Row="1">
@@ -108,11 +110,19 @@
                                     <Run Text="{x:Bind StdDevText}" />
                                 </TextBlock>
                                 <TextBlock Grid.Row="6">
+                                    <Run x:Uid="MeasurementDeltaRun" />
+                                    <Run Text="{x:Bind DeltaText}" />
+                                </TextBlock>
+                                <TextBlock Grid.Row="7">
+                                    <Run x:Uid="MeasurementRelativeErrorRun" />
+                                    <Run Text="{x:Bind RelativeErrorText}" />
+                                </TextBlock>
+                                <TextBlock Grid.Row="8">
                                     <Run x:Uid="MeasurementValidityRun" />
                                     <Run Text="{x:Bind ValidityText}" />
                                 </TextBlock>
                                 <TextBlock
-                                    Grid.Row="7"
+                                    Grid.Row="9"
                                     Text="{x:Bind WarningsText}"
                                     TextWrapping="WrapWholeWords"
                                     Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
