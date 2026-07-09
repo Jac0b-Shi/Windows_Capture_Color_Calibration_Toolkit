@@ -26,6 +26,8 @@ public partial class App : Application
 
     public nint WindowHandle => (window as MainWindow)?.WindowHandle ?? 0;
 
+    public MainWindow? MainWindow => window as MainWindow;
+
     protected override void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs args)
     {
         window = Services.GetRequiredService<MainWindow>();

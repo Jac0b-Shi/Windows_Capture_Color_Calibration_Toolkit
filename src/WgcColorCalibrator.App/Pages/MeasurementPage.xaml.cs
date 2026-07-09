@@ -1,6 +1,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.Windows.ApplicationModel.Resources;
 using WgcColorCalibrator.App.Services;
 using WgcColorCalibrator.Core.Capture;
 using WgcColorCalibrator.Core.Colors;
@@ -23,6 +24,7 @@ public sealed partial class MeasurementPage : Page
     private readonly MeasurementService _measurementService;
     private readonly ProfileJsonSerializerService _serializer;
     private readonly MeasurementDebugOverlayService _overlayService;
+    private readonly ResourceLoader _resourceLoader;
 
     public MeasurementPage()
     {
@@ -30,6 +32,7 @@ public sealed partial class MeasurementPage : Page
         _measurementService = App.Services.GetRequiredService<MeasurementService>();
         _serializer = App.Services.GetRequiredService<ProfileJsonSerializerService>();
         _overlayService = App.Services.GetRequiredService<MeasurementDebugOverlayService>();
+        _resourceLoader = new ResourceLoader();
         _measurementService.StateChanged += OnMeasurementServiceStateChanged;
         Loaded += OnLoaded;
     }
@@ -62,7 +65,8 @@ public sealed partial class MeasurementPage : Page
             $"Validity: {session.Validity}\n" +
             $"Geometry: {geometryStatus}\n" +
             $"Patches: {session.Measurements.Count}\n" +
-            $"Warnings: {string.Join(", ", session.Warnings)}";
+            $"Warnings: {string.Join(", ", session.Warnings)}\n" +
+            _resourceLoader.GetString("MeasurementOverlayNote");
 
         StatusInfoBar.Message = session.Validity == MeasurementSessionValidity.Valid
             ? "Measurement valid"
@@ -251,6 +255,6 @@ public sealed partial class MeasurementPage : Page
 
     private void BackToChartButton_Click(object sender, RoutedEventArgs e)
     {
-        Frame.Navigate(typeof(ChartPage));
+        ((App)App.Current).MainWindow?.NavigateTo("chart");
     }
 }

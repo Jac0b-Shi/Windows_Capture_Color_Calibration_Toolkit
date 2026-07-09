@@ -23,13 +23,22 @@ public sealed partial class MainWindow : Window
 
     public nint WindowHandle { get; }
 
-    private void RootNavigation_SelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
+    public void NavigateTo(string tag)
     {
-        if (args.SelectedItem is not NavigationViewItem item || item.Tag is not string tag)
+        NavigationViewItem? item = RootNavigation.MenuItems
+            .OfType<NavigationViewItem>()
+            .FirstOrDefault(i => string.Equals(i.Tag as string, tag, StringComparison.Ordinal));
+
+        if (item is not null)
         {
-            return;
+            RootNavigation.SelectedItem = item;
         }
 
+        NavigateByTag(tag);
+    }
+
+    private void NavigateByTag(string tag)
+    {
         Type pageType = tag switch
         {
             "chart" => typeof(ChartPage),
@@ -44,6 +53,16 @@ public sealed partial class MainWindow : Window
         {
             ContentFrame.Navigate(pageType);
         }
+    }
+
+    private void RootNavigation_SelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
+    {
+        if (args.SelectedItem is not NavigationViewItem item || item.Tag is not string tag)
+        {
+            return;
+        }
+
+        NavigateByTag(tag);
     }
 }
 

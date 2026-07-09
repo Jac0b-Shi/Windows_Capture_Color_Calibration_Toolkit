@@ -22,11 +22,14 @@ public sealed partial class ChartPage : Page
     private readonly XamlChartPreviewRenderer _previewRenderer;
     private readonly EventHandler _onWorkspaceStateChanged;
     private bool _uiEventsAttached;
+    private bool _workspaceEventsAttached;
     private bool _isDirty;
     private bool _isInitializing;
 
     public ChartPage()
     {
+        NavigationCacheMode = NavigationCacheMode.Required;
+
         _workspaceService = App.Services.GetRequiredService<ChartWorkspaceService>();
         _resourceLoader = new ResourceLoader();
         _previewRenderer = new XamlChartPreviewRenderer();
@@ -38,14 +41,31 @@ public sealed partial class ChartPage : Page
         // XAML event bindings would fire during initialization while sibling controls are still null.
         AttachUiEvents();
         InitializeUiState();
+    }
 
-        _workspaceService.StateChanged += _onWorkspaceStateChanged;
+    protected override void OnNavigatedTo(NavigationEventArgs e)
+    {
+        base.OnNavigatedTo(e);
+
+        if (!_workspaceEventsAttached)
+        {
+            _workspaceService.StateChanged += _onWorkspaceStateChanged;
+            _workspaceEventsAttached = true;
+        }
+
+        UpdateStatus();
+        RenderPreview();
     }
 
     protected override void OnNavigatedFrom(NavigationEventArgs e)
     {
         base.OnNavigatedFrom(e);
-        _workspaceService.StateChanged -= _onWorkspaceStateChanged;
+
+        if (_workspaceEventsAttached)
+        {
+            _workspaceService.StateChanged -= _onWorkspaceStateChanged;
+            _workspaceEventsAttached = false;
+        }
     }
 
     private void AttachUiEvents()
