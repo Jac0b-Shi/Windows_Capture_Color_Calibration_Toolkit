@@ -19,7 +19,7 @@ public sealed class MeasurementOperatorComparisonExportService
         _operatorComparisonService = operatorComparisonService ?? throw new ArgumentNullException(nameof(operatorComparisonService));
     }
 
-    public async Task ExportAsync(
+    public async Task<OperatorComparisonExportResult> ExportAsync(
         MeasurementSession session,
         StorageFolder outputFolder,
         DateTimeOffset timestamp,
@@ -38,8 +38,11 @@ public sealed class MeasurementOperatorComparisonExportService
 
         IReadOnlyList<OperatorComparisonResult> results = _operatorComparisonService.Compare(session, operators, cancellationToken);
 
-        string csv = OperatorComparisonCsvSerializer.Serialize(results, session);
+        List<string> fileNames = new(results.Count + 1);
         string csvFileName = $"operator-comparison-{timestamp:yyyyMMdd-HHmmss}.csv";
+        fileNames.Add(csvFileName);
+
+        string csv = OperatorComparisonCsvSerializer.Serialize(results, session);
         StorageFile csvFile = await outputFolder.CreateFileAsync(csvFileName, CreationCollisionOption.GenerateUniqueName);
         await FileIO.WriteTextAsync(csvFile, csv);
 
@@ -48,6 +51,8 @@ public sealed class MeasurementOperatorComparisonExportService
             cancellationToken.ThrowIfCancellationRequested();
 
             string pngFileName = $"operator-preview-{result.OperatorId}-{timestamp:yyyyMMdd-HHmmss}.png";
+            fileNames.Add(pngFileName);
+
             StorageFile pngFile = await outputFolder.CreateFileAsync(pngFileName, CreationCollisionOption.GenerateUniqueName);
 
             using IRandomAccessStream stream = await pngFile.OpenAsync(FileAccessMode.ReadWrite);
@@ -61,5 +66,7 @@ public sealed class MeasurementOperatorComparisonExportService
                 BitmapAlphaMode.Premultiplied));
             await encoder.FlushAsync();
         }
+
+        return new OperatorComparisonExportResult(results.Count, session.Measurements.Count, fileNames);
     }
 }

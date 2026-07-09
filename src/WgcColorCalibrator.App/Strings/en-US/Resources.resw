@@ -484,7 +484,25 @@
     <value>Export FP16 luminance heatmap</value>
   </data>
   <data name="ExportBuiltInOperatorComparisonMenuItem.Text" xml:space="preserve">
-    <value>Export built-in HDR-to-SDR operator comparison...</value>
+    <value>Export built-in HDR-to-SDR comparison package...</value>
+  </data>
+  <data name="CustomOperatorMenuItem.Text" xml:space="preserve">
+    <value>Custom operator...</value>
+  </data>
+  <data name="OperatorComparisonMenuItemToolTip" xml:space="preserve">
+    <value>Requires an FP16 RGBA capture first.</value>
+  </data>
+  <data name="CustomOperatorMenuItemToolTip" xml:space="preserve">
+    <value>Not yet implemented. User-defined scalar expressions will be saved to LocalAppData.</value>
+  </data>
+  <data name="OperatorComparisonPackageExported" xml:space="preserve">
+    <value>Operator comparison package exported.</value>
+  </data>
+  <data name="OperatorComparisonPackageExportedMessage" xml:space="preserve">
+    <value>Exported {0} files: {1} CSV and {2} PNG previews.</value>
+  </data>
+  <data name="OperatorComparisonExported" xml:space="preserve">
+    <value>Operator comparison exported.</value>
   </data>
   <data name="CustomOperatorMenuItem.Text" xml:space="preserve">
     <value>Custom operator...</value>

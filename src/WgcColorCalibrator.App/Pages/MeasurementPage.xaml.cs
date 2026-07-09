@@ -1,8 +1,10 @@
+using System.IO.Compression;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
 using Microsoft.Windows.ApplicationModel.Resources;
+using Windows.Storage;
 using WgcColorCalibrator.App.Services;
 using WgcColorCalibrator.Core.Capture;
 using WgcColorCalibrator.Core.Colors;
@@ -580,27 +582,57 @@ public sealed partial class MeasurementPage : Page
             return;
         }
 
-        await RunExportAsync(async () =>
+        _isExporting = true;
+        RefreshExportMenuButtonEnabled();
+        ShowExportInfo("Exporting");
+
+        try
         {
-            global::Windows.Storage.StorageFile? file = await PickSaveFileAsync(
+            StorageFile? file = await PickSaveFileAsync(
                 $"operator-comparison-{session.CreatedAt:yyyyMMdd-HHmmss}",
-                "CSV",
-                ".csv");
+                "ZIP",
+                ".zip");
             if (file is null)
             {
-                return false;
+                StatusInfoBar.IsOpen = false;
+                return;
             }
 
-            string? folderPath = global::System.IO.Path.GetDirectoryName(file.Path);
-            if (folderPath is null)
+            string tempFolderName = $"operator-comparison-{session.CreatedAt:yyyyMMdd-HHmmss}-{Guid.NewGuid():N}";
+            StorageFolder tempFolder = await ApplicationData.Current.TemporaryFolder.CreateFolderAsync(
+                tempFolderName,
+                CreationCollisionOption.GenerateUniqueName);
+
+            try
             {
-                return false;
-            }
+                OperatorComparisonExportResult result = await _operatorComparisonExportService.ExportAsync(session, tempFolder, session.CreatedAt);
+                ZipFile.CreateFromDirectory(tempFolder.Path, file.Path, CompressionLevel.Optimal, includeBaseDirectory: true);
 
-            global::Windows.Storage.StorageFolder outputFolder = await global::Windows.Storage.StorageFolder.GetFolderFromPathAsync(folderPath);
-            await _operatorComparisonExportService.ExportAsync(session, outputFolder, session.CreatedAt);
-            return true;
-        }, "OperatorComparisonExported");
+                int csvCount = result.FileNames.Count - result.OperatorCount;
+                StatusInfoBar.Title = _resourceLoader.GetString("OperatorComparisonPackageExported");
+                StatusInfoBar.Message = string.Format(
+                    System.Globalization.CultureInfo.CurrentCulture,
+                    _resourceLoader.GetString("OperatorComparisonPackageExportedMessage"),
+                    result.FileNames.Count,
+                    csvCount,
+                    result.OperatorCount);
+                StatusInfoBar.Severity = InfoBarSeverity.Success;
+                StatusInfoBar.IsOpen = true;
+            }
+            finally
+            {
+                await tempFolder.DeleteAsync(StorageDeleteOption.PermanentDelete);
+            }
+        }
+        catch (Exception ex)
+        {
+            ShowExportError(ex);
+        }
+        finally
+        {
+            _isExporting = false;
+            RefreshExportMenuButtonEnabled();
+        }
     }
 
     private void BackToChartButton_Click(object sender, RoutedEventArgs e)
