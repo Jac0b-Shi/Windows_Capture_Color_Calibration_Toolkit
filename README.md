@@ -14,10 +14,12 @@ WGC Color Calibrator is an experimental Windows developer tool for measuring how
 
 ## Requirements
 
-- Windows 10 version 1803 or later (WGC requires `Windows.Graphics.Capture`).
+- Windows 10 version 1809 or later is the current packaging baseline (`TargetPlatformMinVersion=10.0.17763.0`).
+- WGC requires `Windows.Graphics.Capture` support. The minimum Windows version for the HDR/FP16 measurement path has not been fully validated.
 - .NET SDK 10.0.x.
 - Windows App SDK package dependencies restored from NuGet.
 - Visual Studio with Windows app development components is recommended for running the WinUI project.
+- A current Windows 11 HDR system is recommended for development and experiments.
 
 ## Build
 
