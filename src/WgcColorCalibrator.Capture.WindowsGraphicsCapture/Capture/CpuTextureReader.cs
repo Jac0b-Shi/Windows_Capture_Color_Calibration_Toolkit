@@ -73,12 +73,36 @@ internal sealed class CpuTextureReader : IDisposable
         MappedSubresource mapped = _context.Map(_stagingTexture, 0, MapMode.Read, Vortice.Direct3D11.MapFlags.None);
         try
         {
-            return CopyPackedBgra(mapped, contentSize);
+            return CopyPackedRaw(mapped, contentSize, sourceTexture.Description.Format);
         }
         finally
         {
             _context.Unmap(_stagingTexture, 0);
         }
+    }
+
+    private static unsafe byte[] CopyPackedRaw(MappedSubresource mapped, SizeInt contentSize, Format format)
+    {
+        int bytesPerPixel = format switch
+        {
+            Format.B8G8R8A8_UNorm => 4,
+            Format.R16G16B16A16_Float => 8,
+            _ => throw new NotSupportedException($"Pixel format '{format}' is not supported for CPU readback.")
+        };
+
+        int packedStride = contentSize.Width * bytesPerPixel;
+        byte[] buffer = new byte[packedStride * contentSize.Height];
+        byte* sourceRow = (byte*)mapped.DataPointer.ToPointer();
+
+        for (int y = 0; y < contentSize.Height; y++)
+        {
+            Span<byte> source = new Span<byte>(sourceRow, packedStride);
+            Span<byte> destination = buffer.AsSpan(y * packedStride, packedStride);
+            source.CopyTo(destination);
+            sourceRow += mapped.RowPitch;
+        }
+
+        return buffer;
     }
 
     private static ID3D11Texture2D GetNativeTexture(IDirect3DSurface surface)
@@ -123,23 +147,6 @@ internal sealed class CpuTextureReader : IDisposable
         };
 
         _stagingTexture = _context.Device.CreateTexture2D(description);
-    }
-
-    private static unsafe byte[] CopyPackedBgra(MappedSubresource mapped, SizeInt contentSize)
-    {
-        int packedStride = contentSize.Width * 4;
-        byte[] buffer = new byte[packedStride * contentSize.Height];
-        byte* sourceRow = (byte*)mapped.DataPointer.ToPointer();
-
-        for (int y = 0; y < contentSize.Height; y++)
-        {
-            Span<byte> source = new Span<byte>(sourceRow, packedStride);
-            Span<byte> destination = buffer.AsSpan(y * packedStride, packedStride);
-            source.CopyTo(destination);
-            sourceRow += mapped.RowPitch;
-        }
-
-        return buffer;
     }
 
     public void Dispose()

@@ -32,7 +32,8 @@ public sealed class WindowsGraphicsCaptureBackend : ISingleFrameCaptureBackend, 
         ArgumentNullException.ThrowIfNull(request);
         ArgumentOutOfRangeException.ThrowIfZero(request.WindowHandle);
 
-        if (request.PixelFormat != CapturePixelFormat.B8G8R8A8UIntNormalized)
+        if (request.PixelFormat != CapturePixelFormat.B8G8R8A8UIntNormalized &&
+            request.PixelFormat != CapturePixelFormat.R16G16B16A16Float)
         {
             throw new NotSupportedException($"Pixel format '{request.PixelFormat}' is not supported in this milestone.");
         }
@@ -47,6 +48,7 @@ public sealed class WindowsGraphicsCaptureBackend : ISingleFrameCaptureBackend, 
                 _device,
                 item,
                 request.Timeout,
+                request.PixelFormat,
                 cancellationToken);
 
             session.StartCapture();

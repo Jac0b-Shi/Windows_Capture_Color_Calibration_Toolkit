@@ -22,6 +22,7 @@ internal sealed class WgcCaptureSession : IDisposable
     private readonly CancellationTokenRegistration _cancellationRegistration;
     private readonly CancellationTokenSource _timeoutCts;
     private readonly int _sizeTolerance;
+    private readonly CapturePixelFormat _pixelFormat;
 
     private int _completed;
     private bool _disposed;
@@ -30,6 +31,7 @@ internal sealed class WgcCaptureSession : IDisposable
         D3D11CaptureDevice device,
         GraphicsCaptureItem captureItem,
         TimeSpan timeout,
+        CapturePixelFormat pixelFormat,
         CancellationToken cancellationToken,
         int sizeTolerance = 1)
     {
@@ -39,6 +41,7 @@ internal sealed class WgcCaptureSession : IDisposable
         _device = device;
         _captureItem = captureItem;
         _sizeTolerance = sizeTolerance;
+        _pixelFormat = pixelFormat;
         _textureReader = new CpuTextureReader(device.Context);
         _frameTcs = new TaskCompletionSource<Direct3D11CaptureFrame>(TaskCreationOptions.RunContinuationsAsynchronously);
         _timeoutCts = new CancellationTokenSource(timeout);
@@ -50,7 +53,7 @@ internal sealed class WgcCaptureSession : IDisposable
 
         _framePool = Direct3D11CaptureFramePool.CreateFreeThreaded(
             device.WinrtDevice,
-            DirectXPixelFormat.B8G8R8A8UIntNormalized,
+            pixelFormat.ToDirectXPixelFormat(),
             1,
             captureItem.Size);
         _framePool.FrameArrived += OnFrameArrived;
@@ -95,12 +98,15 @@ internal sealed class WgcCaptureSession : IDisposable
                 warnings.Add($"capture-item-size-differs-from-surface: item={captureItemSize.Width}x{captureItemSize.Height}, surface={surfaceSize.Width}x{surfaceSize.Height}");
             }
 
+            int bytesPerPixel = _pixelFormat.GetBytesPerPixel();
+            int packedRowStride = contentSize.Width * bytesPerPixel;
+
             return new CapturedFrame(
                 captureItemSize,
                 surfaceSize,
                 contentSize,
-                CapturePixelFormat.B8G8R8A8UIntNormalized,
-                contentSize.Width * 4,
+                _pixelFormat,
+                packedRowStride,
                 pixels,
                 CaptureSourceKind.Window,
                 frame.SystemRelativeTime,
