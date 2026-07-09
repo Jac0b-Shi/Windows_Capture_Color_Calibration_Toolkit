@@ -414,6 +414,15 @@
   <data name="MeasurementCapturedRun.Text" xml:space="preserve">
     <value>Captured: </value>
   </data>
+  <data name="MeasurementMeanRun.Text" xml:space="preserve">
+    <value>Mean: </value>
+  </data>
+  <data name="MeasurementMedianRun.Text" xml:space="preserve">
+    <value>Median: </value>
+  </data>
+  <data name="MeasurementStdDevRun.Text" xml:space="preserve">
+    <value>StdDev: </value>
+  </data>
   <data name="MeasurementValidityRun.Text" xml:space="preserve">
     <value>Validity: </value>
   </data>

@@ -12,6 +12,9 @@ public sealed record MeasurementRecordViewModel(
     string PatchId,
     string ExpectedText,
     string CapturedText,
+    string MeanText,
+    string MedianText,
+    string StdDevText,
     string ValidityText,
     string WarningsText);
 
@@ -80,13 +83,29 @@ public sealed partial class MeasurementPage : Page
     {
         string expected = FormatColorValue(record.Expected);
         string captured = FormatColorValue(record.Captured);
+        string mean = FormatChannelStatistics(record.ChannelStatistics, s => s.Mean);
+        string median = FormatChannelStatistics(record.ChannelStatistics, s => s.Median);
+        string stdDev = FormatChannelStatistics(record.ChannelStatistics, s => s.StandardDeviation);
         string validity = record.Validity.ToString();
         return new MeasurementRecordViewModel(
             record.PatchId,
             expected,
             captured,
+            mean,
+            median,
+            stdDev,
             validity,
             string.Join(", ", record.Warnings));
+    }
+
+    private static string FormatChannelStatistics(ChannelStatistics? statistics, Func<ChannelStatistic, double> selector)
+    {
+        if (statistics is null)
+        {
+            return "-";
+        }
+
+        return $"R{selector(statistics.R):F2} G{selector(statistics.G):F2} B{selector(statistics.B):F2}";
     }
 
     private static string FormatColorValue(ColorValue color)

@@ -73,6 +73,9 @@
                                     <RowDefinition Height="Auto" />
                                     <RowDefinition Height="Auto" />
                                     <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
                                 </Grid.RowDefinitions>
                                 <TextBlock Text="{x:Bind PatchId}" FontWeight="SemiBold" />
                                 <TextBlock Grid.Row="1">
@@ -84,11 +87,23 @@
                                     <Run Text="{x:Bind CapturedText}" />
                                 </TextBlock>
                                 <TextBlock Grid.Row="3">
+                                    <Run x:Uid="MeasurementMeanRun" />
+                                    <Run Text="{x:Bind MeanText}" />
+                                </TextBlock>
+                                <TextBlock Grid.Row="4">
+                                    <Run x:Uid="MeasurementMedianRun" />
+                                    <Run Text="{x:Bind MedianText}" />
+                                </TextBlock>
+                                <TextBlock Grid.Row="5">
+                                    <Run x:Uid="MeasurementStdDevRun" />
+                                    <Run Text="{x:Bind StdDevText}" />
+                                </TextBlock>
+                                <TextBlock Grid.Row="6">
                                     <Run x:Uid="MeasurementValidityRun" />
                                     <Run Text="{x:Bind ValidityText}" />
                                 </TextBlock>
                                 <TextBlock
-                                    Grid.Row="4"
+                                    Grid.Row="7"
                                     Text="{x:Bind WarningsText}"
                                     TextWrapping="WrapWholeWords"
                                     Foreground="{ThemeResource TextFillColorSecondaryBrush}" />

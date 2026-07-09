@@ -32,8 +32,8 @@ public sealed class ProfileJsonSerializerTests
 
         string csv = MeasurementCsvSerializer.Serialize(session);
 
-        Assert.Contains("patchId,label,expectedR,expectedG,expectedB,capturedR,capturedG,capturedB,deltaR,deltaG,deltaB,capturePixelFormat,sampleMethod", csv, StringComparison.Ordinal);
-        Assert.Contains("manual-ffffff,#FFFFFF,255,255,255,242,242,242,-13,-13,-13,B8G8R8A8UIntNormalized,CenterMedian", csv, StringComparison.Ordinal);
+        Assert.Contains("patchId,label,expectedR,expectedG,expectedB,capturedR,capturedG,capturedB,meanR,meanG,meanB,medianR,medianG,medianB,stdDevR,stdDevG,stdDevB,deltaR,deltaG,deltaB,capturePixelFormat,sampleMethod", csv, StringComparison.Ordinal);
+        Assert.Contains("manual-ffffff,#FFFFFF,255,255,255,242,242,242,242.0000,242.0000,242.0000,242.0000,242.0000,242.0000,0.0000,0.0000,0.0000,-13,-13,-13,B8G8R8A8UIntNormalized,CenterMedian", csv, StringComparison.Ordinal);
     }
 
     private static MeasurementSession CreateSession()

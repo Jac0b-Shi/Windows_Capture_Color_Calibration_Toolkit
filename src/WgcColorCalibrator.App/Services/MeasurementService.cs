@@ -7,6 +7,7 @@ using WgcColorCalibrator.Core.Geometry;
 using WgcColorCalibrator.Core.Layout;
 using WgcColorCalibrator.Core.Measurements;
 using WgcColorCalibrator.Core.Rendering;
+using WgcColorCalibrator.App.Models;
 using WgcColorCalibrator.Core.Serialization;
 
 namespace WgcColorCalibrator.App.Services;
@@ -19,19 +20,23 @@ public sealed class MeasurementService
     private readonly ISingleFrameCaptureBackend _captureBackend;
     private readonly IWindowGeometryProbe _geometryProbe;
     private readonly ChartWorkspaceService _workspace;
+    private readonly AppDefaults _defaults;
 
     public MeasurementService(
         ISingleFrameCaptureBackend captureBackend,
         IWindowGeometryProbe geometryProbe,
-        ChartWorkspaceService workspace)
+        ChartWorkspaceService workspace,
+        AppDefaults defaults)
     {
         ArgumentNullException.ThrowIfNull(captureBackend);
         ArgumentNullException.ThrowIfNull(geometryProbe);
         ArgumentNullException.ThrowIfNull(workspace);
+        ArgumentNullException.ThrowIfNull(defaults);
 
         _captureBackend = captureBackend;
         _geometryProbe = geometryProbe;
         _workspace = workspace;
+        _defaults = defaults;
     }
 
     public event EventHandler? StateChanged;
@@ -136,7 +141,7 @@ public sealed class MeasurementService
             ColorEncoding.CaptureNative,
             false);
 
-        SampleMethod sampleMethod = SampleMethod.CenterMean;
+        SampleMethod sampleMethod = ParseSampleMethod(_defaults.SampleMethod);
         List<PatchSample> samples = new(target.Placements.Count);
         foreach (PatchPlacement placement in target.Placements)
         {
@@ -224,6 +229,17 @@ public sealed class MeasurementService
             ["toneMapperId"] = session.ToneMapperId ?? "none",
             ["paperWhiteNits"] = session.ToneMappingParameters.PaperWhiteNits.ToString(System.Globalization.CultureInfo.InvariantCulture),
             ["peakBrightnessNits"] = session.ToneMappingParameters.PeakBrightnessNits.ToString(System.Globalization.CultureInfo.InvariantCulture)
+        };
+    }
+
+    private static SampleMethod ParseSampleMethod(string? value)
+    {
+        return value?.ToLowerInvariant() switch
+        {
+            "center-pixel" or "pixel" => SampleMethod.CenterPixel,
+            "center-mean" or "mean" => SampleMethod.CenterMean,
+            "center-median" or "median" => SampleMethod.CenterMedian,
+            _ => SampleMethod.CenterMedian
         };
     }
 

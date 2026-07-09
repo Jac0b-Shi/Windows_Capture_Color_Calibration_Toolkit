@@ -9,7 +9,7 @@ namespace WgcColorCalibrator.Core.Serialization;
 /// </summary>
 public static class MeasurementCsvSerializer
 {
-    private const string Header = "patchId,label,expectedR,expectedG,expectedB,capturedR,capturedG,capturedB,deltaR,deltaG,deltaB,capturePixelFormat,sampleMethod";
+    private const string Header = "patchId,label,expectedR,expectedG,expectedB,capturedR,capturedG,capturedB,meanR,meanG,meanB,medianR,medianG,medianB,stdDevR,stdDevG,stdDevB,deltaR,deltaG,deltaB,capturePixelFormat,sampleMethod";
 
     public static string Serialize(MeasurementSession session)
     {
@@ -24,6 +24,7 @@ public static class MeasurementCsvSerializer
             patchById.TryGetValue(measurement.PatchId, out var patch);
             var expected = measurement.Expected.Rgb8;
             var captured = measurement.Captured.Rgb8;
+            ChannelStatistics stats = measurement.ChannelStatistics;
 
             builder.Append(Escape(measurement.PatchId)).Append(',')
                 .Append(Escape(patch?.Label ?? measurement.PatchId)).Append(',')
@@ -33,6 +34,15 @@ public static class MeasurementCsvSerializer
                 .Append(ByteOrEmpty(captured?.R)).Append(',')
                 .Append(ByteOrEmpty(captured?.G)).Append(',')
                 .Append(ByteOrEmpty(captured?.B)).Append(',')
+                .Append(DoubleOrEmpty(stats?.R.Mean)).Append(',')
+                .Append(DoubleOrEmpty(stats?.G.Mean)).Append(',')
+                .Append(DoubleOrEmpty(stats?.B.Mean)).Append(',')
+                .Append(DoubleOrEmpty(stats?.R.Median)).Append(',')
+                .Append(DoubleOrEmpty(stats?.G.Median)).Append(',')
+                .Append(DoubleOrEmpty(stats?.B.Median)).Append(',')
+                .Append(DoubleOrEmpty(stats?.R.StandardDeviation)).Append(',')
+                .Append(DoubleOrEmpty(stats?.G.StandardDeviation)).Append(',')
+                .Append(DoubleOrEmpty(stats?.B.StandardDeviation)).Append(',')
                 .Append(DeltaOrEmpty(expected?.R, captured?.R)).Append(',')
                 .Append(DeltaOrEmpty(expected?.G, captured?.G)).Append(',')
                 .Append(DeltaOrEmpty(expected?.B, captured?.B)).Append(',')
@@ -46,6 +56,9 @@ public static class MeasurementCsvSerializer
 
     private static string ByteOrEmpty(byte? value) =>
         value.HasValue ? value.Value.ToString(CultureInfo.InvariantCulture) : string.Empty;
+
+    private static string DoubleOrEmpty(double? value) =>
+        value.HasValue ? value.Value.ToString("F4", CultureInfo.InvariantCulture) : string.Empty;
 
     private static string DeltaOrEmpty(byte? expected, byte? captured)
     {

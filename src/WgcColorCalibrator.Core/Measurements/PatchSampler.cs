@@ -66,6 +66,12 @@ public static class PatchSampler
             new ChannelStatistic(gValues.Min(), gValues.Max(), gValues.Average(v => v), MedianAsDouble(gValues), StdDev(gValues), gValues.Distinct().Count()),
             new ChannelStatistic(bValues.Min(), bValues.Max(), bValues.Average(v => v), MedianAsDouble(bValues), StdDev(bValues), bValues.Distinct().Count()));
 
+        List<string> warnings = new();
+        if (IsNonuniform(statistics))
+        {
+            warnings.Add("sample-region-nonuniform");
+        }
+
         return new PatchSample(
             placement.PatchId,
             method,
@@ -73,7 +79,7 @@ public static class PatchSampler
             rgb,
             null,
             statistics,
-            new List<string>());
+            warnings);
     }
 
     private static PatchSample CreateInvalidSample(
@@ -92,6 +98,16 @@ public static class PatchSampler
             null,
             emptyStats,
             new List<string> { warning, validity.ToString().ToLowerInvariant() });
+    }
+
+    private static bool IsNonuniform(ChannelStatistics stats)
+    {
+        return IsNonuniform(stats.R) || IsNonuniform(stats.G) || IsNonuniform(stats.B);
+    }
+
+    private static bool IsNonuniform(ChannelStatistic stat)
+    {
+        return Math.Abs(stat.Mean - stat.Median) > 3.0 || stat.StandardDeviation > 5.0;
     }
 
     private static byte Median(List<byte> values)
