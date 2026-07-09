@@ -14,10 +14,11 @@
 - 输出：每个算子各一张 SDR 预览 PNG 和一份逐 patch CSV。
 - 本项目独立实现的算子：
   1. `ClampToSdr`：`out = saturate(x)`
-  2. `LinearScale`：`out = saturate(x / maxLuminance)`
+  2. `LinearScale`：`out = saturate(x / inputWhiteScRgb)`，其中 `inputWhiteScRgb` 是希望映射为 SDR 白色的无量纲 scRGB 值。这样可避免把 scRGB 数值与显示器 nits 单位混用。
   3. `Reinhard`：`out = x / (1 + x)`
   4. `ExposureGamma`：`out = pow(1 - exp(-x * exposure), 1 / 2.2)`
-- 里程碑 5 测得的 BGRA8 曲线作为经验参考 `WindowsBgra8Observed`。
+- 里程碑 5 测得的 BGRA8 曲线作为经验参考数据集 `ObservedBgra8Curve`。
+  它**不是**通用算子，导出时必须附带产生它的显示器、HDR 状态、swapchain 格式、tone mapper 和 Windows 版本元数据。
 
 ## 约束
 

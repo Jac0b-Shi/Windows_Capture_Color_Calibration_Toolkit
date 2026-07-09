@@ -14,10 +14,11 @@ Milestone 5 proved that WGC `R16G16B16A16Float` capture preserves HDR scRGB valu
 - Output: one SDR preview PNG and one per-patch CSV for each operator.
 - Operators implemented in this project:
   1. `ClampToSdr` — `out = saturate(x)`
-  2. `LinearScale` — `out = saturate(x / maxLuminance)`
+  2. `LinearScale` — `out = saturate(x / inputWhiteScRgb)` where `inputWhiteScRgb` is the dimensionless scRGB value that should map to SDR white. This avoids mixing scRGB values with display nits.
   3. `Reinhard` — `out = x / (1 + x)`
   4. `ExposureGamma` — `out = pow(1 - exp(-x * exposure), 1 / 2.2)`
-- The BGRA8 capture curve measured in Milestone 5 is kept as an empirical reference (`WindowsBgra8Observed`).
+- The BGRA8 capture curve measured in Milestone 5 is kept as an empirical reference dataset (`ObservedBgra8Curve`).
+  It is **not** a generic operator; it must always be exported together with the display, HDR state, swapchain format, tone-mapper, and Windows build metadata that produced it.
 
 ## Constraints
 

@@ -213,33 +213,20 @@ public sealed partial class MeasurementPage : Page
         float db = capturedB!.Value - expectedB!.Value;
         string delta = $"ΔR{dr:F4} G{dg:F4} B{db:F4}";
 
-        double relativeError = AverageRelativeError(expectedR.Value, expectedG.Value, expectedB.Value, dr, dg, db);
-        string relativeErrorText = double.IsFinite(relativeError)
-            ? $"{relativeError:P2}"
-            : "-";
+        string relativeError = FormatRelativeError(expectedR.Value, expectedG.Value, expectedB.Value, dr, dg, db);
 
-        return (delta, relativeErrorText);
+        return (delta, relativeError);
     }
 
-    private static (float? R, float? G, float? B) ToFloatChannels(ColorValue color)
+    private static string FormatRelativeError(float eR, float eG, float eB, float dR, float dG, float dB)
     {
-        if (color.Rgba.HasValue)
+        bool allExpectedZero = eR == 0.0f && eG == 0.0f && eB == 0.0f;
+        if (allExpectedZero)
         {
-            RgbaFloat rgba = color.Rgba.Value;
-            return (rgba.R, rgba.G, rgba.B);
+            bool allDeltaZero = dR == 0.0f && dG == 0.0f && dB == 0.0f;
+            return allDeltaZero ? "0.00%" : "-";
         }
 
-        if (color.Rgb8.HasValue)
-        {
-            Rgb8 rgb = color.Rgb8.Value;
-            return (rgb.R / 255.0f, rgb.G / 255.0f, rgb.B / 255.0f);
-        }
-
-        return (null, null, null);
-    }
-
-    private static double AverageRelativeError(float eR, float eG, float eB, float dR, float dG, float dB)
-    {
         double sum = 0.0;
         int count = 0;
 
@@ -261,7 +248,24 @@ public sealed partial class MeasurementPage : Page
             count++;
         }
 
-        return count > 0 ? sum / count : 0.0;
+        return count > 0 ? $"{sum / count:P2}" : "-";
+    }
+
+    private static (float? R, float? G, float? B) ToFloatChannels(ColorValue color)
+    {
+        if (color.Rgba.HasValue)
+        {
+            RgbaFloat rgba = color.Rgba.Value;
+            return (rgba.R, rgba.G, rgba.B);
+        }
+
+        if (color.Rgb8.HasValue)
+        {
+            Rgb8 rgb = color.Rgb8.Value;
+            return (rgb.R / 255.0f, rgb.G / 255.0f, rgb.B / 255.0f);
+        }
+
+        return (null, null, null);
     }
 
     private async void CaptureButton_Click(object sender, RoutedEventArgs e)
