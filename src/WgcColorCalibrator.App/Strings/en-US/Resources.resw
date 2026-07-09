@@ -471,7 +471,10 @@
   <data name="CaptureFormatRgba16Float.Content" xml:space="preserve">
     <value>FP16 RGBA</value>
   </data>
-  <data name="MeasurementOverlayNote" xml:space="preserve">
-    <value>The exported overlay is generated from WGC BGRA8 capture data and does not preserve HDR luminance above SDR white.</value>
+  <data name="MeasurementBgraOverlayNote" xml:space="preserve">
+    <value>The BGRA8 overlay is generated from WGC BGRA8 capture data and does not preserve HDR luminance above SDR white.</value>
+  </data>
+  <data name="MeasurementFp16OverlayNote" xml:space="preserve">
+    <value>The FP16 luminance heatmap is an SDR diagnostic preview generated from WGC FP16 capture data. It is not the original HDR image and does not represent actual display luminance.</value>
   </data>
 </root>

@@ -471,7 +471,10 @@
   <data name="CaptureFormatRgba16Float.Content" xml:space="preserve">
     <value>FP16 RGBA</value>
   </data>
-  <data name="MeasurementOverlayNote" xml:space="preserve">
-    <value>导出的调试覆盖层来自 WGC BGRA8 捕获数据，不保留 SDR 白点以上的 HDR 亮度。</value>
+  <data name="MeasurementBgraOverlayNote" xml:space="preserve">
+    <value>BGRA8 调试覆盖层来自 WGC BGRA8 捕获数据，不保留 SDR 白点以上的 HDR 亮度。</value>
+  </data>
+  <data name="MeasurementFp16OverlayNote" xml:space="preserve">
+    <value>FP16 亮度热力图是从 WGC FP16 捕获数据生成的 SDR 诊断预览，不是原始 HDR 图像，也不代表实际显示亮度。</value>
   </data>
 </root>

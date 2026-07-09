@@ -18,7 +18,7 @@
   3. `Reinhard`：`out = x / (1 + x)`
   4. `ExposureGamma`：`out = pow(1 - exp(-x * exposure), 1 / gamma)`
 - `ObservedBgra8Curve`：从里程碑 5 BGRA8 捕获中记录的经验参考数据集。它**不是**通用算子，导出时必须附带产生它的显示器、HDR 状态、swapchain 格式、tone mapper 和 Windows 版本元数据。
-- `CustomExpressionOperator`：基于受限数学表达式语言的本地用户自定义算子。项目只提供表达式求值器；用户表达式不随应用分发，也不属于默认算子列表。
+- `CustomExpressionOperator`：基于受限数学表达式语言的本地用户自定义算子。项目只提供表达式求值器；用户表达式不随应用分发，也不属于默认算子列表。当前提交中这仅是 Core 层能力；UI 对话框和本地持久化在后续步骤中补充。
 - 可选的 `ExternalProcessOperator`：通过 stdin/stdout 或临时文件调用外部工具。主程序只进行数据交换，不将工具加载进自身进程空间。
 
 ## 约束
@@ -33,11 +33,9 @@
 
 1. 在 `WgcColorCalibrator.Core.Rendering.HdrToSdr` 中定义 `IHdrToSdrOperator` 抽象并实现各算子。
 2. 为 `CustomExpressionOperator` 提供受限表达式求值器，支持标量变量、参数和少量数学函数。
-3. 提供一项服务，对 `CapturedFrame`（FP16）应用每个算子，输出：
-   - SDR BGRA8 PNG 预览
-   - 逐 patch CSV（包含 expected、captured、SDR 映射值和 delta）
-4. 使用合成 HDR ramp 数据对每种算子的数学行为做单元测试。
-5. 在测量页增加命令，用于导出当前 FP16 捕获的算子对比结果。
+3. 提供一项服务，对 `CapturedFrame`（FP16）应用每个算子，输出 SDR BGRA8 PNG 预览和逐 patch CSV（包含 expected、captured、SDR 映射值和 delta）（下个提交实现）。
+4. 使用合成 HDR ramp 数据对每种算子的数学行为做单元测试（已完成）。
+5. 在测量页增加命令，用于导出当前 FP16 捕获的算子对比结果（服务实现后补充 UI）。
 
 ## 验收标准
 

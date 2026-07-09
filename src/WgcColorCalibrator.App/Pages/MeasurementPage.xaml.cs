@@ -117,13 +117,16 @@ public sealed partial class MeasurementPage : Page
 
         CaptureGeometry? geometry = session.CaptureGeometry;
         string geometryStatus = geometry?.MappingStatus == CaptureMappingStatus.Verified ? "Verified" : "Unverified";
+        string overlayNoteKey = frame.PixelFormat == CapturePixelFormat.R16G16B16A16Float
+            ? "MeasurementFp16OverlayNote"
+            : "MeasurementBgraOverlayNote";
         SummaryTextBlock.Text =
             $"Validity: {session.Validity}\n" +
             $"Geometry: {geometryStatus}\n" +
             $"Format: {session.Capture.ActualPixelFormat}\n" +
             $"Patches: {session.Measurements.Count}\n" +
             $"Warnings: {string.Join(", ", session.Warnings)}\n" +
-            _resourceLoader.GetString("MeasurementOverlayNote");
+            _resourceLoader.GetString(overlayNoteKey);
 
         StatusInfoBar.Message = session.Validity == MeasurementSessionValidity.Valid
             ? "Measurement valid"
