@@ -5,6 +5,7 @@ using Microsoft.UI.Xaml;
 using WgcColorCalibrator.Capture.WindowsGraphicsCapture;
 using WgcColorCalibrator.Rendering.Direct3D11;
 using WgcColorCalibrator.App.Models;
+using WgcColorCalibrator.Core.Measurements;
 using WgcColorCalibrator.Core.Rendering;
 using WgcColorCalibrator.App.Rendering.Xaml;
 using WgcColorCalibrator.App.Services;
@@ -66,6 +67,8 @@ public partial class App : Application
         services.AddSingleton<MeasurementService>();
         services.AddSingleton<ProfileJsonSerializerService>();
         services.AddSingleton<MeasurementDebugOverlayService>();
+        services.AddSingleton<OperatorComparisonService>();
+        services.AddSingleton<MeasurementOperatorComparisonExportService>();
 
         services.AddTransient<MainWindow>();
         return services.BuildServiceProvider();

@@ -477,4 +477,16 @@
   <data name="MeasurementFp16OverlayNote" xml:space="preserve">
     <value>The FP16 luminance heatmap is an SDR diagnostic preview generated from WGC FP16 capture data. It is not the original HDR image and does not represent actual display luminance.</value>
   </data>
+  <data name="ExportOperatorComparisonButton.Content" xml:space="preserve">
+    <value>Export operator comparison</value>
+  </data>
+  <data name="OperatorComparisonExported" xml:space="preserve">
+    <value>Operator comparison exported.</value>
+  </data>
+  <data name="OperatorComparisonExportFailed" xml:space="preserve">
+    <value>Operator comparison export failed: {0}</value>
+  </data>
+  <data name="OperatorComparisonFp16Only" xml:space="preserve">
+    <value>Operator comparison is only available for FP16 captures.</value>
+  </data>
 </root>

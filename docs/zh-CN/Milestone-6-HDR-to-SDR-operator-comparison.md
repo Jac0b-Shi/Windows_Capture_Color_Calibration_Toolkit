@@ -21,6 +21,13 @@
 - `CustomExpressionOperator`：基于受限数学表达式语言的本地用户自定义算子。项目只提供表达式求值器；用户表达式不随应用分发，也不属于默认算子列表。当前提交中这仅是 Core 层能力；UI 对话框和本地持久化在后续步骤中补充。
 - 可选的 `ExternalProcessOperator`：通过 stdin/stdout 或临时文件调用外部工具。主程序只进行数据交换，不将工具加载进自身进程空间。
 
+## UI 入口规划
+
+`CustomExpressionOperator` 在本提交中已在 Core 层实现，但 App UI 尚未暴露入口。UI 入口将分两步补充：
+
+1. **第一阶段：导出算子对比。** 在测量页增加“导出算子对比”按钮，仅在 FP16 捕获时启用。该功能对当前 FP16 帧依次运行内置算子（`ClampToSdr`、`LinearScale`、`Reinhard`、`ExposureGamma`），输出一份逐 patch CSV 和每个算子对应的 SDR 预览 PNG。
+2. **第二阶段：自定义算子对话框。** 增加“自定义算子...”按钮，打开 `ContentDialog`。第一版仅支持标量表达式（`f(x)`）；RGB 模式（`r`、`g`、`b`、`a`）在标量模式稳定后再考虑。用户自定义算子保存到本机 `%LocalAppData%\WgcColorCalibrator\operators\*.json`，不进入仓库，不作为默认算法，也不随应用分发。
+
 ## 约束
 
 - 项目不随附、复制或派生任何第三方 shader 或捕获代码。

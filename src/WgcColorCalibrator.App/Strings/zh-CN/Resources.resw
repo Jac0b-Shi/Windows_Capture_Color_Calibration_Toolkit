@@ -477,4 +477,16 @@
   <data name="MeasurementFp16OverlayNote" xml:space="preserve">
     <value>FP16 亮度热力图是从 WGC FP16 捕获数据生成的 SDR 诊断预览，不是原始 HDR 图像，也不代表实际显示亮度。</value>
   </data>
+  <data name="ExportOperatorComparisonButton.Content" xml:space="preserve">
+    <value>导出算子对比</value>
+  </data>
+  <data name="OperatorComparisonExported" xml:space="preserve">
+    <value>算子对比已导出。</value>
+  </data>
+  <data name="OperatorComparisonExportFailed" xml:space="preserve">
+    <value>算子对比导出失败：{0}</value>
+  </data>
+  <data name="OperatorComparisonFp16Only" xml:space="preserve">
+    <value>算子对比仅适用于 FP16 捕获。</value>
+  </data>
 </root>

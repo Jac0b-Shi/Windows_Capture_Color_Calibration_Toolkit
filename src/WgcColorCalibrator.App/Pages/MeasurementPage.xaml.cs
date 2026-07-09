@@ -27,6 +27,7 @@ public sealed partial class MeasurementPage : Page
     private readonly MeasurementService _measurementService;
     private readonly ProfileJsonSerializerService _serializer;
     private readonly MeasurementDebugOverlayService _overlayService;
+    private readonly MeasurementOperatorComparisonExportService _operatorComparisonExportService;
     private readonly ResourceLoader _resourceLoader;
     private readonly EventHandler _onMeasurementServiceStateChanged;
     private bool _measurementServiceEventsAttached;
@@ -37,6 +38,7 @@ public sealed partial class MeasurementPage : Page
         _measurementService = App.Services.GetRequiredService<MeasurementService>();
         _serializer = App.Services.GetRequiredService<ProfileJsonSerializerService>();
         _overlayService = App.Services.GetRequiredService<MeasurementDebugOverlayService>();
+        _operatorComparisonExportService = App.Services.GetRequiredService<MeasurementOperatorComparisonExportService>();
         _resourceLoader = new ResourceLoader();
         _onMeasurementServiceStateChanged = OnMeasurementServiceStateChanged;
         Loaded += OnLoaded;
@@ -112,6 +114,7 @@ public sealed partial class MeasurementPage : Page
             ExportRawButton.IsEnabled = false;
             ExportDebugOverlayButton.IsEnabled = false;
             ExportLuminanceOverlayButton.IsEnabled = false;
+            ExportOperatorComparisonButton.IsEnabled = false;
             return;
         }
 
@@ -150,6 +153,7 @@ public sealed partial class MeasurementPage : Page
         ExportDebugOverlayButton.Visibility = isBgra8 ? Visibility.Visible : Visibility.Collapsed;
         ExportLuminanceOverlayButton.IsEnabled = !isBgra8;
         ExportLuminanceOverlayButton.Visibility = isBgra8 ? Visibility.Collapsed : Visibility.Visible;
+        ExportOperatorComparisonButton.IsEnabled = !isBgra8;
     }
 
     private static MeasurementRecordViewModel ToViewModel(MeasurementRecord record)
@@ -428,6 +432,54 @@ public sealed partial class MeasurementPage : Page
             session.CaptureGeometry,
             session.Layout,
             file);
+    }
+
+    private async void ExportOperatorComparisonButton_Click(object sender, RoutedEventArgs e)
+    {
+        MeasurementSession? session = _measurementService.CurrentSession;
+        if (session is null)
+        {
+            return;
+        }
+
+        var picker = new global::Windows.Storage.Pickers.FileSavePicker();
+        picker.SuggestedStartLocation = global::Windows.Storage.Pickers.PickerLocationId.DocumentsLibrary;
+        picker.SuggestedFileName = $"operator-comparison-{session.CreatedAt:yyyyMMdd-HHmmss}";
+        picker.FileTypeChoices.Add("CSV", new[] { ".csv" });
+
+        WinRT.Interop.InitializeWithWindow.Initialize(picker, ((App)App.Current).WindowHandle);
+        global::Windows.Storage.StorageFile? file = await picker.PickSaveFileAsync();
+        if (file is null)
+        {
+            return;
+        }
+
+        string? folderPath = Path.GetDirectoryName(file.Path);
+        if (folderPath is null)
+        {
+            return;
+        }
+
+        try
+        {
+            global::Windows.Storage.StorageFolder outputFolder = await global::Windows.Storage.StorageFolder.GetFolderFromPathAsync(folderPath);
+            await _operatorComparisonExportService.ExportAsync(session, outputFolder, session.CreatedAt);
+
+            StatusInfoBar.Title = _resourceLoader.GetString("OperatorComparisonExported");
+            StatusInfoBar.Message = string.Empty;
+            StatusInfoBar.Severity = InfoBarSeverity.Success;
+            StatusInfoBar.IsOpen = true;
+        }
+        catch (Exception ex)
+        {
+            StatusInfoBar.Title = _resourceLoader.GetString("ExportErrorTitle");
+            StatusInfoBar.Message = string.Format(
+                System.Globalization.CultureInfo.CurrentCulture,
+                _resourceLoader.GetString("OperatorComparisonExportFailed"),
+                ex.Message);
+            StatusInfoBar.Severity = InfoBarSeverity.Error;
+            StatusInfoBar.IsOpen = true;
+        }
     }
 
     private void BackToChartButton_Click(object sender, RoutedEventArgs e)

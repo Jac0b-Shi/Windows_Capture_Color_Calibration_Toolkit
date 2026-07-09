@@ -21,6 +21,13 @@ Milestone 5 proved that WGC `R16G16B16A16Float` capture preserves HDR scRGB valu
 - `CustomExpressionOperator`: a local, user-defined operator based on a restricted mathematical expression language. The project only provides the evaluator; user expressions are not shipped with the application and are not part of the default operator list. In the current commit this is a Core-only capability; the UI dialog and local persistence are added in a subsequent step.
 - Optional `ExternalProcessOperator`: invokes an external tool through stdin/stdout or temporary files. The main application only exchanges data; it does not load the tool into its address space.
 
+## UI Entry Plan
+
+`CustomExpressionOperator` is implemented in Core in this commit, but the App UI does not expose it yet. The UI entry will be added in two phases:
+
+1. **Phase 1 — Export operator comparison:** Add a "Export operator comparison" button on the Measurement page, enabled only for FP16 captures. This runs the built-in operators (`ClampToSdr`, `LinearScale`, `Reinhard`, `ExposureGamma`) on the current FP16 frame and exports one per-patch CSV plus one SDR preview PNG per operator.
+2. **Phase 2 — Custom operator dialog:** Add a "Custom operator..." button that opens a `ContentDialog`. The first version supports only scalar expressions (`f(x)`); RGB mode (`r`, `g`, `b`, `a`) may be added once scalar mode is stable. User operators are saved locally under `%LocalAppData%\WgcColorCalibrator\operators\*.json` and are not checked into the repository, not bundled as default algorithms, and not shipped with the application.
+
 ## Constraints
 
 - The project does not ship, copy, or derive from third-party shader or capture code.
