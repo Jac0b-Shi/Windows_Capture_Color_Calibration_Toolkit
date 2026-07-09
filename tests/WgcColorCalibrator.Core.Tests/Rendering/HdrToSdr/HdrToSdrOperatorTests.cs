@@ -70,9 +70,60 @@ public sealed class HdrToSdrOperatorTests
     }
 
     [Fact]
+    public void CustomExpression_EvaluatesPerChannel()
+    {
+        var parameters = new Dictionary<string, float>(StringComparer.Ordinal)
+        {
+            ["scale"] = 0.5f,
+        };
+        var op = new CustomExpressionOperator(
+            "saturate(x * scale)",
+            parameters);
+
+        RgbaFloat result = op.Map(new RgbaFloat(2.0f, 4.0f, 1.0f, 1.0f));
+
+        Assert.Equal(1.0f, result.R, 4);
+        Assert.Equal(1.0f, result.G, 4);
+        Assert.Equal(0.5f, result.B, 4);
+        Assert.Equal(1.0f, result.A, 4);
+    }
+
+    [Fact]
+    public void CustomExpression_CanReferenceOtherChannels()
+    {
+        var parameters = new Dictionary<string, float>(StringComparer.Ordinal)
+        {
+            ["scale"] = 1.0f,
+        };
+        var op = new CustomExpressionOperator(
+            "saturate((r + g + b) / 3 * scale)",
+            parameters);
+
+        RgbaFloat result = op.Map(new RgbaFloat(1.0f, 0.5f, 0.0f, 1.0f));
+
+        Assert.Equal(0.5f, result.R, 6);
+        Assert.Equal(0.5f, result.G, 6);
+        Assert.Equal(0.5f, result.B, 6);
+    }
+
+    [Fact]
+    public void CustomExpression_ThrowsOnUnknownFunction()
+    {
+        Assert.Throws<ExpressionParseException>(() => new CustomExpressionOperator("unknown(x)", ReadOnlyParameters));
+    }
+
+    [Fact]
+    public void CustomExpression_ThrowsOnMissingParameter()
+    {
+        Assert.Throws<ExpressionParseException>(() => new CustomExpressionOperator("x * missing", ReadOnlyParameters));
+    }
+
+    [Fact]
     public void ExposureGamma_ThrowsForNonPositiveParameters()
     {
         Assert.Throws<ArgumentOutOfRangeException>(() => new ExposureGammaOperator(0.0f, 2.2f));
         Assert.Throws<ArgumentOutOfRangeException>(() => new ExposureGammaOperator(1.0f, 0.0f));
     }
+
+    private static IReadOnlyDictionary<string, float> ReadOnlyParameters { get; } = new Dictionary<string, float>(StringComparer.Ordinal);
 }
