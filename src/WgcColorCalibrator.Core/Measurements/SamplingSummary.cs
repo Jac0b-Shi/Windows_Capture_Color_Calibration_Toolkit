@@ -7,7 +7,7 @@ public sealed record SamplingSummary
 {
     public SamplingSummary(SampleMethod method, int sampleCount)
     {
-        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(sampleCount);
+        ArgumentOutOfRangeException.ThrowIfNegative(sampleCount);
 
         Method = method;
         SampleCount = sampleCount;

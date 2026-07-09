@@ -120,10 +120,10 @@ internal sealed class WgcCaptureSession : IDisposable
                 TryComplete(frame, null);
             }
         }
-        catch
+        catch (Exception ex)
         {
             frame?.Dispose();
-            throw;
+            TryComplete(null, ex);
         }
     }
 

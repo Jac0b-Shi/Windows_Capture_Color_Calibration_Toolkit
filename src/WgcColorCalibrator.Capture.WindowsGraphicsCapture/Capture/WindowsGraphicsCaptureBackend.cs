@@ -9,7 +9,7 @@ namespace WgcColorCalibrator.Capture.WindowsGraphicsCapture;
 /// <summary>
 /// Windows Graphics Capture implementation of the single-frame capture backend.
 /// </summary>
-public sealed class WindowsGraphicsCaptureBackend : ISingleFrameCaptureBackend, IWindowGeometryProbe, IDisposable
+public sealed class WindowsGraphicsCaptureBackend : ISingleFrameCaptureBackend, IDisposable
 {
     private readonly D3D11CaptureDevice _device;
     private readonly SemaphoreSlim _concurrencyLock = new(1, 1);
@@ -26,12 +26,6 @@ public sealed class WindowsGraphicsCaptureBackend : ISingleFrameCaptureBackend, 
     }
 
     public string BackendId => "windows-graphics-capture";
-
-    public WindowGeometrySnapshot Capture(nint hwnd)
-    {
-        ArgumentOutOfRangeException.ThrowIfZero(hwnd);
-        return new WindowsWindowGeometryProbe().Capture(hwnd);
-    }
 
     public async Task<CapturedFrame> CaptureAsync(WindowCaptureRequest request, CancellationToken cancellationToken = default)
     {

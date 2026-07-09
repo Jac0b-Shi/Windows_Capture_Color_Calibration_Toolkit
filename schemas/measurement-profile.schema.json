@@ -3,7 +3,7 @@
   "$id": "urn:wgc-color-calibrator:schemas:measurement-profile",
   "title": "MeasurementProfile",
   "type": "object",
-  "required": ["schemaVersion", "application", "system", "capture", "chart", "layout", "measurements", "warnings", "createdAt"],
+  "required": ["schemaVersion", "application", "system", "capture", "renderSummary", "captureGeometry", "chart", "layout", "measurements", "validity", "warnings", "createdAt"],
   "properties": {
     "schemaVersion": { "const": "0.2.0" },
     "application": {
@@ -31,7 +31,7 @@
       }
     },
     "renderSummary": {
-      "type": ["object", "null"],
+      "type": "object",
       "required": ["rendererId", "requestedOutputMode", "actualOutputMode", "swapChainFormat", "dxgiColorSpace", "hdrOutputActive", "toneMappingParameters", "intendedPhysicalSize", "actualPhysicalSize", "clientPhysicalSize", "contentOrigin", "compositionScaleX", "compositionScaleY", "warnings"],
       "properties": {
         "rendererId": { "type": "string", "minLength": 1 },
@@ -62,7 +62,7 @@
       }
     },
     "captureGeometry": {
-      "type": ["object", "null"],
+      "type": "object",
       "required": ["beforeCaptureGeometry", "afterCaptureGeometry", "frameOriginBasis", "mappingStatus", "contentOffset", "warnings"],
       "properties": {
         "beforeCaptureGeometry": { "$ref": "#/$defs/windowGeometrySnapshot" },

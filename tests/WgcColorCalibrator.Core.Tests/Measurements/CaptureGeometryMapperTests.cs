@@ -21,6 +21,20 @@ public sealed class CaptureGeometryMapperTests
     }
 
     [Fact]
+    public void Map_WidthMatchesHeightDoesNot_ReturnsUnverified()
+    {
+        WindowGeometrySnapshot before = CreateSnapshotWithClient(
+            windowX: 0, windowY: 0, windowWidth: 100, windowHeight: 150,
+            clientX: 0, clientY: 0, clientWidth: 100, clientHeight: 150);
+        CapturedFrame frame = CreateFrame(100, 100);
+
+        CaptureGeometry geometry = CaptureGeometryMapper.Map(before, before, frame, new PixelPoint(0, 0));
+
+        Assert.Equal(CaptureMappingStatus.Unverified, geometry.MappingStatus);
+        Assert.Contains("capture-frame-origin-unverified", geometry.Warnings);
+    }
+
+    [Fact]
     public void Map_ClientRectMatchesFrame_ReturnsVerified()
     {
         WindowGeometrySnapshot before = CreateSnapshot(0, 0, 100, 100);

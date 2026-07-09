@@ -13,7 +13,7 @@ public static class ServiceCollectionExtensions
         ArgumentNullException.ThrowIfNull(services);
 
         services.AddSingleton<ISingleFrameCaptureBackend, WindowsGraphicsCaptureBackend>();
-        services.AddSingleton<IWindowGeometryProbe, WindowsGraphicsCaptureBackend>();
+        services.AddSingleton<IWindowGeometryProbe, WindowsWindowGeometryProbe>();
         return services;
     }
 }

@@ -2,6 +2,7 @@ using System.Runtime.InteropServices;
 using Vortice.Direct3D;
 using Vortice.Direct3D11;
 using Vortice.DXGI;
+using Vortice.Mathematics;
 using Windows.Graphics.DirectX.Direct3D11;
 using WgcColorCalibrator.Core.Capture;
 using WgcColorCalibrator.Core.Rendering;
@@ -59,7 +60,15 @@ internal sealed class CpuTextureReader : IDisposable
             0,
             sourceTexture,
             0,
-            null);
+            new Box
+            {
+                Left = 0,
+                Top = 0,
+                Front = 0,
+                Right = contentSize.Width,
+                Bottom = contentSize.Height,
+                Back = 1
+            });
 
         MappedSubresource mapped = _context.Map(_stagingTexture, 0, MapMode.Read, Vortice.Direct3D11.MapFlags.None);
         try

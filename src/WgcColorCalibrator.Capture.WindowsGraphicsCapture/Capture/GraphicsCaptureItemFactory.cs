@@ -21,6 +21,13 @@ internal static class GraphicsCaptureItemFactory
         int CreateForMonitor(nint monitor, ref Guid iid, out nint result);
     }
 
+    /// <summary>
+    /// Creates a projected <see cref="GraphicsCaptureItem"/> from a window handle using the
+    /// <see cref="IGraphicsCaptureItemInterop"/> COM interface. The returned object takes ownership
+    /// of the ABI pointer returned by <see cref="IGraphicsCaptureItemInterop.CreateForWindow"/>;
+    /// callers must not release the pointer themselves. The projected object lifetime follows normal
+    /// WinRT reference counting and is released when the caller disposes or drops all references.
+    /// </summary>
     public static GraphicsCaptureItem CreateForWindow(nint hwnd)
     {
         IObjectReference factory = ActivationFactory.Get("Windows.Graphics.Capture.GraphicsCaptureItem");
@@ -33,6 +40,7 @@ internal static class GraphicsCaptureItemFactory
             Marshal.ThrowExceptionForHR(hr);
         }
 
+        // FromAbi takes ownership of itemPointer; do not Marshal.Release it afterwards.
         return GraphicsCaptureItem.FromAbi(itemPointer);
     }
 }

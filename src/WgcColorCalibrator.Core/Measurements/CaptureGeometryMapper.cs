@@ -108,11 +108,17 @@ public static class CaptureGeometryMapper
         return SelectPreferredBasis(matches.Select(m => m.Basis).ToList());
     }
 
+    private static bool IsSizeMatch(ScreenRectInt rect, SizeInt size, int sizeTolerance)
+    {
+        return Math.Abs(rect.Width - size.Width) <= sizeTolerance &&
+               Math.Abs(rect.Height - size.Height) <= sizeTolerance;
+    }
+
     private static bool IsSizeMatch(ScreenRectInt rect, CapturedFrame frame, int sizeTolerance)
     {
-        return Math.Abs(rect.Width - frame.ContentSize.Width) <= sizeTolerance ||
-               Math.Abs(rect.Width - frame.SurfaceSize.Width) <= sizeTolerance ||
-               Math.Abs(rect.Width - frame.CaptureItemSize.Width) <= sizeTolerance;
+        return IsSizeMatch(rect, frame.ContentSize, sizeTolerance) ||
+               IsSizeMatch(rect, frame.SurfaceSize, sizeTolerance) ||
+               IsSizeMatch(rect, frame.CaptureItemSize, sizeTolerance);
     }
 
     private static PixelPoint? ComputeContentOffset(ScreenRectInt frameOriginRect, ScreenRectInt clientRectInScreen, PixelPoint chartContentOrigin)
